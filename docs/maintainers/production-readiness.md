@@ -5,9 +5,9 @@ Python **3.11–3.14** and exact released beartype **0.23.1**. PRs
 [#48–#55](https://github.com/beartype/bearshape/pull/55) add the six audit
 fixes, measured scope/Tree optimizations, complete release composition gates and
 tested native factory aliases. The current
-[execution plan](https://github.com/beartype/bearshape/blob/codex/audit-ci-docs/plans/2026-10-11-audit-followup.md)
+[execution plan](https://github.com/beartype/bearshape/blob/main/plans/2026-10-11-audit-followup.md)
 records validation and external prerequisites; the
-[performance evidence](https://github.com/beartype/bearshape/tree/codex/lazy-array-scope/tools/evidence/2026-10-11-audit-performance)
+[performance evidence](https://github.com/beartype/bearshape/tree/a30c11b52b2ac53ebfc79f7ee00fb1f1fb0ecd18/tools/evidence/2026-10-11-audit-performance)
 contains matched installed measurements and artifact identities.
 
 The combined implementation passes **1,300 installed baseline tests** and
@@ -23,8 +23,10 @@ tests.
 full composite-union rollback. The local upstream proposal is separate evidence,
 not a released integration. Current runtime changes need fresh exact-wheel CUDA
 evidence; earlier GPU results below do not cover them. Repository/PyPI controls,
-merge approval and separately authorized publication remain outstanding. The
-dated sections below retain their original evidence.
+and separately authorized publication remain outstanding. The owner approved
+merging the validated stack on 11 October 2026, preserving every reviewed
+commit, then verifying main before cleanup. The dated sections below retain
+their original evidence.
 
 This is the 8 September 2026 review record for **bearshape 0.1.0rc0**. The
 candidate is independently versioned from beartype and requires

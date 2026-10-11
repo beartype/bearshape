@@ -15,8 +15,10 @@ six local gaps despite 1,262 passing installed tests per Python endpoint. Close
 those gaps with failing-first regressions, then reduce measured overhead and
 complete release CI and developer documentation. Keep Python 3.11–3.14 and
 released beartype 0.23.1 as the baseline while separately validating the local
-upstream proposal. No publication, deployment, maintainer message or main merge
-is authorized by this implementation request.
+upstream proposal. The subsequent owner instruction on 11 October 2026
+authorizes merging the validated stack, verifying main and cleaning merged
+branches/worktrees while preserving every reviewed commit. Publication,
+deployment and maintainer contact remain unauthorized.
 
 ## Progress
 
@@ -71,8 +73,11 @@ is authorized by this implementation request.
   hooks, actionlint, rendered docs and both notebook endpoints pass. All eight
   focused PR heads have 36 successful hosted checks; both new hosted dependency
   canaries pass. Exact identities and remaining release prerequisites follow.
-- [ ] External: supported upstream release, approved repository/PyPI controls, exact final
-  CUDA evidence, merge approval and separately authorized publication.
+- [x] (2026-10-11) Owner approved merging the validated stack with all reviewed
+  commits preserved, followed by main verification and merged-worktree cleanup.
+  The closeout record is retained outside worktrees in `build/merge-closeout/`.
+- [ ] External: supported upstream release, approved repository/PyPI controls,
+  exact final CUDA evidence and separately authorized publication.
 
 ## Surprises & Discoveries
 
@@ -111,12 +116,22 @@ settings explicit. Rationale: patches do not constitute a published dependency,
 and the missing environment reviewer and private publisher identity cannot be
 invented. Date/author: 2026-10-11, Codex.
 
+Decision: merge approved stacked heads into their actual bases without rewriting
+commits, then merge the complete integration PR into main. Verify every saved
+review head is reachable, main's CI and archive identity, and preserve ignored
+evidence before removing only clean merged worktrees and branches. Replace live
+links to disposable branches with durable destinations. Rationale: explicit
+owner approval now covers merge and cleanup, but not publication or contact.
+Date/author: 2026-10-11, Codex.
+
 ## Outcomes & Retrospective
 
 
 The six correctness fixes, measured optimizations and CI/docs work are implemented
 in PRs #48–#55. No additional public feature was necessary. Nothing has been
-merged, published or deployed; the upstream proposal has not been sent. Local
+merged at the pre-merge review recorded below. Merge and cleanup are now
+authorized and their final evidence belongs in `build/merge-closeout/`. Nothing
+has been published or deployed; the upstream proposal has not been sent. Local
 and hosted CPU evidence is complete for the tested implementation below. Release
 readiness remains withheld for the supported upstream dependency, fresh CUDA
 evidence and owner-controlled prerequisites.
@@ -306,3 +321,6 @@ inference, replacement type checker or new public feature is part of this plan.
 
 Revision 2026-10-11: initial authorized follow-up plan, with separate correctness,
 optimization and release-documentation milestones and explicit external limits.
+
+Revision 2026-10-11: record explicit merge/verification/cleanup approval and
+keep branch-deletion-safe evidence links; publication and contact remain separate.
