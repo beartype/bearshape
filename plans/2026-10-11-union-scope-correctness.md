@@ -18,10 +18,10 @@ supported scope interface and preserve all native composition and errors.
 
 
 - [x] (2026-10-11) Inspect the previous proposal and the additional failing cases.
-- [ ] Commit this plan and open a draft PR before implementation.
-- [ ] Add a public lazy scope API to the local upstream proposal and adapt bearshape.
-- [ ] Add alias ownership and nested-failure regressions; demonstrate old failures.
-- [ ] Preserve an independently applicable upstream patch series and reproducible CI.
+- [x] (2026-10-11) Committed plan and opened draft PR #46 before implementation.
+- [x] (2026-10-11) Implemented public lazy scope API and optional bearshape adapter.
+- [x] (2026-10-11) Old proposal: eleven failures and five passes. Revised proposal: 67 focused passes on each endpoint.
+- [x] (2026-10-11) Added pinned, hashed patch series and proposal-only installed-consumer CI.
 - [ ] Validate exact installed wheels, upstream units, runtime consumers and checkers.
 - [ ] Update evidence and prepare review. No main merge or publishing.
 

@@ -1,5 +1,50 @@
 # Native union integration proposal
 
+## Current correctness proposal
+
+PR #46 supersedes the earlier ownership design. The previous proposal passed 22
+union cases but failed eleven additional alias and caught-failure regressions.
+The scope interface is now `beartype.plug.get_hint_check_scope()`: it returns an
+invocation-owned `HintCheckScope` with a private-keyed `state` dictionary,
+`owner_code`, and lazily bound `arguments`. Internal alias checks share the
+caller; nested decorated and public DOOR checks remain independent. No frame or
+context token is retained by a scope. Ordinary users allocate no scope unless a
+plugin requests one. bearshape keeps its released-0.23.1 fallback.
+
+`patches/series.json` pins the released upstream base and SHA256 of each ordered
+patch. `0001-state.patch` preserves the original state protocol proposal;
+`0002-scope-correctness.patch` adds the public scope API and independent
+rollback for a rejected late leaf. These files are review artifacts, never
+runtime code loaded or automatically applied by bearshape. The local wheels
+still identify as 0.23.1; they are **not the published beartype 0.23.1 wheel**.
+
+Create a disposable clean checkout of beartype at
+`f85b67d8b0b6bd9c910bd97f0d2d417c4550b038`. From this bearshape checkout, run:
+
+```sh
+uv run --locked python tools/check_upstream_proposal.py \
+  --upstream-source /path/to/clean/beartype \
+  --output /path/to/new/proposal-evidence --python 3.11
+```
+
+Repeat with a second clean upstream checkout, a new output directory and Python
+3.14. The driver rejects a dirty/wrong-base checkout and changed patch hashes,
+clears hook-local Git variables, applies the reviewed series, builds both
+wheels, and runs copied consumers outside source checkouts in a fresh
+environment. It includes all runtime tests, four static consumer engines, the
+original union probe, scope regressions and upstream protocol/scope unit cases.
+It writes exact commands, source base and artifact hashes to the output
+directory. A partial failure leaves evidence intact; retry with fresh disposable
+paths. Use the created environment's interpreter directly for additional
+experiments.
+
+The `Validate local upstream proposal` workflow runs these endpoint consumers
+with read-only repository permissions. It has no publishing job or credentials.
+This evidence supplements the released-dependency CI; it does not change release
+gates, the dependency lock or the requirement for supported upstream adoption.
+
+## Historical proposal evidence
+
 The `test_union_transactions.py` suite exercises the proposed beartype
 `__beartype_state__` protocol. It runs explicitly because the required upstream
 change has not shipped. These tests are real failures on published beartype

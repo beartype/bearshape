@@ -21,6 +21,8 @@ repos:
   - repo: builtin
     hooks:
       - id: trailing-whitespace
+        # Unified diffs require the leading space on blank context lines.
+        exclude: ^tools/upstream/patches/.*\.patch$
         priority: 20
       - id: check-added-large-files
         priority: 10
@@ -78,6 +80,8 @@ repos:
     rev: v1.45.0
     hooks:
       - id: typos
+        # Preserve exact upstream identifiers and the reviewed patch digests.
+        exclude: ^tools/upstream/patches/.*\.patch$
         priority: 40
 
   - repo: https://github.com/executablebooks/mdformat

@@ -27,6 +27,8 @@ import types
 import typing as tp
 from dataclasses import dataclass, field
 
+import beartype.plug as _beartype_plug
+
 __all__ = [
   "ShapeMemo",
   "get_memo",
@@ -36,6 +38,23 @@ __all__ = [
 ]
 
 _FRAME_MEMO_NAME = "__bearshape_memo__"
+_SCOPE_MEMO_KEY = object()
+
+
+class _HintCheckScope(tp.Protocol):
+  state: dict[object, object]
+  owner_code: types.CodeType
+
+  @property
+  def arguments(self) -> dict[str, object]: ...
+
+
+# The supported API is optional until an upstream release includes it. Keep the
+# released baseline path intact; never patch or inspect upstream internals.
+_get_hint_check_scope = tp.cast(
+  "tp.Callable[[], _HintCheckScope | None] | None",
+  getattr(_beartype_plug, "get_hint_check_scope", None),
+)
 
 
 @dataclass
@@ -198,6 +217,24 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
       → beartype wrapper.
 
   """
+  if _get_hint_check_scope is not None:
+    scope = _get_hint_check_scope()
+    explicit = _explicit_stack.get()
+    owners = _explicit_owner_stack.get()
+    if explicit and (
+      not owners
+      or owners[-1] is None
+      or (scope is not None and scope.owner_code is owners[-1])
+    ):
+      return explicit[-1]
+    if scope is None:
+      return ShapeMemo()
+    memo = scope.state.get(_SCOPE_MEMO_KEY)
+    if memo is None:
+      memo = ShapeMemo()
+      scope.state[_SCOPE_MEMO_KEY] = memo
+    return tp.cast("ShapeMemo", memo)
+
   # 1. Explicit stack takes priority (if owner matches or untagged)
   explicit = _explicit_stack.get()
   if explicit:
@@ -226,6 +263,20 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
 
 def get_scope(_depth: int = 2) -> dict[str, object]:
   """Return the current runtime scope for ``Value(...)`` expressions."""
+  if _get_hint_check_scope is not None:
+    scope = _get_hint_check_scope()
+    explicit_scope = _explicit_scope_stack.get()
+    owners = _explicit_owner_stack.get()
+    owner_matches = (
+      not owners
+      or owners[-1] is None
+      or (scope is not None and scope.owner_code is owners[-1])
+    )
+    if explicit_scope and explicit_scope[-1] is not None and owner_matches:
+      return explicit_scope[-1]
+    if scope is not None:
+      return scope.arguments
+
   explicit = _explicit_scope_stack.get()
   if explicit and explicit[-1] is not None:
     owners = _explicit_owner_stack.get()
