@@ -80,6 +80,8 @@ def _run(tool: str, targets: list[str]) -> subprocess.CompletedProcess[str]:
       ],
       "pyrefly": [
         "check",
+        "--config",
+        str(ROOT / "pyproject.toml"),
         "--search-path",
         str(ROOT),
         "--python-version",

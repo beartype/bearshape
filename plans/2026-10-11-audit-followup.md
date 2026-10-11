@@ -83,6 +83,11 @@ Hosted NumPy-only lanes exposed a misplaced Tree optimization guard, which
 required optree. Move that guard into the Tree module and retain independent
 strict/Like guards in the NumPy-compatible memo suite; no test is removed.
 
+Installed proposal consumers inside a checkout exposed Pyrefly loading different
+ancestor configurations for dependency files. Pin its configuration to the copied
+consumer pyproject, alongside the consumer search root and selected interpreter.
+The failing positive dtype-identity consumer remains unchanged.
+
 ## Decision Log
 
 
