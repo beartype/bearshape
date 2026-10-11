@@ -1709,3 +1709,22 @@ def test_owned_custom_array_leaf_keeps_metadata_fresh_and_nested_calls_isolated(
   value.dtype = "int32"
   with pytest.raises(BeartypeCallHintParamViolation, match="dtype"):
     consume([value], np.ones(3, dtype=np.float32))
+
+
+def test_tree_without_value_does_not_bind_arguments(
+  monkeypatch: pytest.MonkeyPatch,
+) -> None:
+  import bearshape._array_types as array_types
+  import bearshape._memo as memo_module
+
+  @beartype
+  def consume(value: Tree[F32[N]]) -> Tree[F32[N]]:
+    return value
+
+  def unused_scope() -> dict[str, object]:
+    pytest.fail("A Tree without Value requested runtime arguments")
+
+  monkeypatch.setattr(array_types, "get_scope", unused_scope)
+  monkeypatch.setattr(memo_module, "get_scope", unused_scope)
+  value = [np.ones(2, dtype=np.float32)]
+  assert consume(value) is value

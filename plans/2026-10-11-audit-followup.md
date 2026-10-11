@@ -72,6 +72,10 @@ suites pass. Arithmetic, mixed variadics and Tree ownership also fail with the
 published dependency, independently of the proposed upstream protocol. Current
 release CI runs the original 22 union cases but omits 40 later scope cases.
 
+Hosted NumPy-only lanes exposed a misplaced Tree optimization guard, which
+required optree. Move that guard into the Tree module and retain independent
+strict/Like guards in the NumPy-compatible memo suite; no test is removed.
+
 ## Decision Log
 
 
