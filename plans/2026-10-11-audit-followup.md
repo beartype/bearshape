@@ -41,9 +41,11 @@ is authorized by this implementation request.
   multi-name suffixes, empty containers, shared bindings and rollback. Tree/JAX
   suites pass. Rendered docs and all 94 Python snippets validate; changed
   paragraphs were inspected in the generated HTML.
-- [ ] M5 in progress: focused metadata PR follows #51. Normalize dimensions
-  through the integer-index protocol, reject negative sizes, preserve readable
-  failures and cancellation, and let selected converters inspect untrusted inputs.
+- [x] (2026-10-11) M5: PR #52 normalizes strict, trusted Like and converted
+  shapes and contains ordinary metadata exceptions. Twenty new cases include
+  four malformed shapes, nine failing properties, converter-owned inspection,
+  integer-index axes and cancellation. Failing-first evidence retained; NumPy,
+  JAX, Torch and edge suites pass. Minimal consumer checks negative metadata.
 - [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.

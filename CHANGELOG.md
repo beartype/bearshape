@@ -8,6 +8,10 @@ and this project follows
 
 ## [Unreleased]
 
+- Validate custom shape metadata through the integer-index protocol and reject
+    negative axes. Report ordinary metadata failures without swallowing
+    cancellation, and let selected Like converters inspect untrusted inputs.
+
 - Check Tree suffix structures along every ragged path, including shallow leaves
     and empty containers, while preserving valid differing outer depths.
 

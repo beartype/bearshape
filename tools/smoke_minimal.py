@@ -81,6 +81,8 @@ def main() -> None:
   x = CustomArray((3,))
   if pair(x, CustomArray((3,))) is not x:
     sys.exit("Validation replaced the custom array argument")
+  if isinstance(CustomArray((-1,)), FloatArray[N]):
+    sys.exit("Negative custom array metadata was accepted")
   _expect_param_failure(x, CustomArray((4,)))
   _expect_param_failure(x, CustomArray((3,), "int32"))
   try:

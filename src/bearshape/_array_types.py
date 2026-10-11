@@ -130,6 +130,15 @@ def _infer_arraylike_hint_module(
   return __name__
 
 
+def _normalize_shape(raw_shape: tp.Any) -> tuple[int, ...]:
+  """Accept integer-index axes and reject malformed or negative dimensions."""
+  shape = tuple(index(size) for size in raw_shape)
+  if any(size < 0 for size in shape):
+    message = "shape contains negative dimensions"
+    raise ValueError(message)
+  return shape
+
+
 def _describe_actual_dtype(obj: object) -> str:
   source = extract_dtype_str(obj)
   dtype = getattr(obj, "dtype", None)
@@ -234,16 +243,20 @@ class _ArrayChecker:
       actual = f"{type(obj).__module__}.{type(obj).__name__}"
       return ValidationFailure(f"expected {expected} but got {actual}")
 
-    if not self._dtype_spec.matches(obj):
-      return _dtype_mismatch(self._dtype_spec, obj)
+    try:
+      if not self._dtype_spec.matches(obj):
+        return _dtype_mismatch(self._dtype_spec, obj)
 
-    shape = getattr(obj, "shape", None)
-    if shape is None:
-      return ValidationFailure(
-        f"expected object with shape for {self._repr} but got {type(obj).__name__}"
-      )
+      raw_shape = getattr(obj, "shape", None)
+      if raw_shape is None:
+        return ValidationFailure(
+          f"expected object with shape for {self._repr} but got {type(obj).__name__}"
+        )
+      shape = _normalize_shape(raw_shape)
+    except Exception as exc:  # noqa: BLE001
+      return ValidationFailure(f"invalid array metadata: {exc}")
 
-    err = check_shape(tuple(shape), self._shape_spec, memo, scope)
+    err = check_shape(shape, self._shape_spec, memo, scope)
     if err:
       return ValidationFailure(err)
     return None
@@ -410,32 +423,36 @@ class _ArrayLikeChecker:
     # When trusted_types is set, only those types get the fast path;
     # foreign-backend arrays fall through to the slow path where
     # _convert() verifies actual convertibility.
-    shape = getattr(obj, "shape", None)
-    if shape is not None and getattr(obj, "dtype", None) is not None:
-      trusted = self._trusted_types
-      if (trusted is not None and isinstance(obj, trusted)) or (
-        trusted is None and self._asarray is None and _is_trusted_array(obj)
-      ):
-        return self._check(obj, tuple(shape), memo, scope)
+    trusted = self._trusted_types
+    if (trusted is not None and isinstance(obj, trusted)) or (
+      trusted is None and self._asarray is None and _is_trusted_array(obj)
+    ):
+      return self._check_array(obj, memo, scope, source="array has")
 
-    # Slow path: convert scalar / sequence / protocol object to array.
-    # Use the selected backend converter; a different backend cannot establish
-    # that this input satisfies the selected conversion contract.
+    # Untrusted input properties belong to the selected converter. Reading
+    # them here could reject an input that the converter knows how to handle.
     arr, failure = self._convert(obj)
     if failure is not None:
       return failure
+    return self._check_array(arr, memo, scope, source="converter returned")
 
+  def _check_array(
+    self,
+    obj: object,
+    memo: ShapeMemo,
+    scope: dict[str, object],
+    *,
+    source: str,
+  ) -> ValidationFailure | None:
     try:
-      raw_shape = getattr(arr, "shape", None)
-      if raw_shape is None or getattr(arr, "dtype", None) is None:
-        return ValidationFailure("converter returned an object without shape and dtype")
-      shape = tuple(index(size) for size in raw_shape)
-      if any(size < 0 for size in shape):
-        return ValidationFailure("converter returned a shape with negative dimensions")
+      raw_shape = getattr(obj, "shape", None)
+      if raw_shape is None or getattr(obj, "dtype", None) is None:
+        return ValidationFailure(f"{source} no usable shape and dtype")
+      shape = _normalize_shape(raw_shape)
+      return self._check(obj, shape, memo, scope)
     except Exception as exc:  # noqa: BLE001
-      # Custom converters can return arbitrary objects or failing properties.
-      return ValidationFailure(f"converter returned invalid array metadata: {exc}")
-    return self._check(arr, shape, memo, scope)
+      # Ordinary metadata errors are mismatches; cancellation still propagates.
+      return ValidationFailure(f"{source} invalid array metadata: {exc}")
 
   def _convert(self, obj: object) -> tuple[object | None, ValidationFailure | None]:
     """Convert *obj* to an array with ``.shape`` and ``.dtype``."""
