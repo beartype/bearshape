@@ -17,8 +17,8 @@ supported scope interface and preserve all native composition and errors.
 ## Progress
 
 
-- [ ] (2026-10-11, follow-up) Fix transaction enrollment across independent invocation scopes; review simpler alternatives and record the decision.
-- [ ] (2026-10-11, follow-up) Run failing isolation regressions, endpoint consumers, upstream units and typing; update this PR and its dependent optimization evidence.
+- [x] (2026-10-11, follow-up) Fix transaction enrollment across independent invocation scopes; review simpler alternatives and record the decision.
+- [x] (2026-10-11, follow-up) Run failing isolation regressions, endpoint consumers, upstream units and typing; update this PR and its dependent optimization evidence.
 - [x] (2026-10-11) Inspect the previous proposal and the additional failing cases.
 - [x] (2026-10-11) Committed plan and opened draft PR #46 before implementation.
 - [x] (2026-10-11) Implemented public lazy scope API and optional bearshape adapter.
@@ -78,14 +78,15 @@ Author/date: Codex, 2026-10-11.
 ## Outcomes & Retrospective
 
 
-The later isolation finding reopens implementation completion. Historical passing
-results below remain evidence for their exact artifacts, but they do not include
-the newly demonstrated failure. The corrected candidate must pass this case and
-the expanded ownership matrix before completion is restored.
+The invocation-isolation correction is implemented and passes the expanded
+regression matrix and both installed endpoint suites. The design review records
+why a private live-invocation identifier is sufficient without changing the scope
+API or allocating public scopes for ordinary checks. Earlier results below remain
+historical evidence for their exact artifacts. The current evidence is recorded
+in the isolation correction validation section.
 
-The correctness implementation is complete in PR #46. Published beartype 0.23.1 still lacks the protocol.
-Passing proposal tests does not authorize changing release readiness or claiming
-support in the published dependency.
+Published beartype 0.23.1 still lacks the protocol. Passing proposal tests does
+not establish support in that published dependency or authorize release.
 
 ## Context and Orientation
 
@@ -249,3 +250,43 @@ contact, main merge or publication is authorized.
 
 Revision note — 2026-10-11: Reopened correctness for the confirmed cross-invocation
 transaction defect and documented the owner-authorized correction before code.
+
+
+## Isolation correction validation
+
+The corrected upstream source is `e44afa9241cf656c39101375a3b729dff77c5142`;
+bearshape implementation commit is `4d4ca48`. Patch 0002 was regenerated against
+the preserved original proposal, with its SHA256 updated in the manifest.
+`tools/upstream/DESIGN_REVIEW.md` records the root cause, alternatives and native
+code-generation/cache compatibility review. The public API is unchanged.
+
+Before the fix, the new generic regression suite reports eight failures and nine
+passes. After the fix, all 17 generic cases and all 24 bearshape cases pass. The
+latter cover nested public testers, raisers and decorated calls, both discovery
+orders, caught rejection and automatic/explicit scopes. Recursion, copied active
+contexts across threads, object lifetime and lazy public-scope allocation are
+covered directly upstream. Existing internal-alias and asynchronous cases remain
+in the full suite. Total focused coverage is now 108 cases.
+
+Clean-base patch application and fresh normally installed wheels pass 1,251 tests
+on each Python 3.11.15 and 3.14.5, including CPU backends, the union probe and all
+four positive/negative/inference checker consumers. Five skips remain absent CuPy
+and four platform precision cases. Upstream units pass 473/481 cases with 15/7
+existing interpreter, optional and known-issue skips. Upstream pyright analyzes
+483 files with zero errors or warnings using an explicit 3.11 interpreter and
+target. An initial invocation inherited an older system target; both that failed
+log and the corrected command are retained. Normal hooks pass.
+
+Fresh source archives, wheels, exact commands, imported paths and hashes are
+preserved under `build/union-isolation-revision/` in the main checkout. The
+corrected upstream wheel SHA256 is
+`0e19b66f35fd1a49dff124f67d69f273dd2309d1b850d4b6bc59cad6521a9100`.
+The bearshape runtime wheel remains byte-identical to the earlier correctness
+wheel (`b80d0b47...`); only proposal patches, tests and review documentation changed.
+The dependent #47 reruns matched benchmarks with the same bearshape wheel across
+released, corrected and optimized upstream variants. No main merge, upstream
+message or publication is included in this work.
+
+Revision note — 2026-10-11: Completed the isolation correction and source design
+review. Historical logs are retained; hosted validation is checked after pushing
+the final review commits rather than inferred from older green runs.
