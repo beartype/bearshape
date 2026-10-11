@@ -44,6 +44,14 @@ owners. Workflow files do not configure these controls:
 The October 2026 audit found the GitHub protections/reviewers incomplete and
 PyPI trust unverified. Keep them outstanding until there is actual verification.
 
+The project can remain owned by a personal PyPI account. Its owner configures
+**Publishing → Trusted Publisher**, separately from the **Collaboration** page
+that manages project roles. No PyPI organization transfer is required. The
+GitHub `pypi` environment reviewer is a separate approval: preventing
+self-approval requires someone other than the person starting the release.
+Choose that reviewer before enabling publication; keep the choice pending while
+preparing the candidate.
+
 ## Prepare a candidate
 
 Use uv 0.11.17 and Python 3.11–3.14. If a global uv version is outside the
@@ -97,6 +105,10 @@ gh workflow run pypi.yml --repo beartype/bearshape \
   --ref <reviewed-branch-or-tag> \
   -f ref=<reviewed-commit> -F publish=false
 ```
+
+Use the full 40-character commit SHA for `<reviewed-commit>`; checkout does not
+resolve an abbreviated SHA reliably. A branch or tag is appropriate for `--ref`,
+which selects the workflow definition.
 
 The workflow resolves the source once. Shared validation builds and tests
 `candidate-distributions`; the additional composition jobs install that wheel

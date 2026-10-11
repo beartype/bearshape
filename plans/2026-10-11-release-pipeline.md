@@ -16,7 +16,7 @@ Maintainers need a repeatable route from a reviewed commit to tested wheel/sourc
 - [x] (2026-10-11) Add explicit release-contract validation, archive evidence verification and publication concurrency.
 - [x] (2026-10-11) Test positive/negative release inputs with disposable repositories and artifacts; run real hooks/actionlint.
 - [x] (2026-10-11) Write developer/maintainer instructions, build and inspect rendered documentation, and prepare the administrative prerequisite list.
-- [ ] Validate the combined candidate without publication once an integration head exists.
+- [x] (2026-10-11) Exercised validation-only run 38132526795 against full source SHA f7d54d5e9f68e4ef63cb727cff625d885281b0a7: all shared lanes passed, both full-composition gates failed on the real union defect, and evidence/upload were skipped. This proves blocking behavior, not release acceptance.
 
 ## Surprises & Discoveries
 
@@ -91,3 +91,12 @@ Use standard-library release tooling, existing check_distribution/git_environmen
 Revision note — 2026-10-11: Created the focused automation/runbook plan before implementation, preserving the explicit no-publication boundary.
 
 Revision note — 2026-10-11: Recorded implementation and local evidence; hosted validation-only integration remains pending and full composition remains blocked by published upstream.
+
+Revision note — 2026-10-11: The first dispatch used an abbreviated SHA and failed
+at checkout (run 38132402776); rerunning with the full SHA exercised the intended
+contract failure (run 38132526795). The runbook now makes this requirement
+explicit. Its downloaded archives exactly match the locally tested and GPU-tested
+wheel/source hashes. The owner reports the PyPI project in their personal account;
+that ownership arrangement is compatible with trusted publishing. The GitHub
+reviewer choice and private publisher verification remain pending. No access
+settings or publishing actions were changed.
