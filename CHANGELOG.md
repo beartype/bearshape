@@ -17,6 +17,9 @@ and this project follows
 
 - Reject interior or repeated ellipses in Tree structure specifications.
 
+- Refine the local union-integration proposal to reuse active state and measure
+    transaction overhead; the upstream hook remains unpublished.
+
 - Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
 
 - Correct installed-package origin checks for symlinked virtual environments.
@@ -79,6 +82,11 @@ and this project follows
     Pages deployment; scope Pages/OIDC write permissions to that job.
 
 ### Added
+
+- Prepare an opt-in snapshot adapter and 22 explicit integration regressions for
+    the proposed beartype transaction protocol. The local upstream patch fixes
+    failed native union alternatives, including diagnostics and lazy aliases;
+    published beartype rc0 still requires the upstream change.
 
 - Add the production contract/test map, reproducible runtime measurements and
     ownership handoff evidence with unresolved release decisions stated
