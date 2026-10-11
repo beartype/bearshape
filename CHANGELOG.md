@@ -6,12 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
 
 - Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
-- Correct installed-package origin checks for symlinked virtual environments.
 
-## [Unreleased]
+- Correct installed-package origin checks for symlinked virtual environments.
 
 - Require runtime and four-checker consumer tests from normally installed
     sdist-derived wheels outside the checkout on Python 3.10 and 3.14.
