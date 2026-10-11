@@ -30,6 +30,26 @@ original versions; they do not validate the changed candidate. Full native-union
 rollback is still blocked in released 0.23.1. Publication remains explicitly
 unauthorized.
 
+The October candidate's ordinary validation is now complete: 1,142 installed
+consumer cases passed on each Python endpoint, source coverage was 92.05%, and
+[hosted CI](https://github.com/beartype/bearshape/actions/runs/38132351427)
+passed the Linux/macOS/Windows, four-checker, compatibility-floor, docs/notebook
+and archive matrix. Its exact wheel passed all 95 CuPy tests at both endpoints.
+
+The
+[validation-only release run](https://github.com/beartype/bearshape/actions/runs/38132526795)
+passed shared validation, then correctly failed both full-composition gates on
+released 0.23.1; upload was skipped. A normally installed local upstream
+proposal passed 1,164 cases per endpoint, including all 22 union regressions.
+That proposal has not been submitted, accepted or released. The detailed
+source/hashes, performance costs and PR dispositions are recorded in integration
+PR [#45](https://github.com/beartype/bearshape/pull/45) and its execution plan.
+
+The owner reports the PyPI project in their personal account; no organization
+transfer is required. Private publisher verification and GitHub release controls
+remain pending. Follow the [release runbook](releasing.md) for future authorized
+publishing. The dated September tables below remain historical evidence.
+
 ## Purpose and intended users
 
 bearshape checks array shape, dtype and related tree constraints at Python API
@@ -62,7 +82,7 @@ positive, negative and inference fixtures.
 | JAX             | Locked current and 0.5 floor; jit/vmap/grad numerical and violation cases                                   | Checks inside JIT run while tracing; see [frameworks](../features/frameworks.md)                               |
 | Torch           | Locked current and 2.6 floor; autograd and compile cases                                                    | Compile evidence uses `backend="eager"` with outer Python validation                                           |
 | optree          | Locked current and 0.14 floor; containers and structure binding                                             | Default registry only; no custom namespace API                                                                 |
-| CuPy            | 95 tests on H200, CUDA 12.9, CuPy 14.2.0, Python 3.10.20/3.14.3                                             | Other GPU/driver combinations and multiple-device behavior are unverified; native static typing is limited     |
+| CuPy            | 95 tests with CUDA 12.9, CuPy 14.2.0, Python 3.10.20/3.14.3                                                 | Other GPU/driver combinations and multiple-device behavior are unverified; native static typing is limited     |
 | Static checkers | pyright, mypy, ty and pyrefly positive/negative/inference batches on Python 3.10–3.14 and configured floors | Dimensions are runtime constraints; advanced syntax and native CuPy limitations are explicit                   |
 | Minimal install | Normally installed wheel with only declared dependencies at Python endpoints                                | Root import loads none of NumPy/JAX/Torch/CuPy/optree; custom strict arrays work without NumPy                 |
 

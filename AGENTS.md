@@ -29,8 +29,9 @@ evidence; current owner decisions take precedence.
 
 - GitHub ownership transferred on 2026-09-10: use `beartype/bearshape` and
   `https://beartype.github.io/bearshape/`. Preserve original authorship and
-  historical plan evidence. PyPI ownership and trusted-publisher configuration
-  are separate and remain unverified; future publishing must trust owner
+  historical plan evidence. The owner reports the PyPI project in a personal
+  account; no transfer is required. Private trusted-publisher configuration
+  remains unverified; future publishing must trust owner
   `beartype`, repository `bearshape`, workflow `pypi.yml`, environment `pypi`.
 
 - bearshape is independently versioned; the candidate is `0.1.0rc1`.

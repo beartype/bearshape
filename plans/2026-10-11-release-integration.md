@@ -11,20 +11,20 @@ Reviewers need a concrete combined candidate that preserves every focused PR's h
 ## Progress
 
 
-- [x] (2026-10-11) Created the integration branch from the validated baseline; confirmed H200 CUDA hardware is reachable.
+- [x] (2026-10-11) Created the integration branch from the validated baseline.
 - [x] (2026-10-11) Commit plan and open draft PR before integrating implementations.
 - [x] (2026-10-11) Merge focused heads and PRs #32/#34/#35, preserving ancestry and resolving conflicts surgically.
 - [x] (2026-10-11) Set the independent candidate identity, update current readiness documentation and release notes.
-- [ ] Run combined source/checker/hooks/docs/notebook and installed-archive validation, plus hosted platform/floor lanes.
-- [ ] Run the final wheel on actual CUDA hardware; record versions/source/hashes and real results.
-- [ ] Validate the same final bearshape artifact with the refreshed upstream proposal, including transaction/lifetime/performance evidence.
-- [ ] Run validation-only release workflow; report the real published-0.23.1 contract failure explicitly.
-- [ ] Present all reviewed PR heads, evidence, external prerequisites and proposed dispositions for merge approval. Do not publish.
+- [x] (2026-10-11) Run combined source/checker/hooks/docs/notebook and installed-archive validation, plus hosted platform/floor lanes.
+- [x] (2026-10-11) Run the final wheel on actual CUDA hardware; record versions/source/hashes and real results.
+- [x] (2026-10-11) Validate the same final bearshape artifact with the refreshed upstream proposal, including transaction/lifetime/performance evidence.
+- [x] (2026-10-11) Run validation-only release workflow; report the real published-0.23.1 contract failure explicitly.
+- [x] (2026-10-11) Prepare all reviewed PR heads, evidence, external prerequisites and proposed dispositions for merge approval. Do not publish.
 
 ## Surprises & Discoveries
 
 
-The refreshed local upstream proposal passes all 22 transaction cases on both Python endpoints, while published 0.23.1 fails 20. It is not a normal supported dependency yet. CPU skips do not substitute for GPU proof; the available H200 host reports NVIDIA driver 575.57.08.
+The refreshed local upstream proposal passes all 22 transaction cases on both Python endpoints, while published 0.23.1 fails 20. It is not a normal supported dependency yet. CPU skips do not substitute for GPU proof.
 
 ## Decision Log
 
@@ -36,7 +36,7 @@ Decision: Keep release readiness withheld while preparing candidate 0.1.0rc1. Ra
 ## Outcomes & Retrospective
 
 
-Integration and candidate validation pending. Implementation, hosted checks, merge completion and publication readiness will be reported separately.
+Independent implementation and ordinary candidate validation are complete. Supported union integration remains the release blocker, with a tested local upstream proposal prepared for review. No main merge, release tag, upload, deployment, access change or upstream message has occurred. Merge and publication readiness are separate outstanding decisions.
 
 ## Context and Orientation
 
@@ -50,7 +50,7 @@ The upstream proposal port is commit d0fe6e67a5ab693acb263e4bb0e1eb7131dc3fba in
 
 Open the plan PR, then merge each focused head using ordinary Git merges. Resolve changelog conflicts by retaining all independent entries, keep current beartype organization identity and baseline decisions, and correct action version comments to the verified pinned tags. Preserve #35's frame filter and #34's adapter/tests. Record every source head and confirm it is an ancestor of integration HEAD.
 
-Set pyproject version to 0.1.0rc1 and refresh the lock/current candidate filenames and agent guidance. Preserve historical evidence and the published-0.23.1 union blocker. Run required validation and build source then wheel into a clean directory. Normally install copied archive consumers on both endpoints, and execute the final artifact on H200 with CuPy. Compare matched benchmark runs with the frame filter and upstream proposal separated. Use isolated upstream environments directly rather than uv run, which would restore published dependencies.
+Set pyproject version to 0.1.0rc1 and refresh the lock/current candidate filenames and agent guidance. Preserve historical evidence and the published-0.23.1 union blocker. Run required validation and build source then wheel into a clean directory. Normally install copied archive consumers on both endpoints, and validate the final CuPy artifact. Compare matched benchmark runs with the frame filter and upstream proposal separated. Use isolated upstream environments directly rather than uv run, which would restore published dependencies.
 
 Update the current handoff with exact source/version/hash evidence and links to checks. Dispatch the integration branch's release workflow with publish=false; it must report the full-composition failure while upload stays skipped. Do not submit upstream contact, apply administrative controls, merge main or publish without the appropriate separate approval.
 
@@ -98,3 +98,98 @@ Preserve all public annotation syntax, memo ownership and backend boundaries. Ba
 Revision note — 2026-10-11: Created integration and final-evidence plan before combining focused changes.
 
 Revision note — 2026-10-11: Integrated #32/#34/#35 and #39–#44, retained both independently appended test groups, corrected action pin comments and prepared unpublished 0.1.0rc1. All focused heads are retained as merge parents. Final validation is now running.
+
+## Completed evidence, 11 October 2026
+
+
+Artifact-producing source is f7d54d5e9f68e4ef63cb727cff625d885281b0a7. Subsequent
+documentation follow-up also corrects the changelog's obsolete Python endpoint;
+the final source archive identity is recorded separately below. Durable local evidence is
+`/Users/ale/Code/bearshape/build/release-2026-10-11/` and survives worktree cleanup.
+The wheel is bearshape-0.1.0rc1-py3-none-any.whl, SHA256
+007d1905c677057240eaa2569b417325a7258fb0b4c68e7f2e19e0c6846b6231. The source archive
+is bearshape-0.1.0rc1.tar.gz, SHA256
+2096217b3ebb94503e2b9cd80775a606d931f89248c72cfdfc4643d805aeddf2.
+
+Source Python 3.11 validation passed 1,142 cases with five existing CPU skip
+records and 92.05% branch coverage. Normal installed-wheel consumers copied from
+the sdist, without src, passed 1,142 cases on EACH Python 3.11.15 and 3.14.5,
+including the four checker harnesses. The five skips are absent CuPy and four
+macOS extended-precision dtype cases. Fresh minimal consumers passed on both
+endpoints with zero optional imports, including backend-free broadcasting and
+canonical /tmp environment paths. Normal hooks and manual actionlint passed.
+The rendered docs check covered 94 Python snippets; all 29 tour notebook cells
+executed. Logs are evidence/integration-all311.log, installed311.log,
+installed314.log, minimal-3.11.log, minimal-3.14.log, integration-docs.log,
+integration-notebook311.log and integration-hooks-final.log.
+
+Hosted CI run 38132351427 passed every shared lane: Linux 3.11–3.14,
+macOS/Windows 3.11 and 3.14, four static checkers on every interpreter, the twelve
+configured backend/checker floor lanes, docs, endpoint notebooks, distribution,
+minimal and normal installed-wheel consumers. See
+https://github.com/beartype/bearshape/actions/runs/38132351427.
+
+Validation-only release run 38132526795 used the full artifact source SHA with
+publish=false. Resolve and all shared validation jobs passed. The two full-
+composition jobs failed for the real N=2 binding leak, and evidence/publication
+were skipped. Downloaded candidate-distributions hashes exactly match the local
+artifacts above. This is successful verification of the blocker, NOT successful
+release acceptance. Run 38132402776 had previously failed at checkout because an
+abbreviated SHA was supplied; the runbook now requires all 40 characters. See
+https://github.com/beartype/bearshape/actions/runs/38132526795 and the saved
+validation-only-run.json / validation-only-union-blocked.log.
+
+The exact wheel passed all 95 CuPy tests on Python 3.11.15 and 3.14.5 with
+beartype 0.23.1, NumPy 2.4.6, CuPy 14.2.0, optree 0.19.1 and CUDA 12.9.
+Together with shared dtype tests each endpoint had 193 passes and 28 unrelated
+absent Torch/JAX skips. These results do not establish multi-device support or
+native CuPy static inference. Machine-specific operational details are excluded
+from project documentation.
+
+The upstream port d0fe6e67a5ab693acb263e4bb0e1eb7131dc3fba is based on released
+v0.23.1 f85b67d8b0b6bd9c910bd97f0d2d417c4550b038. Upstream a00_unit passed
+449/15 skipped on 3.11 and 457/7 skipped on 3.14. The initial 3.11 run
+without optional scientific backends had 446 passes and 18 skips; the final
+normally installed wheel run includes those available backend cases. Upstream pyright passed. With the normally
+installed proposal and the exact final bearshape wheel, copied consumers passed
+1,164 cases on EACH endpoint, including all 22 transaction cases and four
+checker engines. The original probe passed. Protocol tests include 600
+independent reference cases and copied-context/lifetime regressions.
+The proposal wheel SHA256 is
+3cc168846f71053cc975d0e0fb202dcfa38a100e49b7d1d50afb6b7d98664a03; normal reinstalls
+of this exact wheel passed the original probe and 22 cases on both endpoints.
+Its unchanged upstream 0.23.1 version string is NOT the released 0.23.1 artifact.
+The durable patch and UPSTREAM-PROPOSAL.txt are prepared but have not been sent.
+
+Matched benchmarks use 20,000 calls per repeat and seven raw repeats on macOS
+arm64, both endpoint interpreters, NumPy 2.4.6 and the same final bearshape wheel.
+A separate normally installed counterfactual wheel reverses only the memo.py
+change from 344d390 to isolate PR #35. Strict medians improved from 13.706 to
+12.506 microseconds on 3.11 and 17.599 to 12.604 on 3.14. Separately, adding the
+upstream transaction proposal changes strict medians from 12.506 to 16.180 and
+12.604 to 16.032; correct fallback unions take 25.163 and 25.261 microseconds.
+Stateless native checks remain about 0.1 microseconds, while nested ordinary
+forward references rise from 0.684 to 1.139 and 0.542 to 0.893. Keep this remaining
+cost explicit. Incorrect union baselines are labelled incorrect, not timed as
+successful calls. Raw samples, correctness flags, benchmark/source and artifact
+hashes are in evidence/perf-{unfiltered,released,prototype}{311,314}.json.
+No timing threshold was introduced into CI.
+
+Python 3.15 availability was evaluated using uv 0.11.17's interpreter inventory
+and wheel-only resolution for the locked scientific stack on macOS arm64. The
+locked NumPy 2.4.6 has no usable wheel there; no 3.15 compatibility claim follows.
+Free-threaded builds exist in the inventory, but the required full backend,
+checker and concurrency/lifetime evidence is absent, so this is outside the
+claimed 3.11–3.14 matrix. See python-availability.json and python315-resolution.log.
+
+PR disposition: #32 action updates, #35 memo filtering and #38–#44 focused plan,
+baseline, fixes and pipeline are reviewable in the combined history. #34 retains
+the supported-upstream adoption blocker. #45 is the integration/evidence review
+packet and remains a draft pending that decision. Do not close release request
+#37 before publication; ownership discussion #8 can be closed administratively
+later. No unsolicited comments have been sent. Main and all unmerged worktrees
+are preserved for owner review.
+
+Revision note — 2026-10-11: Replaced queued validation with completed local,
+hosted, archive, GPU and prototype evidence; recorded performance costs, the
+failed-closed release run and remaining external work. Later evidence-only commits do not authorize any publication.

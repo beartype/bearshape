@@ -15,14 +15,15 @@ The owner requested addressing the entire October audit in focused PRs, selected
 
 - [x] (2026-10-11) Audited main c0874f34615ca3797b24601a91324f3c9beb462a and all three open PRs. Preserved raw results and independent reproducers under the main checkout's ignored `build/audit-2026-10-11/`.
 - [x] (2026-10-11) Recorded the owner's Python 3.11+, beartype 0.23.1 and no-publication decisions; created the program worktree before implementation.
-- [ ] Commit this plan and open its draft PR before changing implementation.
-- [ ] M1: Adopt the coordinated Python/dependency baseline and path-safe tooling in a focused PR.
-- [ ] M2: Fix nested Value expressions, malformed converters, backend-free broadcasting and Tree grammar with failing regressions in focused PRs.
-- [ ] M3: Refresh the existing upstream union proposal against 0.23.1, validate both projects, and prepare the supported integration route; resolve PR #34 conflicts without losing historical evidence.
-- [ ] M4: Validate and reconcile existing action-update PR #32 and memo-performance PR #35, preserving their reviewed heads.
-- [ ] M5: Implement candidate validation and publication controls, exact-artifact evidence and a developer release runbook in a focused PR.
-- [ ] M6: Validate the combined source, four checker consumers, minimum dependency lanes, archives, documentation, notebook and actual CUDA hardware where available.
-- [ ] M7: Present the review packet with PR disposition, evidence, external prerequisites and merge readiness; do not publish.
+- [x] (2026-10-11) Committed this plan and opened PR #38 before implementation; live completion evidence is maintained in integration PR #45.
+- [x] (2026-10-11) M1: Adopt the coordinated Python/dependency baseline and path-safe tooling in a focused PR.
+- [x] (2026-10-11) M2: Fix nested Value expressions, malformed converters, backend-free broadcasting and Tree grammar with failing regressions in focused PRs.
+- [x] (2026-10-11) M3 preparation: ported and tested the upstream proposal on 0.23.1, resolved #34 conflicts, and prepared the patch, submission text and performance evidence.
+- [ ] M3 supported adoption: obtain authorization to submit upstream, upstream acceptance and a normally available supported release; update the dependency floor/lock/preflights/CI together and rerun final acceptance. Released 0.23.1 still fails the contract.
+- [x] (2026-10-11) M4: Validate and reconcile existing action-update PR #32 and memo-performance PR #35, preserving their reviewed heads.
+- [x] (2026-10-11) M5: Implement candidate validation and publication controls, exact-artifact evidence and a developer release runbook in a focused PR.
+- [x] (2026-10-11) M6: Validate the combined source, four checker consumers, minimum dependency lanes, archives, documentation, notebook and actual CUDA hardware where available.
+- [x] (2026-10-11) M7: Present the review packet with PR disposition, evidence, external prerequisites and merge readiness; do not publish.
 - [ ] Merge approved heads, verify reachability and main, then remove only clean merged worktrees. No merge approval has yet been requested for this program.
 
 ## Surprises & Discoveries
@@ -52,7 +53,11 @@ Decision: Do not send an upstream maintainer message or apply administrative con
 ## Outcomes & Retrospective
 
 
-Planning is recorded. Implementation, integration, merge and release readiness remain separate outstanding states. The hard external limitation is that the required transaction protocol has not shipped in 0.23.1. This must be reported explicitly even if all independent improvements are ready.
+Independent implementation and combined validation are complete in PRs #39–#45. PR #38 retains the original pre-implementation program plan; this integration copy is the current progress record. Main remains c0874f34615ca3797b24601a91324f3c9beb462a, with no merges, tags, publication, deployment or administrative changes. All original and focused PR heads are preserved in the integration history.
+
+The candidate is ready for code review, not release. Supported upstream union integration remains unavailable in released 0.23.1. A local upstream proposal passes the complete contract, and the hosted release dry run correctly fails on the published dependency. Submission/acceptance/release and the separately controlled publishing prerequisites remain outstanding. Personal PyPI ownership can stay in place; private trusted-publisher settings still require verification.
+
+Audit coverage: A02–A07, A09–A11 and A13 are implemented and tested. A08 is reconciled in the integration history but awaits merge approval; #34 remains a proposal with the A01 upstream blocker. A12 has implemented workflow controls and documented external settings, with administrative verification still pending. A14 has fresh matched measurements. A15's release issue #37 stays open until an actual release; ownership discussion #8 is an optional administrative closure, with no code defect or unsolicited comment. The supported matrix remains Python 3.11–3.14: the locked NumPy 2.4.6 wheel set cannot resolve for CPython 3.15 on macOS arm64, and free-threaded full backend/checker/lifetime evidence is absent.
 
 ## Context and Orientation
 
@@ -114,7 +119,7 @@ Write a maintainer release runbook linked from `CONTRIBUTING.md` and `tools/READ
 ### M6: Validate the final candidate and document its limits
 
 
-Set candidate 0.1.0rc1 once changes are integrated and update CHANGELOG, installation/support guidance and the current handoff summary. Run Linux 3.11–3.14, macOS/Windows endpoints, all four static engines, configured backend/checker floors, coverage at the existing threshold, normal hooks/manual actionlint, docs/rendered snippets and the executed notebook. Build and normally install archives outside source checkouts. Run the final wheel on available CUDA hardware, capturing Python/CuPy/CUDA/device versions, source SHA and hashes. CPU skips and September H200 results do not constitute new GPU evidence. If a lane is unavailable, record that limit rather than claiming it passed.
+Set candidate 0.1.0rc1 once changes are integrated and update CHANGELOG, installation/support guidance and the current handoff summary. Run Linux 3.11–3.14, macOS/Windows endpoints, all four static engines, configured backend/checker floors, coverage at the existing threshold, normal hooks/manual actionlint, docs/rendered snippets and the executed notebook. Build and normally install archives outside source checkouts. Run the final wheel in a provisioned CUDA validation environment, capturing Python/CuPy/CUDA/device versions, source SHA and hashes. CPU skips and September GPU results do not constitute new GPU evidence. If a lane is unavailable, record that limit rather than claiming it passed.
 
 Evaluate Python 3.15/free-threaded dependency availability as a follow-up compatibility decision; retain only proven support claims. Report release controls and private publisher verification as separate owner prerequisites. Present every PR with completed/pending checks and a proposed disposition. After explicit merge approval and passing checks, preserve reviewed heads in history, verify main and clean only clean merged worktrees. Never publish during this program.
 
@@ -168,3 +173,8 @@ Audit: `/Users/ale/Code/bearshape/build/audit-2026-10-11/AUDIT.txt`, with `evide
 Public annotation syntax, direct `bearshape.claw` alias and current backend boundaries remain stable. `ShapeMemo.snapshot()`/`restore(token)` remain the state contract. The proposed upstream `__beartype_state__` getter is opt-in and returns shared snapshot-capable state; it must not import bearshape/backends or retain caller objects after checking. No new runtime dependency is planned. Retain uv 0.11, the four supported checkers, optree's default registry and the accepted native CuPy static limits. Git tools creating temporary repositories must use the existing `git_environment` helper to remove inherited local Git variables.
 
 Revision note — 2026-10-11: Created the detailed program plan before implementation, incorporating audit A01–A15 and the owner's new baseline, Python floor and no-publication instruction.
+
+Revision note — 2026-10-11: Completed the independent fixes, combined matrix,
+archive/GPU/prototype checks, matched performance and validation-only release
+exercise. Exact results and hashes are in the integration plan. Personal
+infrastructure and its administration are outside the repository documentation.

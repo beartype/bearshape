@@ -35,7 +35,7 @@ beartype 0.23.1.
     reading their locals.
 
 - Require runtime and four-checker consumer tests from normally installed
-    sdist-derived wheels outside the checkout on Python 3.10 and 3.14.
+    sdist-derived wheels outside the checkout on Python 3.11 and 3.14.
 
 - Share candidate validation across PRs, pushes and nightly runs, with explicit
     CPU backends, four checkers, complete hooks and a required final gate.
