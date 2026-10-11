@@ -36,7 +36,9 @@ is authorized by this implementation request.
   cross-leaf/outer Value, parameter/return, exception rollback and lifetime tests
   pass. Tree/JAX baseline suites pass; 189 Tree/proposal source tests pass with
   the optimized upstream patch. Exact installed validation follows in M9.
-- [ ] M4: Open Tree suffix PR, implement documented leaf-adjacent ragged semantics.
+- [ ] M4 in progress: focused suffix PR follows #50. Traverse each terminal
+  path relative to its leaf-adjacent container; include empty containers and
+  require enough container levels on every path for multi-name suffixes.
 - [ ] M5: Open metadata PR, validate custom shapes and malformed properties consistently.
 - [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
