@@ -2292,3 +2292,36 @@ class TestCustomConversionContract:
 
     hint = make_array_like_type(FLOAT32, asarray=reject)[N]
     assert not is_bearable(value, hint)
+
+
+class TestNestedValueScope:
+  def test_nested_value_parameters_and_returns(self) -> None:
+    @beartype
+    def pad(
+      x: F32[N], size: int, y: F32[N + (Value("size") + 1)]
+    ) -> F32[(Value("size") + 1) + N]:
+      return y
+
+    x = np.ones(3, dtype=np.float32)
+    y = np.ones(6, dtype=np.float32)
+    assert pad(x, 2, y) is y
+    with pytest.raises(BeartypeCallHintParamViolation):
+      pad(x, 3, y)
+
+    @beartype
+    def wrong_return(x: F32[N], size: int) -> F32[N + (Value("size") + 1)]:
+      return x
+
+    with pytest.raises(BeartypeCallHintReturnViolation):
+      wrong_return(x, 2)
+
+  def test_nested_unary_attribute_expression(self) -> None:
+    class Model:
+      size = 2
+
+      @beartype
+      def shrink(self, x: F32[N]) -> F32[N + (-Value("self.size"))]:
+        return x[: -self.size]
+
+    x = np.ones(5, dtype=np.float32)
+    assert Model().shrink(x).shape == (3,)

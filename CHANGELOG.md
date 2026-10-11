@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Preserve runtime value scope in nested dimension arithmetic, including unary
+    and attribute expressions.
+
 - Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
 
 - Correct installed-package origin checks for symlinked virtual environments.

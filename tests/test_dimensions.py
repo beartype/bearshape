@@ -657,3 +657,21 @@ class TestScalarArithmeticRejection:
   def test_dimension_empty_add_raises(self) -> None:
     with pytest.raises(TypeError, match="Cannot use Scalar"):
       Dimension("") + 1
+
+
+@pytest.mark.parametrize(
+  "expr",
+  [
+    Dimension("N") + (Value("size") + 1),
+    Dimension("N") - (Value("size") - 1),
+    Dimension("N") * (Value("size") * 2),
+    Dimension("N") / (Value("size") / 2),
+    Dimension("N") // (Value("size") // 2),
+    Dimension("N") ** (Value("size") ** 2),
+    Dimension("N") % (Value("size") % 2),
+    Dimension("N") + (-Value("self.size")),
+    (Value("size") + 1) + Dimension("N"),
+  ],
+)
+def test_derived_value_expressions_keep_runtime_scope(expr: Dimension) -> None:
+  assert isinstance(expr._dim_spec, ValueDim)

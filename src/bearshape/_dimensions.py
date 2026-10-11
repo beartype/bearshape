@@ -83,14 +83,14 @@ else:
 
 
 def _binop(left: object, op: str, right: object) -> Dimension:
-  """Build a binary expression.  Returns ``Value`` if either operand is one."""
+  """Build a binary expression.  Preserve runtime scope for derived value operands."""
   if isinstance(left, Dimension) and not str(left):
     msg = "Cannot use Scalar in arithmetic expressions"
     raise TypeError(msg)
   if isinstance(right, Dimension) and not str(right):
     msg = "Cannot use Scalar in arithmetic expressions"
     raise TypeError(msg)
-  if isinstance(left, Value) or isinstance(right, Value):
+  if isinstance(left, _ValueExpr) or isinstance(right, _ValueExpr):
     return _make_value_dim(f"({left}{op}{right})")
   return Dimension(f"({left}{op}{right})")
 
