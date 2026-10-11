@@ -58,7 +58,11 @@ is authorized by this implementation request.
   strict checks about 44–62% faster and Tree/100 about 50–61% faster. Raw samples,
   construction costs, limitations and hashes are in
   `tools/evidence/2026-10-11-audit-performance/`.
-- [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
+- [ ] M8 in progress: focused CI/docs PR follows #54. Release validation
+  must collect every composition module, the separate canary upgrades compatible
+  runtime/backend dependencies without changing locked acceptance, and native
+  TYPE_CHECKING aliases gain positive/negative/inference consumers. Refresh
+  current-facing handoff/changelog and document remaining owner prerequisites.
 - [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
   present PRs and remaining external prerequisites for review.
 - [ ] External: supported upstream release, approved repository/PyPI controls, exact final
