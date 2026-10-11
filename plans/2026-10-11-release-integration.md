@@ -112,7 +112,7 @@ is bearshape-0.1.0rc1.tar.gz, SHA256
 2096217b3ebb94503e2b9cd80775a606d931f89248c72cfdfc4643d805aeddf2.
 
 Source Python 3.11 validation passed 1,142 cases with five existing CPU skip
-records and 92.05% branch coverage. Normal installed-wheel consumers copied from
+records and 92.05% coverage with branch measurement enabled. Normal installed-wheel consumers copied from
 the sdist, without src, passed 1,142 cases on EACH Python 3.11.15 and 3.14.5,
 including the four checker harnesses. The five skips are absent CuPy and four
 macOS extended-precision dtype cases. Fresh minimal consumers passed on both
@@ -193,3 +193,37 @@ are preserved for owner review.
 Revision note — 2026-10-11: Replaced queued validation with completed local,
 hosted, archive, GPU and prototype evidence; recorded performance costs, the
 failed-closed release run and remaining external work. Later evidence-only commits do not authorize any publication.
+
+## Final archive and review follow-up
+
+
+Source 26b293cf6f7db9bbd928f6d0d2fda7c8bff93ce8 produces the final review archives
+under `build/release-2026-10-11/final-dist/`. The wheel SHA256 remains
+007d1905c677057240eaa2569b417325a7258fb0b4c68e7f2e19e0c6846b6231; the source
+archive SHA256 is now
+d75180399f300dde9bb947012a65e2610f6a4f055cf956b253b8a28dd7f793d0.
+Comparing every source-archive member proves only CHANGELOG.md changed from the
+first artifact set; it corrects an obsolete Python 3.10 endpoint. The wheel is
+byte-for-byte identical. No new device execution was needed or performed.
+
+The final source's ordinary hosted CI passed all 34 jobs:
+https://github.com/beartype/bearshape/actions/runs/38133983895.
+Validation-only run https://github.com/beartype/bearshape/actions/runs/38134009706
+passed resolve and all shared lanes, failed only the two real composition checks,
+and skipped evidence/upload. Its downloaded archives match the final local
+hashes. Saved evidence files are final-integration-ci-run.json,
+final-validation-only-run.json and final-validation-only-union-blocked.log.
+
+All four runtime-fix PRs have been refreshed against the final #39 baseline and
+are independently mergeable, with all 34 checks passing per focused head. Their
+baseline-merge commits preserve identical trees to their earlier implementation
+heads. The final two ancestry-only integration merges were guarded by complete
+tree equality and ancestor checks; they do not change any candidate files.
+Every original and latest reviewed head is retained. #35 and #38–#44 are ready
+for owner review; #34 and #45 remain drafts with the supported-upstream decision
+explicit. Main is unchanged. No release or publication has occurred.
+
+Revision note — 2026-10-11: Recorded the final source-archive hash, fully finished
+hosted runs and independent PR conflict resolutions. Machine-specific operating
+instructions were removed from current review documentation; package evidence
+is retained without personal infrastructure identifiers.

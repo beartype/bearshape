@@ -32,12 +32,12 @@ unauthorized.
 
 The October candidate's ordinary validation is now complete: 1,142 installed
 consumer cases passed on each Python endpoint, source coverage was 92.05%, and
-[hosted CI](https://github.com/beartype/bearshape/actions/runs/38132351427)
+[hosted CI](https://github.com/beartype/bearshape/actions/runs/38133983895)
 passed the Linux/macOS/Windows, four-checker, compatibility-floor, docs/notebook
 and archive matrix. Its exact wheel passed all 95 CuPy tests at both endpoints.
 
 The
-[validation-only release run](https://github.com/beartype/bearshape/actions/runs/38132526795)
+[validation-only release run](https://github.com/beartype/bearshape/actions/runs/38134009706)
 passed shared validation, then correctly failed both full-composition gates on
 released 0.23.1; upload was skipped. A normally installed local upstream
 proposal passed 1,164 cases per endpoint, including all 22 union regressions.
