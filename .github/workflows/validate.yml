@@ -46,11 +46,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
         include:
-          - { os: macos-latest, python: "3.10" }
+          - { os: macos-latest, python: "3.11" }
           - { os: macos-latest, python: "3.14" }
-          - { os: windows-latest, python: "3.10" }
+          - { os: windows-latest, python: "3.11" }
           - { os: windows-latest, python: "3.14" }
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -95,18 +95,18 @@ jobs:
       fail-fast: false
       matrix:
         environment:
-          - py310-bt023rc0-numpy22
-          - py310-bt023rc0-jax05
-          - py310-bt023rc0-torch26
-          - py310-bt023rc0-optree014
-          - py313-bt023rc0-numpy24
-          - py313-bt023rc0-jax09
-          - py313-bt023rc0-torch210
-          - py313-bt023rc0-optree019
-          - py313-bt023rc0-type-pyright1408
-          - py313-bt023rc0-type-mypy119
-          - py313-bt023rc0-type-ty
-          - py313-bt023rc0-type-pyrefly
+          - py311-bt0231-numpy22
+          - py311-bt0231-jax05
+          - py311-bt0231-torch26
+          - py311-bt0231-optree014
+          - py313-bt0231-numpy24
+          - py313-bt0231-jax09
+          - py313-bt0231-torch210
+          - py313-bt0231-optree019
+          - py313-bt0231-type-pyright1408
+          - py313-bt0231-type-mypy119
+          - py313-bt0231-type-ty
+          - py313-bt0231-type-pyrefly
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -140,7 +140,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -179,7 +179,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -192,7 +192,7 @@ jobs:
           name: candidate-distributions
           path: dist/
       - run: uv venv --python "${{ matrix.python }}" .minimal
-      - run: uv pip install --python .minimal/bin/python dist/*.whl "beartype==0.23.0rc0"
+      - run: uv pip install --python .minimal/bin/python dist/*.whl "beartype==0.23.1"
       - run: .minimal/bin/python -I tools/smoke_minimal.py
 
   installed:
@@ -202,7 +202,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:

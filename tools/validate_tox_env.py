@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import sys
 
-PYTHONS = {"py310", "py311", "py312", "py313", "py314"}
-BEARTYPES = {"bt023rc0"}
+PYTHONS = {"py311", "py312", "py313", "py314"}
+BEARTYPES = {"bt0231"}
 BACKENDS = {
   "cpu",
   "numpy22",

@@ -185,3 +185,11 @@ def f(x: F32[~B, C]):  # type: ignore[valid-type]
 The same rule applies to custom dimensions and structure symbols: if the
 annotation refers to a runtime object, that symbol must exist in module scope
 when beartype resolves the annotation.
+
+## Deterministic container sampling
+
+`BeartypeConf(is_random=False)` selects the first item when beartype samples a
+container. It does not check every item. A sampled bearshape annotation still
+binds dimensions shared with later arguments and the return value. The default
+sampling policy is unchanged; use this option only when first-item checking is
+the intended policy.

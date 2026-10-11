@@ -18,8 +18,9 @@ are re-exported from ``bearshape.numpy`` for convenience.
 from __future__ import annotations
 
 import typing as tp
+from typing import Self
 
-from typing_extensions import Self, TypeAliasType, TypeVarTuple
+from typing_extensions import TypeAliasType, TypeVarTuple
 
 from ._imports import require_attr, require_module
 

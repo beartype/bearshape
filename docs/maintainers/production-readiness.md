@@ -2,8 +2,8 @@
 
 This is the 8 September 2026 review record for **bearshape 0.1.0rc0**. The
 candidate is independently versioned from beartype and requires
-`beartype>=0.23.0rc0,<0.24`. Exact `0.23.0rc0` remains the current required test
-target until a supported replacement is implemented and validated.
+`beartype>=0.23.0rc0,<0.24`. Exact `0.23.0rc0` was the required test target for
+that historical review.
 
 **Release readiness is withheld.** Native composite-union rollback remains
 incorrect in one important composition case. The owner selected full composition
@@ -21,6 +21,13 @@ workflow was successfully redeployed after transfer. Repository links in this
 report now use the new owner; dated validation results and artifact identities
 remain unchanged. PyPI ownership and trusted-publisher configuration remain
 unverified.
+
+**Current program, 11 October 2026:** the owner selected Python 3.11+ (supported
+matrix 3.11–3.14) and released beartype `>=0.23.1,<0.24`, with exact `0.23.1` in
+validation. The October execution plan records the coordinated migration. The
+historical results below retain their original versions; they do not validate
+the changed candidate. Full native-union rollback is still blocked in released
+0.23.1. Publication remains explicitly unauthorized.
 
 ## Purpose and intended users
 

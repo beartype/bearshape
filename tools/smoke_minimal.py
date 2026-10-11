@@ -57,7 +57,7 @@ def _expect_param_failure(x: CustomArray, bad: CustomArray) -> None:
 
 def main() -> None:
   location = Path(bearshape.__file__).resolve()
-  if not location.is_relative_to(Path(sys.prefix)):
+  if not location.is_relative_to(Path(sys.prefix).resolve()):
     sys.exit(f"Imported bearshape outside the consumer environment: {location}")
   if present := [backend for backend in BACKENDS if find_spec(backend) is not None]:
     sys.exit(f"Minimal consumer unexpectedly has optional backends: {present}")

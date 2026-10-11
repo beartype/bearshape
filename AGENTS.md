@@ -34,16 +34,16 @@ evidence; current owner decisions take precedence.
   `beartype`, repository `bearshape`, workflow `pypi.yml`, environment `pypi`.
 
 - bearshape is independently versioned; the candidate is `0.1.0rc0`.
-- The current dependency and test target is beartype `0.23.0rc0`, with metadata
-  `>=0.23.0rc0,<0.24`. Full native composite-union rollback is still incorrect.
+- The current dependency and test target is beartype `0.23.1`, with metadata
+  `>=0.23.1,<0.24`. Full native composite-union rollback is still incorrect.
   The owner chose full composition through supported upstream integration and
-  permits a later candidate. Keep rc0 validation until a concrete replacement is
+  permits a later candidate. Keep exact 0.23.1 validation until a supported transaction integration is
   implemented and tested; update metadata, lock, preflight and CI together.
 - Do not replace beartype, monkeypatch upstream internals, infer union boundaries
   from bytecode, hide the defect with an xfail, or restrict composition to make
   CI pass. `tools/probe_union.py` reproduces the open release blocker.
 - pyright, mypy, ty and pyrefly are supported through the consumer harness on
-  Python 3.10–3.14. New checkers, including zuban, need an explicit plan.
+  Python 3.11–3.14. New checkers, including zuban, need an explicit plan.
 - Native CuPy static typing is explicitly limited, as accepted by the owner.
   Its protocol fallback does not prove native ndarray method inference. Actual
   GPU runtime evidence is recorded separately in the handoff report.
