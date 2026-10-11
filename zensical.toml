@@ -45,6 +45,7 @@ nav = [
   ]},
   { "Maintainers" = [
     "maintainers/production-readiness.md",
+    "maintainers/releasing.md",
   ]},
 ]
 
