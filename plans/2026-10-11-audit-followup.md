@@ -50,11 +50,14 @@ is authorized by this implementation request.
   Both lifetime regressions failed first; all 64 temporary protocol/native
   classes now collect, while stable native positive/negative checks still pass.
   The NumPy suite passes with only platform precision skips.
-- [ ] M7 in progress: performance PR follows #53. Measure the corrected
-  installed baseline, skip scope binding for annotations without Value, and
-  reuse array leaf validators with explicit memo/scope while retaining both
-  per-leaf and whole-Tree rollback snapshots. Keep generic leaves on the owned
-  public wrapper path. Preserve raw matched samples and profile dtype costs.
+- [x] (2026-10-11) M7: PR #54 keeps Value binding lazy and directly reuses
+  owned array leaf validators, retaining all snapshots. Four optimization
+  guards failed first; expanded nested rejection, fresh metadata and seven
+  composition guards pass. Full runtime/four-checker push hooks pass. Matched
+  installed measurements on 3.11/3.14 with both released/proposed beartype show
+  strict checks about 44–62% faster and Tree/100 about 50–61% faster. Raw samples,
+  construction costs, limitations and hashes are in
+  `tools/evidence/2026-10-11-audit-performance/`.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
 - [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
   present PRs and remaining external prerequisites for review.

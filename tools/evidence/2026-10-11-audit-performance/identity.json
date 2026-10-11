@@ -1,0 +1,17 @@
+{
+  "source_commits": {
+    "correctness": "1e17a96f9969cb4121042cf1bcdd4406182dec94",
+    "optimized": "1991deabe05180f54616aa42a36940d40dedc1e5"
+  },
+  "sha256": {
+    "correctness-dist/bearshape-0.1.0rc1.tar.gz": "14c3191b78a5de7c36be131ce0ce31201f530e43cf59df3cd68e410adb484efe",
+    "correctness-dist/.gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "correctness-dist/bearshape-0.1.0rc1-py3-none-any.whl": "30c137c09d5b44daf66f2cb29e7157de2789a50dadb9c14d33ce3eabd48e4f92",
+    "optimized-dist/bearshape-0.1.0rc1.tar.gz": "5e01df1a903e22d0d4c384813af3018aa48581b3ccd63bd1778007baa96b2b97",
+    "optimized-dist/.gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "optimized-dist/bearshape-0.1.0rc1-py3-none-any.whl": "1e0bf25f4ad018d661d28b84a9136ade8f4f809a5c54c745a213c22d52284897",
+    "beartype/released": "4461b4dc57e3fdd6c8a8464b22cf118002eea107c33e9fef651c69068ab3cce3",
+    "beartype/optimized311/dist": "0580ede1fe87229728b42674d45fb8c32ce09a7e348f962cc2741304ef2f10d8"
+  },
+  "runtime_script_commit": "1991deabe05180f54616aa42a36940d40dedc1e5"
+}
