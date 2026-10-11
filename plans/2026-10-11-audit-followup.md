@@ -46,7 +46,9 @@ is authorized by this implementation request.
   four malformed shapes, nine failing properties, converter-owned inspection,
   integer-index axes and cancellation. Failing-first evidence retained; NumPy,
   JAX, Torch and edge suites pass. Minimal consumer checks negative metadata.
-- [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
+- [ ] M6 in progress: focused lifetime PR follows #52. Replace strong class
+  keys in the default Like trust cache with weak ownership; verify repeated
+  temporary protocol classes and native subclasses can be collected.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
 - [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
