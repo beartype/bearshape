@@ -82,6 +82,25 @@ else:
     return tp.cast("Dimension", Value(expr))
 
 
+def _operand(value: object) -> str:
+  """Keep an operand's grouping when embedding it in another expression."""
+  raw = str(value)
+  if raw.isidentifier() or raw.isdecimal():
+    return raw
+  if raw.startswith("("):
+    depth = 0
+    for index, char in enumerate(raw):
+      if char == "(":
+        depth += 1
+      elif char == ")":
+        depth -= 1
+        if depth == 0:
+          if index == len(raw) - 1:
+            return raw
+          break
+  return f"({raw})"
+
+
 def _binop(left: object, op: str, right: object) -> Dimension:
   """Build a binary expression.  Preserve runtime scope for derived value operands."""
   if isinstance(left, Dimension) and not str(left):
@@ -91,8 +110,8 @@ def _binop(left: object, op: str, right: object) -> Dimension:
     msg = "Cannot use Scalar in arithmetic expressions"
     raise TypeError(msg)
   if isinstance(left, _ValueExpr) or isinstance(right, _ValueExpr):
-    return _make_value_dim(f"({left}{op}{right})")
-  return Dimension(f"({left}{op}{right})")
+    return _make_value_dim(f"({_operand(left)}{op}{_operand(right)})")
+  return Dimension(f"({_operand(left)}{op}{_operand(right)})")
 
 
 class Dimension(str):
@@ -170,7 +189,7 @@ class Dimension(str):
     if not str(self):
       msg = "Cannot use Scalar in arithmetic expressions"
       raise TypeError(msg)
-    return Dimension(f"-{self}")
+    return Dimension(f"-{_operand(self)}")
 
   def __invert__(self) -> Dimension:
     """``~N`` → variadic dimension (matches zero or more contiguous dims)."""
@@ -311,7 +330,7 @@ class _ValueExpr(str):
     return _ValueExpr(str(self), broadcastable=True)
 
   def __neg__(self) -> _ValueExpr:
-    return _ValueExpr(f"(-{self})")
+    return _ValueExpr(f"(-{_operand(self)})")
 
   def __invert__(self) -> Never:
     """``~Value(...)`` is not supported — variadic requires a name."""
@@ -323,46 +342,46 @@ class _ValueExpr(str):
   # ------------------------------------------------------------------
 
   def __add__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}+{other})")
+    return _ValueExpr(f"({_operand(self)}+{_operand(other)})")
 
   def __radd__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}+{self})")
+    return _ValueExpr(f"({_operand(other)}+{_operand(self)})")
 
   def __sub__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}-{other})")
+    return _ValueExpr(f"({_operand(self)}-{_operand(other)})")
 
   def __rsub__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}-{self})")
+    return _ValueExpr(f"({_operand(other)}-{_operand(self)})")
 
   def __mul__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}*{other})")
+    return _ValueExpr(f"({_operand(self)}*{_operand(other)})")
 
   def __rmul__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}*{self})")
+    return _ValueExpr(f"({_operand(other)}*{_operand(self)})")
 
   def __truediv__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}/{other})")
+    return _ValueExpr(f"({_operand(self)}/{_operand(other)})")
 
   def __rtruediv__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}/{self})")
+    return _ValueExpr(f"({_operand(other)}/{_operand(self)})")
 
   def __floordiv__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}//{other})")
+    return _ValueExpr(f"({_operand(self)}//{_operand(other)})")
 
   def __rfloordiv__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}//{self})")
+    return _ValueExpr(f"({_operand(other)}//{_operand(self)})")
 
   def __pow__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}**{other})")
+    return _ValueExpr(f"({_operand(self)}**{_operand(other)})")
 
   def __rpow__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}**{self})")
+    return _ValueExpr(f"({_operand(other)}**{_operand(self)})")
 
   def __mod__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({self}%{other})")
+    return _ValueExpr(f"({_operand(self)}%{_operand(other)})")
 
   def __rmod__(self, other: object) -> _ValueExpr:
-    return _ValueExpr(f"({other}%{self})")
+    return _ValueExpr(f"({_operand(other)}%{_operand(self)})")
 
   # ------------------------------------------------------------------
   # Dim spec + repr

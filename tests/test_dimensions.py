@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import operator
+from collections.abc import Callable
+
 import pytest
 
 from bearshape._dimensions import Dimension, Value
@@ -675,3 +678,41 @@ class TestScalarArithmeticRejection:
 )
 def test_derived_value_expressions_keep_runtime_scope(expr: Dimension) -> None:
   assert isinstance(expr._dim_spec, ValueDim)
+
+
+@pytest.mark.parametrize("factory", [Dimension, Value])
+@pytest.mark.parametrize("raw", ["x + 1", "(x) + (1)"])
+@pytest.mark.parametrize(
+  "operation, expected",
+  [
+    (lambda x: x + 2, 6),
+    (lambda x: 2 + x, 6),
+    (lambda x: x - 2, 2),
+    (lambda x: 10 - x, 6),
+    (lambda x: x * 2, 8),
+    (lambda x: 2 * x, 8),
+    (lambda x: x / 2, 2),
+    (lambda x: 16 / x, 4),
+    (lambda x: x // 3, 1),
+    (lambda x: 16 // x, 4),
+    (lambda x: x % 3, 1),
+    (lambda x: 11 % x, 3),
+    (lambda x: x**2, 16),
+    (lambda x: 2**x, 16),
+    (operator.neg, -4),
+    (lambda x: (-x) ** 2, 16),
+  ],
+)
+def test_arithmetic_preserves_operand_grouping(
+  factory: Callable[[str], Dimension],
+  raw: str,
+  operation: Callable[[Dimension], Dimension],
+  expected: int,
+) -> None:
+  from bearshape._shape import ShapeMemo, check_shape
+
+  expression = operation(factory(raw))
+  memo = ShapeMemo()
+  memo.single["x"] = 3
+  assert check_shape((expected,), (expression._dim_spec,), memo, scope={"x": 3}) == ""
+  assert check_shape((expected + 1,), (expression._dim_spec,), memo, scope={"x": 3})

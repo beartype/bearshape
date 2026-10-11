@@ -2375,3 +2375,24 @@ def test_valid_custom_conversion_preserves_original_argument() -> None:
 
   value = [1.0, 2.0]
   assert consume(value) is value
+
+
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+def test_grouped_arithmetic_parameters_and_returns(mode: str) -> None:
+  from beartype import BeartypeConf
+
+  def consume(size: int, x: F32[N], y: F32[Value("size + 1") * 2]) -> F32[(-N) ** 2]:
+    return y
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  valid = np.ones(4, dtype=np.float32)
+  assert checked(1, np.ones(2, dtype=np.float32), valid) is valid
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(2, np.ones(2, dtype=np.float32), valid)
+  with pytest.raises(BeartypeCallHintReturnViolation):
+    checked(2, np.ones(2, dtype=np.float32), np.ones(6, dtype=np.float32))

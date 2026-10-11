@@ -25,7 +25,9 @@ is authorized by this implementation request.
   retained 23 failing audit cases, a 676-case broadcast matrix and raw evidence.
 - [x] (2026-10-11) Owner authorized all audit fixes in focused PRs, correctness
   before optimization and CI/docs; explicitly prohibited publishing/contact.
-- [ ] M1: Commit plan, open arithmetic PR, preserve operand grouping and validate.
+- [x] (2026-10-11) M1: PR #48 preserves grouping with 64 arithmetic table cases
+  and three public decorator-mode regressions; failing-first evidence retained.
+  Dimension/NumPy suites pass with only platform precision skips.
 - [ ] M2: Open variadic PR, retain strict constraints across broadcasting and validate.
 - [ ] M3: Open Tree ownership PR, isolate independent checks without losing leaf sharing.
 - [ ] M4: Open Tree suffix PR, implement documented leaf-adjacent ragged semantics.

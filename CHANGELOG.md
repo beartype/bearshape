@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Preserve operand grouping in symbolic and Value arithmetic, including
+    reflected operators and powers of negative dimensions.
+
 The next candidate is **0.1.0rc1**. It has not been published; full native-union
 composition still requires supported upstream integration beyond released
 beartype 0.23.1.
