@@ -1512,7 +1512,10 @@ def test_invalid_ellipsis_placement_is_rejected(spec: tuple[object, ...]) -> Non
 @pytest.mark.parametrize("backend", ["optree", "jax"])
 @pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
 @pytest.mark.parametrize("kind", ["decorated", "door"])
-def test_tree_predicate_independent_checks(backend: str, mode: str, kind: str) -> None:
+@pytest.mark.parametrize("nested_rejects", [False, True])
+def test_tree_predicate_independent_checks(
+  backend: str, mode: str, kind: str, *, nested_rejects: bool
+) -> None:
   from typing import Annotated
 
   from beartype import BeartypeConf
@@ -1526,7 +1529,7 @@ def test_tree_predicate_independent_checks(backend: str, mode: str, kind: str) -
     tree = JaxTree
 
   @beartype
-  def independent(size: int, value: F32[N, Value("size")]) -> bool:
+  def independent(size: int, value: F32[N, Value("size")], last: F32[N]) -> bool:
     return True
 
   calls = []
@@ -1534,11 +1537,16 @@ def test_tree_predicate_independent_checks(backend: str, mode: str, kind: str) -
   def predicate(value: object) -> bool:
     calls.append(True)
     other = np.ones((3, 4), dtype=np.float32)
+    last = np.ones(7 if nested_rejects else 3, dtype=np.float32)
     if kind == "decorated":
-      return independent(4, other)
-    return is_bearable(other, F32[N, 4])
+      if nested_rejects:
+        with pytest.raises(BeartypeCallHintParamViolation):
+          independent(4, other, last)
+        return True
+      return independent(4, other, last)
+    return is_bearable((other, last), tuple[F32[N, 4], F32[N]]) is not nested_rejects
 
-  predicate.__qualname__ += f"_{backend}_{mode}_{kind}"
+  predicate.__qualname__ += f"_{backend}_{mode}_{kind}_{nested_rejects}"
   hint = tree[Annotated[F32[N, Value("size")], Is[predicate]]]
 
   def consume(size: int, value: hint, last: F32[N]) -> hint:
@@ -1640,3 +1648,64 @@ def test_ragged_suffix_bindings_and_rollback(backend: str) -> None:
     assert is_bearable({"a": [1, 2, 3], "b": [[4, 5, 6]]}, hint)
     assert not is_bearable([1, 2], hint)
     assert is_bearable([1, 2, 3], hint)
+
+
+def test_array_leaf_reuse_preserves_snapshots(monkeypatch: pytest.MonkeyPatch) -> None:
+  from bearshape._array_types import _ArrayChecker
+  from bearshape._memo import ShapeMemo
+
+  @beartype
+  def consume(value: Tree[F32[N]]) -> Tree[F32[N]]:
+    return value
+
+  original_snapshot = ShapeMemo.snapshot
+  snapshots = []
+
+  def record_snapshot(memo: ShapeMemo) -> object:
+    snapshots.append(True)
+    return original_snapshot(memo)
+
+  def unused_discovery(checker: _ArrayChecker, value: object) -> bool:
+    pytest.fail("An owned array leaf repeated standalone context discovery")
+
+  monkeypatch.setattr(ShapeMemo, "snapshot", record_snapshot)
+  monkeypatch.setattr(_ArrayChecker, "instancecheck", unused_discovery)
+  data = [np.ones(2, dtype=np.float32) for _ in range(100)]
+  assert consume(data) is data
+  assert len(snapshots) >= 202  # each leaf and each enclosing Tree, input + return
+
+
+def test_owned_custom_array_leaf_keeps_metadata_fresh_and_nested_calls_isolated() -> (
+  None
+):
+  from bearshape import make_array_type
+  from bearshape._dtypes import FLOAT32
+
+  @beartype
+  def independent(value: F32[N]) -> None:
+    pass
+
+  class Custom:
+    size = 2
+    dtype = "float32"
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+      independent(np.ones(7, dtype=np.float32))
+      return (self.size,)
+
+  hint = Tree[make_array_type(Custom, FLOAT32)[N]]
+
+  @beartype
+  def consume(value: hint, last: F32[N]) -> hint:
+    return value
+
+  value = Custom()
+  consume([value, value], np.ones(2, dtype=np.float32))
+  value.size = 3
+  consume([value], np.ones(3, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    consume([value], np.ones(2, dtype=np.float32))
+  value.dtype = "int32"
+  with pytest.raises(BeartypeCallHintParamViolation, match="dtype"):
+    consume([value], np.ones(3, dtype=np.float32))

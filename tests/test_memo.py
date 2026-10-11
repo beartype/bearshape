@@ -340,3 +340,29 @@ class TestFrameDiscoveryCost:
         raise AssertionError(msg)
 
     assert not _is_beartype_wrapper_frame(tp.cast("types.FrameType", UnrelatedFrame()))
+
+
+@pytest.mark.parametrize("kind", ["strict", "like", "tree"])
+def test_annotations_without_value_do_not_bind_arguments(
+  monkeypatch: pytest.MonkeyPatch, kind: str
+) -> None:
+  import bearshape._array_types as array_types
+  import bearshape._memo as memo_module
+  from bearshape.numpy import F32Like
+  from bearshape.optree import Tree
+
+  hint = {"strict": F32[N], "like": F32Like[N], "tree": Tree[F32[N]]}[kind]
+
+  @beartype
+  def consume(value: hint) -> hint:
+    return value
+
+  def unused_scope() -> dict[str, object]:
+    pytest.fail("An annotation without Value requested runtime arguments")
+
+  monkeypatch.setattr(array_types, "get_scope", unused_scope)
+  monkeypatch.setattr(memo_module, "get_scope", unused_scope)
+  value = np.ones(2, dtype=np.float32)
+  if kind == "tree":
+    value = [value, value]
+  assert consume(value) is value

@@ -8,6 +8,10 @@ and this project follows
 
 ## [Unreleased]
 
+- Bind runtime arguments only for array annotations containing Value dimensions.
+    Reuse owned Tree array validators while retaining complete traversal,
+    per-leaf rollback and independent-check isolation.
+
 - Let temporary classes be collected after default Like validation by keeping
     weak keys in the trusted-array cache.
 

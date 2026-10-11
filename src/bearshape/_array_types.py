@@ -187,7 +187,7 @@ class _ArrayChecker:
   ``Float32Array[N, C]``) and reused across all functions that share it.
   """
 
-  __slots__ = ("_array_type", "_dtype_spec", "_repr", "_shape_spec")
+  __slots__ = ("_array_type", "_dtype_spec", "_needs_scope", "_repr", "_shape_spec")
 
   def __init__(
     self,
@@ -204,6 +204,8 @@ class _ArrayChecker:
       self._dtype_spec = tp.cast("DtypeSpec", dtype_spec)
       self._shape_spec = shape_spec
 
+    self._needs_scope = any(isinstance(dim, ValueDim) for dim in self._shape_spec)
+
     # Pre-compute repr for beartype error messages
     dims = ", ".join(repr(d) for d in self._shape_spec)
     self._repr = f"{self._dtype_spec.name}[{dims}]"
@@ -213,7 +215,7 @@ class _ArrayChecker:
 
   def instancecheck(self, obj: object) -> bool:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     valid = False
     try:
@@ -225,7 +227,7 @@ class _ArrayChecker:
 
   def instancecheck_str(self, obj: object) -> str:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     try:
       failure = self._validate(obj, memo, scope)
@@ -236,7 +238,7 @@ class _ArrayChecker:
     return failure.message
 
   def _validate(
-    self, obj: object, memo: ShapeMemo, scope: dict[str, object]
+    self, obj: object, memo: ShapeMemo, scope: dict[str, object] | None
   ) -> ValidationFailure | None:
     array_type = self._array_type
     if array_type is not None and not isinstance(obj, array_type):
@@ -363,6 +365,7 @@ class _ArrayLikeChecker:
     "_casting",
     "_dtype_spec",
     "_is_structured",
+    "_needs_scope",
     "_repr",
     "_shape_spec",
     "_trusted_types",
@@ -380,6 +383,7 @@ class _ArrayLikeChecker:
   ) -> None:
     self._dtype_spec = dtype_spec
     self._shape_spec = shape_spec
+    self._needs_scope = any(isinstance(dim, ValueDim) for dim in shape_spec)
     self._casting = casting
     self._is_structured: bool = dtype_spec._structured is not None
     self._asarray = asarray
@@ -393,7 +397,7 @@ class _ArrayLikeChecker:
 
   def instancecheck(self, obj: object) -> bool:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     valid = False
     try:
@@ -405,7 +409,7 @@ class _ArrayLikeChecker:
 
   def instancecheck_str(self, obj: object) -> str:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     try:
       failure = self._validate(obj, memo, scope)
@@ -416,7 +420,7 @@ class _ArrayLikeChecker:
     return failure.message
 
   def _validate(
-    self, obj: object, memo: ShapeMemo, scope: dict[str, object]
+    self, obj: object, memo: ShapeMemo, scope: dict[str, object] | None
   ) -> ValidationFailure | None:
     # Fast path: known array types with shape + dtype skip conversion.
     # Spoofed objects with .shape/.dtype fall through to the slow path
@@ -441,7 +445,7 @@ class _ArrayLikeChecker:
     self,
     obj: object,
     memo: ShapeMemo,
-    scope: dict[str, object],
+    scope: dict[str, object] | None,
     *,
     source: str,
   ) -> ValidationFailure | None:
@@ -472,7 +476,11 @@ class _ArrayLikeChecker:
       return None, ValidationFailure("could not convert value to array")
 
   def _check(
-    self, obj: object, shape: tuple[int, ...], memo: ShapeMemo, scope: dict[str, object]
+    self,
+    obj: object,
+    shape: tuple[int, ...],
+    memo: ShapeMemo,
+    scope: dict[str, object] | None,
   ) -> ValidationFailure | None:
     """Validate dtype (with casting rules) then shape (with memo)."""
     failure = self._check_dtype(obj)
