@@ -1,0 +1,494 @@
+diff --git a/beartype/_check/code/codemain.py b/beartype/_check/code/codemain.py
+index 9719dcef..5644ffd4 100644
+--- a/beartype/_check/code/codemain.py
++++ b/beartype/_check/code/codemain.py
+@@ -1517,9 +1517,29 @@ def make_check_expr(
+     has_forward_refs = any(
+         is_beartype_ref_proxy(value)
+         for value in hint_tree.func_wrapper_locals.values())
+-    if state_getters or (has_forward_refs and not is_beartype_ref_proxy(hint_sane.hint)):
+-        from beartype.plug._plugstate import _HintCheckState
++    is_atomic_leaf = (
++        bool(state_getters) and isinstance(hint_sane.hint, type) and
++        not is_beartype_ref_proxy(hint_sane.hint) and
++        getattr(hint_sane.hint, '__beartype_state_atomic__', False) is True)
++    from typing import get_args, get_origin
++    from beartype import BeartypeStrategy
++    from beartype._util.hint.pep.utilpepsign import get_hint_pep_sign_or_none
++    from beartype._data.hint.sign.datahintsigns import HintSignForwardRef
++    root_args = get_args(hint_sane.hint)
++    is_single_ref_sample = (
++        conf.strategy is BeartypeStrategy.O1 and
++        get_origin(hint_sane.hint) is list and len(root_args) == 1 and
++        (is_beartype_ref_proxy(root_args[0]) or
++         get_hint_pep_sign_or_none(root_args[0]) is HintSignForwardRef))
++    if (state_getters and not is_atomic_leaf) or (
++        has_forward_refs and not is_beartype_ref_proxy(hint_sane.hint)
++        and not is_single_ref_sample
++    ):
++        from beartype.plug._plugstate import _HintCheckState, _KnownHintCheckState
+         from beartype._util.func.utilfuncmake import make_func
++        plain_expr = func_wrapper_code.replace(
++            '__BEARTYPE_SNAPSHOT_START__', '').replace(
++            '__BEARTYPE_SNAPSHOT_END__', '')
+         func_wrapper_code = func_wrapper_code.replace(
+             '__BEARTYPE_SNAPSHOT_START__',
+             '(__beartype_state.begin() and (',
+@@ -1533,7 +1553,8 @@ def make_check_expr(
+         if hint_tree.is_var_random_int_needed:
+             parameters += f', {VAR_NAME_RANDOM_INT}'
+         check_globals = dict(hint_tree.func_wrapper_locals)
+-        check_globals['__beartype_state_factory'] = _HintCheckState
++        check_globals['__beartype_state_factory'] = (
++            _HintCheckState if has_forward_refs else _KnownHintCheckState)
+         check_globals['__beartype_state_getters'] = state_getters
+         from beartype._util.hint.pep.utilpepsign import get_hint_pep_sign_or_none
+         is_root_union = get_hint_pep_sign_or_none(hint_sane.hint) in HINT_SIGNS_UNION
+@@ -1555,6 +1576,11 @@ def make_check_expr(
+             func_globals=check_globals,
+             is_debug=conf.is_debug,
+         )
++        if has_forward_refs and not state_getters:
++            from beartype.plug._plugstate import _PlainForwardCheck
++            checker = _PlainForwardCheck(
++                checker, parameters, plain_expr,
++                dict(hint_tree.func_wrapper_locals))
+         check_name = add_func_scope_attr(
+             attr=checker, func_scope=hint_tree.func_wrapper_locals)
+         func_wrapper_code = f'{check_name}({parameters})'
+diff --git a/beartype/_check/forward/reference/_cls/fwdrefcache.py b/beartype/_check/forward/reference/_cls/fwdrefcache.py
+index dd4fef94..e236b898 100644
+--- a/beartype/_check/forward/reference/_cls/fwdrefcache.py
++++ b/beartype/_check/forward/reference/_cls/fwdrefcache.py
+@@ -55,7 +55,7 @@ from typing import (
+     TYPE_CHECKING,
+     Optional,
+ )
+-from weakref import WeakKeyDictionary
++from weakref import WeakKeyDictionary, WeakSet
+ 
+ # ....................{ HINTS                              }....................
+ BeartypeForwardRefABC = type[
+@@ -121,6 +121,8 @@ class BeartypeForwardRefProxyCache(CacheABC):
+     # @beartype decorations. Slotting has been shown to reduce read and write
+     # costs by approximately ~10%, which is non-trivial.
+     __slots__ = (
++        '_state_checkers',
++        '_state_revision',
+         '_ref_proxy_to_resolved_hint',
+         '_ref_proxy_to_resolved_hint_get',
+         '_ref_proxy_to_resolved_hint_set',
+@@ -171,6 +173,8 @@ class BeartypeForwardRefProxyCache(CacheABC):
+         super().__init__(*args, **kwargs)
+ 
+         # Initialize all instance variables.
++        self._state_checkers = WeakSet()
++        self._state_revision = 0
+         self._ref_proxy_to_resolved_hint = WeakKeyDictionary()
+         self._ref_proxy_to_resolved_type = WeakKeyDictionary()
+         self._ref_proxy_to_resolved_hint_get = (
+@@ -188,6 +192,9 @@ class BeartypeForwardRefProxyCache(CacheABC):
+ 
+         # Thread-safely clear *BOTH* of the weak dictionaries defined above.
+         with self._lock:
++            self._state_revision += 1
++            for checker in tuple(self._state_checkers):
++                checker.invalidate()
+             self._ref_proxy_to_resolved_hint.clear()
+             self._ref_proxy_to_resolved_type.clear()
+ 
+@@ -362,6 +369,7 @@ class BeartypeForwardRefProxyCache(CacheABC):
+             # of this property casually returns this referent rather than
+             # repeatedly (i.e., uselessly) calling the die_unless_hint() raiser.
+             self._ref_proxy_to_resolved_hint_set(ref_proxy, referent_hint)
++            self._state_revision += 1
+ 
+             # If this referent is *NOT* a supported type hint...
+             #
+diff --git a/beartype/plug/_plugstate.py b/beartype/plug/_plugstate.py
+index b5c07cd8..8a59825d 100644
+--- a/beartype/plug/_plugstate.py
++++ b/beartype/plug/_plugstate.py
+@@ -122,9 +122,29 @@ _ACTIVE_CHECK_STATES: ContextVar[tuple[_HintCheckState, ...]] = ContextVar(
+     'beartype_check_states', default=())
+ 
+ 
++class _KnownHintCheckState(_HintCheckState):
++    """Known domains need not advertise themselves to unresolved references."""
++
++    __slots__ = ()
++
++    def __enter__(self) -> '_KnownHintCheckState':
++        for parent in _ACTIVE_CHECK_STATES.get():
++            if parent._token is not None:
++                parent.register(self.getters, self.states)
++        return self
++
++    def __exit__(self, *exception: object) -> None:
++        try:
++            if self.transactions:
++                self.close()
++        finally:
++            self.getters = ()
++            self.states = ()
++
++
+ def isinstance_stateful(obj: object, hint: Pep3119Checkable, getter: StateGetter) -> bool:
+     """Check a resolved root reference without another generated wrapper."""
+-    with _HintCheckState((getter,)) as state:
++    with _KnownHintCheckState((getter,)) as state:
+         state.begin()
+         if isinstance(obj, hint):
+             return state.commit()
+@@ -153,3 +173,66 @@ def is_bearable_delegated(obj, hint, *, conf) -> bool:
+         _delegate_tester_factory.cache_func_checker(
+             hint, conf, 'is_bearable() ', _make_code_delegated_check))
+     return checker(obj)
++
++
++class _PlainForwardCheck:
++    """Specialize resolved ordinary references without resolving unused hints.
++
++    Fast functions capture plain classes, not proxies: a cache clear racing an
++    in-flight check cannot switch that check to a new stateful referent. Clearing
++    the reference cache drops fast functions and captured classes immediately.
++    """
++
++    __slots__ = (
++        '_slow', '_parameters', '_expression', '_globals', '_refs', '_cache',
++        '_fast', '_revision', '__weakref__')
++
++    def __init__(self, slow, parameters, expression, scope):
++        from beartype._check.forward.reference._cls.fwdrefcache import ref_proxy_cache
++        from beartype._check.forward.reference.fwdreftest import is_beartype_ref_proxy
++        self._slow = slow
++        self._parameters = parameters
++        self._expression = expression
++        self._globals = scope
++        self._refs = {name: value for name, value in scope.items()
++                      if is_beartype_ref_proxy(value)}
++        self._cache = ref_proxy_cache
++        self._fast = None
++        self._revision = -1
++        with self._cache._lock:
++            self._cache._state_checkers.add(self)
++
++    def invalidate(self):
++        self._fast = None
++        self._revision = -1
++
++    def __call__(self, *args):
++        fast = self._fast
++        if fast is not None:
++            return fast(*args)
++        result = self._slow(*args)
++        if self._revision != self._cache._state_revision:
++            self._specialize()
++        return result
++
++    def _specialize(self):
++        from inspect import getattr_static
++        from beartype._data.kind.datakindiota import SENTINEL
++        from beartype._util.func.utilfuncmake import make_func
++        from beartype._util.hint.pep.utilpeptest import is_hint_pep
++        with self._cache._lock:
++            self._revision = self._cache._state_revision
++            scope = dict(self._globals)
++            for name, proxy in self._refs.items():
++                hint = self._cache._ref_proxy_to_resolved_hint_get(proxy, SENTINEL)
++                # Exclude custom metaclasses, unknown/composite hints and state
++                # hooks. No resolution and no user predicate runs here.
++                if (type(hint) is not type or is_hint_pep(hint) or
++                    getattr_static(hint, '__beartype_state__', None) is not None):
++                    return
++                scope[name] = hint
++            self._fast = make_func(
++                func_name='__beartype_plain_forward',
++                func_code=(f'def __beartype_plain_forward({self._parameters}):\n'
++                           f'    return {self._expression}\n'),
++                func_globals=scope)
+diff --git a/beartype_test/a00_unit/a40_api/plug/test_plugstate_fast.py b/beartype_test/a00_unit/a40_api/plug/test_plugstate_fast.py
+new file mode 100644
+index 00000000..0cf4aed6
+--- /dev/null
++++ b/beartype_test/a00_unit/a40_api/plug/test_plugstate_fast.py
+@@ -0,0 +1,243 @@
++"""Optimization preserves lazy resolution, sampling and cache invalidation."""
++import gc
++import weakref
++from concurrent.futures import ThreadPoolExecutor
++from typing import Annotated
++
++import pytest
++from beartype import beartype
++from beartype.door import is_bearable
++from beartype.roar import BeartypeCallHintParamViolation
++from beartype.vale import Is
++from beartype._check.forward.reference._cls.fwdrefcache import ref_proxy_cache
++from beartype.plug._plugstate import _PlainForwardCheck
++
++
++@beartype
++def plain_tuple(value: tuple['LatePlain', int]):
++    pass
++
++
++@beartype
++def plain_mapping(value: dict[str, 'LatePlain']):
++    pass
++
++
++@beartype
++def plain_nested_list(value: list[list['LatePlain']]):
++    pass
++
++
++class LatePlain:
++    pass
++
++
++def dispatcher(func):
++    return next(value for value in func.__kwdefaults__.values()
++                if isinstance(value, _PlainForwardCheck))
++
++
++@pytest.mark.parametrize('func,wrap', [
++    (plain_tuple, lambda value: (value, 1)),
++    (plain_mapping, lambda value: {'key': value}),
++    (plain_nested_list, lambda value: [[value]]),
++])
++def test_plain_references_specialize_only_after_check(func, wrap):
++    ref_proxy_cache.clear_cache()
++    state = dispatcher(func)
++    assert state._fast is None
++    func(wrap(LatePlain()))
++    assert state._fast is not None
++    func(wrap(LatePlain()))
++    with pytest.raises(BeartypeCallHintParamViolation):
++        func(wrap(object()))
++
++
++def test_unselected_reference_remains_unresolved():
++    @beartype
++    def optional(value: tuple['NeverDefinedForFastPath', int] | str):
++        pass
++
++    for _ in range(3):
++        optional('selected stateless alternative')
++    state = dispatcher(optional)
++    assert state._fast is None
++    from beartype._data.kind.datakindiota import SENTINEL
++    assert all(ref_proxy_cache.get_ref_proxy_referent_hint_if_resolved_or_sentinel(proxy)
++               is SENTINEL for proxy in state._refs.values())
++
++
++def test_clear_invalidates_plain_to_stateful_and_back(monkeypatch):
++    bindings = {}
++
++    class State:
++        def snapshot(self):
++            return bindings.copy()
++
++        def restore(self, saved):
++            bindings.clear()
++            bindings.update(saved)
++
++    state = State()
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(lambda: state)
++
++        def __instancecheck__(cls, value):
++            if value is None:
++                return False
++            bindings['seen'] = True
++            return True
++
++    class Stateful(metaclass=Meta):
++        pass
++
++    ref_proxy_cache.clear_cache()
++    plain_tuple((LatePlain(), 1))
++    fast_ref = weakref.ref(dispatcher(plain_tuple)._fast)
++    old = LatePlain
++    monkeypatch.setitem(globals(), 'LatePlain', Stateful)
++    ref_proxy_cache.clear_cache()
++    gc.collect()
++    assert fast_ref() is None
++    with pytest.raises(BeartypeCallHintParamViolation):
++        plain_tuple((object(), None))
++    assert bindings == {}
++    assert dispatcher(plain_tuple)._fast is None
++    monkeypatch.setitem(globals(), 'LatePlain', old)
++    ref_proxy_cache.clear_cache()
++    plain_tuple((old(), 1))
++    assert dispatcher(plain_tuple)._fast is not None
++    ref_proxy_cache.clear_cache()
++
++
++def test_fast_expression_keeps_captured_plain_types_during_clear(monkeypatch):
++    ref_proxy_cache.clear_cache()
++    value = LatePlain()
++    plain_tuple((value, 1))
++    in_flight = dispatcher(plain_tuple)._fast
++    monkeypatch.setitem(globals(), 'LatePlain', type('Replacement', (), {}))
++    ref_proxy_cache.clear_cache()
++    # A caller that already loaded the fast function finishes on its old
++    # snapshot. New calls must use the replacement, not the old specialization.
++    assert in_flight((value, 1))
++    with pytest.raises(BeartypeCallHintParamViolation):
++        plain_tuple((value, 1))
++    plain_tuple((LatePlain(), 1))
++    monkeypatch.undo()
++    ref_proxy_cache.clear_cache()
++
++
++def test_concurrent_cache_clearing():
++    def check(_):
++        for _ in range(40):
++            plain_tuple((LatePlain(), 1))
++            plain_mapping({'a': LatePlain()})
++
++    def clear(_):
++        for _ in range(40):
++            ref_proxy_cache.clear_cache()
++
++    with ThreadPoolExecutor(max_workers=4) as pool:
++        list(pool.map(check, range(3)))
++        futures = [pool.submit(check, 0), pool.submit(clear, 0), pool.submit(check, 0)]
++        for future in futures:
++            future.result()
++
++
++def test_known_domains_do_not_publish_extra_context():
++    from beartype.plug._plugstate import _KnownHintCheckState, _ACTIVE_CHECK_STATES
++    before = _ACTIVE_CHECK_STATES.get()
++    with _KnownHintCheckState(()) as state:
++        assert _ACTIVE_CHECK_STATES.get() is before
++        state.begin()
++        state.commit()
++
++
++def test_atomic_root_omits_only_duplicate_snapshot():
++    snapshots = []
++    bindings = {}
++
++    class State:
++        def snapshot(self):
++            snapshots.append(1)
++            return bindings.copy()
++
++        def restore(self, before):
++            bindings.clear()
++            bindings.update(before)
++
++    state = State()
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(lambda: state)
++        __beartype_state_atomic__ = True
++
++        def __instancecheck__(cls, value):
++            saved = state.snapshot()
++            bindings['seen'] = True
++            if value is None:
++                state.restore(saved)
++                return False
++            return True
++
++    class Atomic(metaclass=Meta):
++        pass
++
++    # Compile first: decoration can probe an instance-checkable metaclass.
++    assert is_bearable(1, Atomic)
++    snapshots.clear()
++    bindings.clear()
++    assert is_bearable(1, Atomic)
++    assert len(snapshots) == 1
++    bindings.clear()
++    assert not is_bearable(None, Atomic)
++    assert bindings == {}
++    assert not is_bearable((1, None), tuple[Atomic, int])
++    assert bindings == {}
++
++
++def test_custom_metaclass_never_specializes(monkeypatch):
++    calls = []
++
++    class Meta(type):
++        def __instancecheck__(cls, value):
++            calls.append(value)
++            return True
++
++    monkeypatch.setitem(globals(), 'LatePlain', Meta('Custom', (), {}))
++    ref_proxy_cache.clear_cache()
++    for _ in range(3):
++        plain_tuple((object(), 1))
++    assert dispatcher(plain_tuple)._fast is None
++    assert len(calls) >= 3
++    monkeypatch.undo()
++    ref_proxy_cache.clear_cache()
++
++
++def test_specialization_preserves_single_sample_and_predicate_calls(monkeypatch):
++    accesses = []
++    predicates = []
++
++    class SampledList(list):
++        def __getitem__(self, index):
++            accesses.append(index)
++            return super().__getitem__(index)
++
++    def predicate(value):
++        predicates.append(1)
++        return True
++
++    @beartype
++    def checked(value: Annotated[tuple['LateForPredicate', int], Is[predicate]]):
++        pass
++
++    monkeypatch.setitem(globals(), 'LateForPredicate', LatePlain)
++    ref_proxy_cache.clear_cache()
++    for iteration in range(3):
++        plain_nested_list(SampledList([SampledList([LatePlain(), LatePlain()])]))
++        checked((LatePlain(), 1))
++        assert len(accesses) == 2 * (iteration + 1)
++        assert len(predicates) == iteration + 1
++    assert dispatcher(plain_nested_list)._fast is not None
++    assert dispatcher(checked)._fast is not None
+diff --git a/doc/src/api_plug.rst b/doc/src/api_plug.rst
+index c27343af..8eabac9e 100644
+--- a/doc/src/api_plug.rst
++++ b/doc/src/api_plug.rst
+@@ -124,3 +124,31 @@ objects. Scope objects themselves hold no frames or context tokens. Scope
+ ownership does not replace state rollback: a rejected composite alternative
+ must restore registered domains, and a rejected nested leaf must roll back even
+ when a predicate catches the rejection and then succeeds.
++
++Optional atomic leaves and ordinary references
++---------------------------------------------
++
++A stateful runtime hint may additionally expose
++``__beartype_state_atomic__ = True``. This promises that its own instance check
++restores every mutation on a false result or any exception, including
++``BaseException``. Only a primitive root with this explicit promise omits its
++otherwise redundant outer checkpoint. Composite parents still take snapshots,
++since a later child may reject the entire alternative. Do not declare the
++promise for a validator that only restores ordinary Exception subclasses.
++
++Checks whose domains are all known register them with an active parent but do
++not publish an unnecessary new transaction context. Unknown references still
++receive transactional handling on their first check. An ordinary composite
++reference check may specialize after natural resolution has shown every proxy
++to reference a plain class with the builtin metaclass and no state hook.
++Specialization never resolves an unused branch, repeats a predicate, or changes
++container sampling. Custom metaclasses and composite/stateful aliases remain
++on the general path. State hooks, like other compiled hint metadata, must remain
++stable while the corresponding checker is cached.
++
++Reference-cache clearing discards specialized functions and their captured
++classes. An in-flight call that already loaded a fast function finishes using
++its captured old class snapshot; subsequent calls re-resolve. This preserves
++cache invalidation without a lock around every ordinary check. Root references
++and single sampled-reference lists retain native proxy checking; the proposal
++still adds a small state-hook lookup cost to those paths.

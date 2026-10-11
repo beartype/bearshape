@@ -43,6 +43,33 @@ with read-only repository permissions. It has no publishing job or credentials.
 This evidence supplements the released-dependency CI; it does not change release
 gates, the dependency lock or the requirement for supported upstream adoption.
 
+## Ordinary-check optimization
+
+PR #47 adds `0003-ordinary-performance.patch` independently of the scope fix.
+Known state domains avoid publishing an unnecessary transaction context.
+bearshape also declares `__beartype_state_atomic__ = True`: each leaf restores
+its own mutations on False or any BaseException. Composite parents still own
+rollback when a later check rejects the whole alternative.
+
+For composite checks containing only ordinary forward references, specialization
+waits until native checking has resolved every reference to a plain class with
+the builtin metaclass and no state hook. It compiles the same expression with
+those classes; it never resolves an unused alternative, retries predicates or
+changes sampling. The upstream reference cache holds weak invalidation
+listeners. Clearing it discards specializations immediately. An already-running
+fast check finishes with its captured classes; later calls re-resolve normally.
+Custom metaclasses and stateful/composite aliases retain transactions. State
+hooks must remain stable while their compiled checker is cached.
+
+Root references and single sampled-reference lists keep native proxy checking.
+They retain a small additional hook lookup cost. This avoids expanding the
+change into code-factory caching contracts merely to optimize that last lookup.
+The benchmark now records tuple, mapping and nested-list cases plus the first
+invocation of each case. First-invocation samples include setup and may share
+previously resolved aliases, so they are not a statistical cold-start benchmark.
+Warm medians and raw samples use the same script and wheel inputs in all
+variants; there is no timing threshold in CI.
+
 ## Historical proposal evidence
 
 The `test_union_transactions.py` suite exercises the proposed beartype

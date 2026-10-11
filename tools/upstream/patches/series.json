@@ -8,6 +8,10 @@
     {
       "file": "0002-scope-correctness.patch",
       "sha256": "7790a1de2adf0a26fad6ebc49c0b2e783f4724447f91bd072b9d7a81c3a17c4f"
+    },
+    {
+      "file": "0003-ordinary-performance.patch",
+      "sha256": "da419be8b225722bdac2d96c229d9c58dfed13701a0bdd52b8bc25a5a08ac84c"
     }
   ]
 }

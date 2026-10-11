@@ -59,6 +59,9 @@ def hint_label(hint: object) -> str:
 
 class _RuntimeHintMeta(type):
   __beartype_state__ = staticmethod(get_memo)
+  # Each leaf restores its memo on False and BaseException. Composite parents
+  # still own rollback when a later child rejects the whole alternative.
+  __beartype_state_atomic__ = True
 
   def __instancecheck__(cls, obj: object) -> bool:
     validator = _require_runtime_validator(cls)

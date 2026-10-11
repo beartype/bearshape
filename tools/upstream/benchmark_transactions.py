@@ -10,6 +10,7 @@ import sys
 import timeit
 from collections.abc import Callable
 from importlib.metadata import version
+from time import perf_counter_ns
 
 import numpy as np
 from beartype import BeartypeConf, beartype
@@ -60,6 +61,21 @@ def unselected(value: int | NeverResolved) -> object:  # noqa: F821
 
 @beartype
 def nested_forward(value: list[LaterNative]) -> object:
+  return value
+
+
+@beartype
+def tuple_forward(value: tuple[LaterNative, int]) -> object:
+  return value
+
+
+@beartype
+def mapping_forward(value: dict[str, LaterNative]) -> object:
+  return value
+
+
+@beartype
+def nested_lists_forward(value: list[list[LaterNative]]) -> object:
   return value
 
 
@@ -167,6 +183,9 @@ def main() -> None:
     "forward-resolved-stateless": lambda: forward(later),
     "forward-unselected": lambda: unselected(1),
     "forward-nested-stateless": lambda: nested_forward(later_list),
+    "forward-tuple": lambda: tuple_forward((later, 1)),
+    "forward-mapping": lambda: mapping_forward({"key": later}),
+    "forward-nested-lists": lambda: nested_lists_forward([later_list]),
     "plugin-leaf": lambda: plugin_leaf([1]),
     "plugin-union-second": plugin_second,
     "strict": lambda: strict(_array2),
@@ -180,11 +199,13 @@ def main() -> None:
   results = []
   for name, call in cases.items():
     _bindings.clear()
+    start = perf_counter_ns()
     try:
       call()
     except (AssertionError, BeartypeCallHintParamViolation) as error:
       results.append({"case": name, "correct": False, "reason": str(error)})
       continue
+    first_call_us = (perf_counter_ns() - start) / 1000
     samples = [
       seconds * 1_000_000 / args.calls
       for seconds in timeit.repeat(call, number=args.calls, repeat=args.repeats)
@@ -192,6 +213,7 @@ def main() -> None:
     results.append({
       "case": name,
       "correct": True,
+      "first_call_us": first_call_us,
       "median_us": statistics.median(samples),
       "samples_us": samples,
     })

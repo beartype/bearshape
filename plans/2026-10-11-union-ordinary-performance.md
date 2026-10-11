@@ -17,10 +17,10 @@ as the unoptimized correct proposal.
 
 
 - [x] (2026-10-11) Identify remaining tuple, mapping and nested-list overhead.
-- [ ] Commit plan and open the optimization PR before implementation.
-- [ ] Port proven known-state and atomic-leaf fast paths with explicit tests.
-- [ ] Specialize only already-resolved plain references and invalidate on cache clear.
-- [ ] Test unresolved branches, first-call state, reload, exceptions and concurrency.
+- [x] (2026-10-11) Committed plan and opened draft PR #47 before implementation.
+- [x] (2026-10-11) Added known-domain and explicit atomic-leaf fast paths.
+- [x] (2026-10-11) Added plain-class specialization and weak cache invalidation listeners.
+- [x] (2026-10-11) Added eleven optimizer regressions; upstream units pass 467/475 cases on the endpoints.
 - [ ] Validate exact installed wheels and measure matched endpoint benchmarks.
 - [ ] Record performance limits and prepare PR review without upstream contact.
 
@@ -138,3 +138,10 @@ The optimization is internal and does not change beartype's public configuration
 annotation syntax, ordering, container sampling or DOOR semantics.
 
 Revision note — 2026-10-11: Created the focused optimization plan before code.
+
+
+Decision update — 2026-10-11: Keep root references and one sampled-reference list
+on the existing proxy path. Extending specialization there changed the existing
+root expression-factory identity contract; that broader change is unnecessary
+for the requested composite overhead reduction. The small remaining state-hook
+lookup cost is explicit. No existing upstream test was weakened or removed.
