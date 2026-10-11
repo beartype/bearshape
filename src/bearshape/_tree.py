@@ -309,44 +309,30 @@ class _TreeChecker:
     container level, the second-to-last matches the level above, etc.
     Outer levels beyond the names are unchecked.
     """
-    levels = self._collect_levels(obj, tree_ops)
-    if len(levels) < len(names):
-      return ValidationFailure(
-        f"tree structure spec '{' '.join(names)}' requires {len(names)} container levels but got {len(levels)}"
+    pending: list[tuple[object, tuple[object, ...]]] = [(obj, ())]
+    while pending:
+      node, ancestors = pending.pop()
+      children, top_spec = tree_ops.tree_flatten(
+        node, is_leaf=lambda child, parent=node: child is not parent
       )
-    for i, name in enumerate(reversed(names)):
-      level_specs = levels[len(levels) - 1 - i]
-      first = level_specs[0]
-      if not all(s == first for s in level_specs):
+      is_leaf = len(children) == 1 and children[0] is node
+      if not is_leaf:
+        ancestors = (*ancestors, top_spec)[-len(names) :]
+        if children:
+          pending.extend((child, ancestors) for child in children)
+          continue
+      # A leaf or an empty container terminates this path. Keep only the
+      # suffix so uneven outer depths do not hide shallower constraints.
+      if len(ancestors) < len(names):
         return ValidationFailure(
-          f"tree structure '{name}' has inconsistent sibling structures at one level"
+          f"tree structure spec '{' '.join(names)}' requires {len(names)} container levels "
+          f"on every path but got {len(ancestors)}"
         )
-      failure = self._bind_or_check(name, first, memo)
-      if failure is not None:
-        return failure
+      for name, tree_spec in zip(reversed(names), reversed(ancestors)):
+        failure = self._bind_or_check(name, tree_spec, memo)
+        if failure is not None:
+          return failure
     return None
-
-  @staticmethod
-  def _collect_levels(obj: object, tree_ops: tp.Any) -> list[list[object]]:
-    """Collect one-level structure specs at each depth of the tree."""
-    levels: list[list[object]] = []
-    current_nodes = [obj]
-    while current_nodes:
-      level_specs: list[object] = []
-      next_nodes: list[object] = []
-      for node in current_nodes:
-        children, top_spec = tree_ops.tree_flatten(
-          node, is_leaf=lambda x, n=node: x is not n
-        )
-        if len(children) == 1 and children[0] is node:
-          continue  # leaf
-        level_specs.append(top_spec)
-        next_nodes.extend(children)
-      if not level_specs:
-        break
-      levels.append(level_specs)
-      current_nodes = next_nodes
-    return levels
 
   def __repr__(self) -> str:
     return self._repr

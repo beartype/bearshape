@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Check Tree suffix structures along every ragged path, including shallow leaves
+    and empty containers, while preserving valid differing outer depths.
+
 - Isolate independent public checks inside Tree predicates while preserving
     cross-leaf dimensions and enclosing Value arguments.
 

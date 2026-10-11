@@ -36,9 +36,11 @@ is authorized by this implementation request.
   cross-leaf/outer Value, parameter/return, exception rollback and lifetime tests
   pass. Tree/JAX baseline suites pass; 189 Tree/proposal source tests pass with
   the optimized upstream patch. Exact installed validation follows in M9.
-- [ ] M4 in progress: focused suffix PR follows #50. Traverse each terminal
-  path relative to its leaf-adjacent container; include empty containers and
-  require enough container levels on every path for multi-name suffixes.
+- [x] (2026-10-11) M4: PR #51 checks suffixes on every terminal path.
+  Twenty-two paired-backend cases cover valid/mismatching ragged shapes,
+  multi-name suffixes, empty containers, shared bindings and rollback. Tree/JAX
+  suites pass. Rendered docs and all 94 Python snippets validate; changed
+  paragraphs were inspected in the generated HTML.
 - [ ] M5: Open metadata PR, validate custom shapes and malformed properties consistently.
 - [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.

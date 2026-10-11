@@ -1596,3 +1596,47 @@ def test_tree_checks_do_not_retain_values() -> None:
   del leaf
   gc.collect()
   assert reference() is None
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+@pytest.mark.parametrize(
+  "value, names, expected",
+  [
+    ({"shallow": [1, 2], "deep": [[3, 4]]}, (T,), True),
+    ({"shallow": [1, 2], "deep": [[3, 4, 5]]}, (T,), False),
+    ({"shallow": {"a": 1}, "deep": [[3, 4]]}, (T,), False),
+    ({"shallow": [], "deep": [[]]}, (T,), True),
+    ({"shallow": [], "deep": [[1]]}, (T,), False),
+    ({"shallow": {"a": [1, 2]}, "deep": [[{"a": [3, 4]}]]}, (T, S), True),
+    ({"shallow": {"a": [1, 2]}, "deep": [[{"b": [3, 4]}]]}, (T, S), False),
+    ({"shallow": [1, 2], "deep": [{"a": [3, 4]}]}, (T, S), False),
+    ([1, [[2]]], (T, S), False),
+    ([[], [[]]], (T, S), False),
+  ],
+)
+def test_ragged_suffix_paths(
+  backend: str, value: object, names: tuple[Structure, ...], *, expected: bool
+) -> None:
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+  assert is_bearable(value, tree[int, ..., *names]) is expected
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+def test_ragged_suffix_bindings_and_rollback(backend: str) -> None:
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+  hint = tree[int, ..., T]
+  with bearshape.check_context():
+    assert not is_bearable({"a": [1, 2], "b": [[3, 4, 5]]}, hint)
+    assert is_bearable({"a": [1, 2, 3], "b": [[4, 5, 6]]}, hint)
+    assert not is_bearable([1, 2], hint)
+    assert is_bearable([1, 2, 3], hint)

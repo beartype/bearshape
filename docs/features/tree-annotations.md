@@ -100,7 +100,16 @@ def f(x: Tree[F32[N], T, ...], y: Tree[F32[N], T, ...]):  # type: ignore[valid-t
 
 ### Bottom-level only
 
-Leading `...` matches names from the bottom up:
+Leading `...` matches names from the bottom up on **every terminal path**. The
+last name describes the leaf-adjacent container; preceding names describe
+successive parents. Outer depths may differ, so ragged trees remain valid when
+their constrained suffixes match. Empty containers also terminate a path. Every
+path must contain enough container levels for all supplied names.
+
+For `Tree[int, ..., T]`, `{"a": [1, 2], "b": [[3, 4]]}` is valid: both
+leaf-adjacent lists have length two. Replacing the deeper list with `[3, 4, 5]`
+is invalid even though it sits at a different depth. With `..., T, S`, every
+path must additionally have a matching parent level.
 
 ```python
 @beartype
