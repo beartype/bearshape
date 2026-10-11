@@ -322,3 +322,21 @@ class TestStateProtocol:
       assert memo.single == {"earlier": 7}
       assert memo.variadic == {}
       assert memo.structures == {}
+
+
+class TestFrameDiscoveryCost:
+  def test_unrelated_frame_does_not_materialize_locals(self) -> None:
+    import types
+    import typing as tp
+
+    from bearshape._memo import _is_beartype_wrapper_frame
+
+    class UnrelatedFrame:
+      f_code = (lambda: None).__code__
+
+      @property
+      def f_locals(self) -> dict[str, object]:
+        msg = "An unrelated frame must be rejected before reading its locals"
+        raise AssertionError(msg)
+
+    assert not _is_beartype_wrapper_frame(tp.cast("types.FrameType", UnrelatedFrame()))
