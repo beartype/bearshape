@@ -12,9 +12,9 @@ Reviewers need a concrete combined candidate that preserves every focused PR's h
 
 
 - [x] (2026-10-11) Created the integration branch from the validated baseline; confirmed H200 CUDA hardware is reachable.
-- [ ] Commit plan and open draft PR before integrating implementations.
-- [ ] Merge focused heads and PRs #32/#34/#35, preserving ancestry and resolving conflicts surgically.
-- [ ] Set the independent candidate identity, update current readiness documentation and release notes.
+- [x] (2026-10-11) Commit plan and open draft PR before integrating implementations.
+- [x] (2026-10-11) Merge focused heads and PRs #32/#34/#35, preserving ancestry and resolving conflicts surgically.
+- [x] (2026-10-11) Set the independent candidate identity, update current readiness documentation and release notes.
 - [ ] Run combined source/checker/hooks/docs/notebook and installed-archive validation, plus hosted platform/floor lanes.
 - [ ] Run the final wheel on actual CUDA hardware; record versions/source/hashes and real results.
 - [ ] Validate the same final bearshape artifact with the refreshed upstream proposal, including transaction/lifetime/performance evidence.
@@ -96,3 +96,5 @@ All evidence belongs under `/Users/ale/Code/bearshape/build/release-2026-10-11/`
 Preserve all public annotation syntax, memo ownership and backend boundaries. Baseline is Python >=3.11, beartype >=0.23.1,<0.24 with exact 0.23.1 validation; supported matrix initially ends at 3.14. Full composition still requires a future supported upstream state hook. Publishing uses exact tested archives and OIDC, with separate owner-controlled prerequisites.
 
 Revision note — 2026-10-11: Created integration and final-evidence plan before combining focused changes.
+
+Revision note — 2026-10-11: Integrated #32/#34/#35 and #39–#44, retained both independently appended test groups, corrected action pin comments and prepared unpublished 0.1.0rc1. All focused heads are retained as merge parents. Final validation is now running.

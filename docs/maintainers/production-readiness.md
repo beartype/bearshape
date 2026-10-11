@@ -22,12 +22,13 @@ report now use the new owner; dated validation results and artifact identities
 remain unchanged. PyPI ownership and trusted-publisher configuration remain
 unverified.
 
-**Current program, 11 October 2026:** the owner selected Python 3.11+ (supported
-matrix 3.11–3.14) and released beartype `>=0.23.1,<0.24`, with exact `0.23.1` in
-validation. The October execution plan records the coordinated migration. The
-historical results below retain their original versions; they do not validate
-the changed candidate. Full native-union rollback is still blocked in released
-0.23.1. Publication remains explicitly unauthorized.
+**Current program, 11 October 2026 (candidate 0.1.0rc1, unpublished):** the
+owner selected Python 3.11+ (supported matrix 3.11–3.14) and released beartype
+`>=0.23.1,<0.24`, with exact `0.23.1` in validation. The October execution plan
+records the coordinated migration. The historical results below retain their
+original versions; they do not validate the changed candidate. Full native-union
+rollback is still blocked in released 0.23.1. Publication remains explicitly
+unauthorized.
 
 ## Purpose and intended users
 

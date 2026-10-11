@@ -112,3 +112,12 @@ Then verify the backend you actually plan to use:
 from bearshape import N, C
 from bearshape.numpy import F32
 ```
+
+## Next candidate migration
+
+The development candidate is 0.1.0rc1, requiring Python 3.11+ and beartype
+0.23.1. The supported test matrix covers Python 3.11–3.14. Public PyPI version
+0.0.1 has older dependency metadata; these candidate changes do not alter an
+already published distribution. Full native composite-union rollback remains a
+release blocker until supported upstream integration is available. See the
+[release runbook](../maintainers/releasing.md) for readiness requirements.

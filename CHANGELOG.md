@@ -8,6 +8,13 @@ and this project follows
 
 ## [Unreleased]
 
+The next candidate is **0.1.0rc1**. It has not been published; full native-union
+composition still requires supported upstream integration beyond released
+beartype 0.23.1.
+
+- Gate releases on native-union correctness and exact artifact evidence, and
+    document candidate validation, future publishing and recovery.
+
 - Preserve runtime value scope in nested dimension arithmetic, including unary
     and attribute expressions.
 

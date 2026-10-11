@@ -33,7 +33,7 @@ evidence; current owner decisions take precedence.
   are separate and remain unverified; future publishing must trust owner
   `beartype`, repository `bearshape`, workflow `pypi.yml`, environment `pypi`.
 
-- bearshape is independently versioned; the candidate is `0.1.0rc0`.
+- bearshape is independently versioned; the candidate is `0.1.0rc1`.
 - The current dependency and test target is beartype `0.23.1`, with metadata
   `>=0.23.1,<0.24`. Full native composite-union rollback is still incorrect.
   The tested local `__beartype_state__` proposal and integration suite are

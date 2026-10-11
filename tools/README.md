@@ -48,9 +48,9 @@ Build the sdist first, then its wheel as described in `CONTRIBUTING.md`.
 
 ```bash
 uv run --locked python tools/check_distribution.py \
-  dist/bearshape-0.1.0rc0-py3-none-any.whl dist/bearshape-0.1.0rc0.tar.gz
+  dist/bearshape-0.1.0rc1-py3-none-any.whl dist/bearshape-0.1.0rc1.tar.gz
 uv run --locked python tools/check_installed.py \
-  dist/bearshape-0.1.0rc0-py3-none-any.whl dist/bearshape-0.1.0rc0.tar.gz \
+  dist/bearshape-0.1.0rc1-py3-none-any.whl dist/bearshape-0.1.0rc1.tar.gz \
   --python 3.11
 ```
 
