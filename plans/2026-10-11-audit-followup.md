@@ -50,7 +50,11 @@ is authorized by this implementation request.
   Both lifetime regressions failed first; all 64 temporary protocol/native
   classes now collect, while stable native positive/negative checks still pass.
   The NumPy suite passes with only platform precision skips.
-- [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
+- [ ] M7 in progress: performance PR follows #53. Measure the corrected
+  installed baseline, skip scope binding for annotations without Value, and
+  reuse array leaf validators with explicit memo/scope while retaining both
+  per-leaf and whole-Tree rollback snapshots. Keep generic leaves on the owned
+  public wrapper path. Preserve raw matched samples and profile dtype costs.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
 - [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
   present PRs and remaining external prerequisites for review.
