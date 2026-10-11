@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import TYPE_CHECKING, NamedTuple, TypeAlias
+from typing import TYPE_CHECKING, NamedTuple, TypeAlias, assert_type
 
 import numpy as np
 from beartype import beartype
 from jax.tree_util import register_pytree_node_class
-from typing_extensions import assert_type
 
 from bearshape import N
 from bearshape.jax import Tree as JaxTree

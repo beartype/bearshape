@@ -26,8 +26,8 @@ import sys
 import bearshape
 import beartype
 origin = pathlib.Path(bearshape.__file__).resolve()
-assert origin.is_relative_to(pathlib.Path(sys.prefix)), origin
-assert beartype.__version__ == '0.23.0rc0', beartype.__version__
+assert origin.is_relative_to(pathlib.Path(sys.prefix).resolve()), origin
+assert beartype.__version__ == '0.23.1', beartype.__version__
 metadata = importlib.metadata.distribution('bearshape')
 direct = json.loads(metadata.read_text('direct_url.json') or '{}')
 assert not direct.get('dir_info', {}).get('editable'), direct
@@ -122,7 +122,7 @@ def main() -> None:
         "--python",
         str(python),
         str(wheel),
-        "beartype==0.23.0rc0",
+        "beartype==0.23.1",
       ],
       check=True,
       cwd=consumer,

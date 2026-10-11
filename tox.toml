@@ -1,23 +1,23 @@
 requires = ["tox>=4.40", "tox-uv>=1.33"]
 env_list = [
   "dev",
-  "py310-bt023rc0-cpu",
-  "py314-bt023rc0-cpu",
+  "py311-bt0231-cpu",
+  "py314-bt0231-cpu",
   # Runtime: {python}-{beartype}-{backend}. Keep default environments
   # installable as backend Python floors and ceilings move independently.
   # Intermediate and cross-axis versions can still be tested manually.
-  "py310-bt023rc0-numpy22",
-  "py310-bt023rc0-jax05",
-  "py310-bt023rc0-torch26",
-  "py310-bt023rc0-optree014",
-  "py313-bt023rc0-numpy24",
-  "py313-bt023rc0-jax09",
-  "py313-bt023rc0-torch210",
-  "py313-bt023rc0-optree019",
-  # Check Python 3.13 with its compatible dependencies; CI also covers 3.10-3.14.
+  "py311-bt0231-numpy22",
+  "py311-bt0231-jax05",
+  "py311-bt0231-torch26",
+  "py311-bt0231-optree014",
+  "py313-bt0231-numpy24",
+  "py313-bt0231-jax09",
+  "py313-bt0231-torch210",
+  "py313-bt0231-optree019",
+  # Check Python 3.13 with its compatible dependencies; CI also covers 3.11-3.14.
   { product = [
     ["py313"],
-    ["bt023rc0"],
+    ["bt0231"],
     ["type"],
     ["pyright1408", "mypy119", "ty", "pyrefly"],
   ] },
@@ -36,7 +36,7 @@ deps = [
   "pytest-xdist>=3.5.0",
 
   # --- beartype ---
-  { replace = "if", condition = "factor.bt023rc0", then = "beartype==0.23.0rc0" },
+  { replace = "if", condition = "factor.bt0231", then = "beartype==0.23.1" },
 
   # --- numpy ---
   # env_list uses numpy22 and numpy24; intermediate versions available for manual testing

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from typing import assert_type
+
 import jax
 import jax.numpy as jnp
 import numpy as np
 import torch
 from beartype import BeartypeConf
 from numpy.typing import NDArray
-from typing_extensions import assert_type
 
 from bearshape import N, check
 from bearshape.jax import F32 as JaxF32

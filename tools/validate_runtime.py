@@ -31,8 +31,8 @@ def main() -> None:
       "version": module.__version__,
       "path": module.__file__,
     }
-    if name == "beartype" and module.__version__ != "0.23.0rc0":
-      message = f"expected beartype 0.23.0rc0, found {module.__version__}"
+    if name == "beartype" and module.__version__ != "0.23.1":
+      message = f"expected beartype 0.23.1, found {module.__version__}"
       raise SystemExit(message)
     if name == "torch" and (
       module.version.cuda is not None or module.version.hip is not None

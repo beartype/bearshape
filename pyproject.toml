@@ -6,9 +6,9 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "acecchini", email = "ale.cecchini.valette@gmail.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "beartype>=0.23.0rc0,<0.24", # Exact candidate tested in tox.toml
+  "beartype>=0.23.1,<0.24", # Exact candidate tested in tox.toml
   "typing_extensions>=4.6",
 ]
 keywords = [
@@ -26,7 +26,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -37,9 +36,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/acecchini/bearshape"
-Repository = "https://github.com/acecchini/bearshape"
-Issues = "https://github.com/acecchini/bearshape/issues"
+Homepage = "https://github.com/beartype/bearshape"
+Documentation = "https://beartype.github.io/bearshape/"
+Repository = "https://github.com/beartype/bearshape"
+Issues = "https://github.com/beartype/bearshape/issues"
 
 [build-system]
 requires = ["uv_build>=0.11.0,<0.12.0"]
@@ -108,16 +108,16 @@ reportUnusedClass = false
 reportPrivateUsage = false
 reportUnusedImport = "warning"
 # Check the oldest supported Python, not the interpreter running the checker.
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 pythonPlatform = "Linux"
 
 [tool.pyrefly]
 preset = "default"
 project-includes = ["src", "tests/typing"]
-python-version = "3.10"
+python-version = "3.11"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 warn_unreachable = true

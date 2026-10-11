@@ -321,3 +321,11 @@ matched comparison cited by PR #35. No earlier artifact evidence was discarded.
 Revision note — 2026-09-08: Added failing copied-context lifetime evidence,
 corrected cleanup, repeated affected installed validation and refreshed the
 matched timing matrix against the final upstream patch.
+
+## October 2026 continuation
+
+The owner selected Python 3.11+ and beartype 0.23.1 on 11 October and requested the complete release program in focused PRs. Merged the new baseline and ownership changes into this PR while preserving its original reviewed head and all dated evidence. Resolved documentation conflicts in favor of the verified beartype organization ownership and current baseline, retaining the local-proposal distinction.
+
+Ported the upstream proposal onto released v0.23.1 in `/private/tmp/beartype-union-0231`. The preserved September checkout is unchanged. Both normally installed 3.11/3.14 environments pass all 22 integration cases and the original probe. Upstream unit tests passed 446/457 with 18/7 pre-existing interpreter/optional-dependency skips; pyright passed. Logs and the concrete patch are under the main checkout's `build/release-2026-10-11/`. Published 0.23.1 still lacks the hook and fails 20 integration cases. This refresh does not close upstream availability or authorize publication/contact. Final combined archive, lifetime/performance and GPU evidence are tracked by `plans/2026-10-11-release-readiness.md`.
+
+Revision note — 2026-10-11: Preserved historical evidence while refreshing the upstream proposal and resolving current-baseline/ownership conflicts.

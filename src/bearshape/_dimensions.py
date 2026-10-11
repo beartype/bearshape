@@ -35,8 +35,7 @@ Use ``Value("expr")`` for dimensions that depend on runtime parameters or
 from __future__ import annotations
 
 import typing as tp
-
-from typing_extensions import Never
+from typing import Never
 
 from ._shape import (
   ANONYMOUS,

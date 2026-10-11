@@ -3,8 +3,8 @@
 The `test_union_transactions.py` suite exercises the proposed beartype
 `__beartype_state__` protocol. It runs explicitly because the required upstream
 change has not shipped. These tests are real failures on published beartype
-`0.23.0rc0`; they have no skips or expected-failure markers. Passing the normal
-rc0 CI suite does not prove this integration.
+`0.23.1`; they have no skips or expected-failure markers. Passing the normal
+0.23.1 CI suite does not prove this integration.
 
 The bearshape adapter exposes the existing `get_memo` function as a shared state
 getter on its runtime-hint metaclass. It returns the active `ShapeMemo`, whose
@@ -32,7 +32,7 @@ the upstream package being tested:
 ```sh
 uv export --locked --no-hashes --no-emit-project --no-emit-package beartype \
   --output-file /tmp/bearshape-union-requirements.txt
-uv venv /tmp/bearshape-union-env --python 3.10
+uv venv /tmp/bearshape-union-env --python 3.11
 UV_TORCH_BACKEND=cpu uv pip install \
   --python /tmp/bearshape-union-env/bin/python \
   -r /tmp/bearshape-union-requirements.txt \
@@ -106,3 +106,19 @@ artifact hashes, and keep raw repeat samples. Timing has no CI threshold.
 The owner requested further optimization before any upstream contact and has a
 direct Zulip contact. Discussion material is prepared locally for the owner; no
 message has been sent.
+
+## October 2026 refresh
+
+The proposal now applies to upstream release tag `v0.23.1`, source `f85b67d8`.
+Published 0.23.1 still fails 20 of the 22 integration cases. The locally built
+port passes all 22 on Python 3.11.15 and 3.14.5, with the original union probe
+unchanged. Normally installed module origins were checked. Upstream unit tests
+passed 446 cases on 3.11 and 457 on 3.14, with 18/7
+interpreter/optional-dependency skips; upstream pyright reports no errors. These
+are proposal results, not claims about the published wheel.
+
+The durable patch and logs are under the main checkout's ignored
+`build/release-2026-10-11/`. The focused program plan records the current
+Python/dependency baseline. No upstream push, PR or maintainer message has been
+sent. Supported upstream adoption is still required before releasing bearshape
+with the full composition contract.

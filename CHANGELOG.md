@@ -11,6 +11,10 @@ and this project follows
 - Refine the local union-integration proposal to reuse active state and measure
     transaction overhead; the upstream hook remains unpublished.
 
+- Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
+
+- Correct installed-package origin checks for symlinked virtual environments.
+
 - Require runtime and four-checker consumer tests from normally installed
     sdist-derived wheels outside the checkout on Python 3.10 and 3.14.
 
@@ -48,6 +52,11 @@ and this project follows
     backend dependencies on Python 3.10 and 3.14.
 
 ### Maintenance
+
+- Restore documentation under `beartype.github.io/bearshape` after the GitHub
+    ownership transfer. Update repository, guide, edit, notebook and package
+    metadata links to the beartype organization, and document publisher
+    migration.
 
 - Scope file hooks to pre-commit and remove the unused commit-message shim.
     Isolate release tooling and disposable Git tests from inherited hook
