@@ -46,6 +46,11 @@ def wrong_return(x: FloatArray[N]) -> FloatArray[N]:
   return CustomArray((x.shape[0] + 1,))
 
 
+@beartype
+def broadcast_pair(x: FloatArray[~+N], _y: FloatArray[~+N]) -> FloatArray[~+N]:
+  return x
+
+
 def _expect_param_failure(x: CustomArray, bad: CustomArray) -> None:
   try:
     pair(x, bad)
@@ -72,6 +77,16 @@ def main() -> None:
     pass
   else:
     sys.exit("Custom array return mismatch was accepted")
+  for left, right in [((2, 1), (1, 3)), ((0, 1), (1, 3)), ((), (2, 3))]:
+    first = CustomArray(left)
+    if broadcast_pair(first, CustomArray(right)) is not first:
+      sys.exit("Broadcast validation replaced the custom array argument")
+  try:
+    broadcast_pair(CustomArray((2, 3)), CustomArray((4, 3)))
+  except BeartypeCallHintParamViolation:
+    pass
+  else:
+    sys.exit("Incompatible custom variadic shapes were accepted")
   if imported := sorted(set(BACKENDS).intersection(sys.modules)):
     sys.exit(f"Root/custom-array validation imported optional backends: {imported}")
   json.dump(
