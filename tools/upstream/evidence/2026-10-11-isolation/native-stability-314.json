@@ -1,0 +1,223 @@
+{
+  "calls": 1000000,
+  "repeats": 7,
+  "runs": [
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015098624979145825,
+          "samples_us": [
+            0.014800208009546623, 0.014658875006716698, 0.015098624979145825,
+            0.015199332992779091, 0.015160582988755777, 0.015152582986047491,
+            0.015086332976352423
+          ]
+        },
+        "native": {
+          "median_us": 0.10145437499159016,
+          "samples_us": [
+            0.10123079200275242, 0.10145437499159016, 0.1012733340030536,
+            0.10236550000263378, 0.10283104199334048, 0.10170370899140835,
+            0.09956304199295118
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 11           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         5 (args)\n              CALL                     1\n              STORE_FAST               7 (__beartype_args_len)\n\n 16           LOAD_FAST_BORROW         7 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         5 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 17   L1:     LOAD_FAST_BORROW         6 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 15   L2:     STORE_FAST               8 (__beartype_pith_0)\n\n 21           LOAD_FAST_BORROW_LOAD_FAST_BORROW 129 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 25           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4404311808)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 27           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 28           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 29           LOAD_CONST               1 ('value')\n\n 30           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 27           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 33           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 36   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         5 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         6 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               8 (__beartype_pith_0)\n\n 40           NOP\n\n 44           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4404311808)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 46           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 47           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 48           LOAD_CONST               3 ('return')\n\n 49           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 46           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 52           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 53   L4:     LOAD_FAST_BORROW         8 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "released",
+      "round": 1
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015123165998375043,
+          "samples_us": [
+            0.015120791998924688, 0.015446208009961993, 0.014990166993811727,
+            0.015437291993293911, 0.015123165998375043, 0.014916917018126696,
+            0.015204167022602633
+          ]
+        },
+        "native": {
+          "median_us": 0.09672233302262612,
+          "samples_us": [
+            0.09776779200183228, 0.09672233302262612, 0.09656454200739972,
+            0.0963241670106072, 0.09654800000134856, 0.09683958298410289,
+            0.09836049997829832
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4482839424)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4482839424)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "correctness",
+      "round": 1
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015092290996108204,
+          "samples_us": [
+            0.015092290996108204, 0.01498425001045689, 0.014943124988349155,
+            0.015311249997466803, 0.014902666007401422, 0.015310832997784019,
+            0.015429083025082946
+          ]
+        },
+        "native": {
+          "median_us": 0.09572591600590385,
+          "samples_us": [
+            0.0952904169971589, 0.09570162498857826, 0.09621583297848701,
+            0.09572591600590385, 0.09572383400518447, 0.09582537499954924,
+            0.09575916701578535
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4402743040)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4402743040)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "optimized",
+      "round": 1
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.01503187499474734,
+          "samples_us": [
+            0.014736667013494298, 0.015322249993914738, 0.015158166992478073,
+            0.014546207996318117, 0.014834959001746029, 0.01503187499474734,
+            0.015213334001600742
+          ]
+        },
+        "native": {
+          "median_us": 0.09412883300683461,
+          "samples_us": [
+            0.09408750000875443, 0.09402858300018124, 0.09436758299125358,
+            0.09455645800335333, 0.0943277080077678, 0.09412883300683461,
+            0.09399308302090503
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4412802176)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4412802176)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "optimized",
+      "round": 2
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015189957979600877,
+          "samples_us": [
+            0.01503808400593698, 0.015207416989142075, 0.015368291991762817,
+            0.015668584004743025, 0.015037457982543856, 0.015189957979600877,
+            0.015065624989802018
+          ]
+        },
+        "native": {
+          "median_us": 0.09655541699612513,
+          "samples_us": [
+            0.09691362499142997, 0.09632179199252278, 0.09631320799235255,
+            0.09670741701847874, 0.09655541699612513, 0.0958467079908587,
+            0.11213966700597666
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4467815808)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4467815808)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "correctness",
+      "round": 2
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015378667012555525,
+          "samples_us": [
+            0.015672292007366195, 0.014993624994531274, 0.014963249996071681,
+            0.015327499975683168, 0.015466707991436124, 0.015537166997091845,
+            0.015378667012555525
+          ]
+        },
+        "native": {
+          "median_us": 0.10278370798914693,
+          "samples_us": [
+            0.10182999999960884, 0.10278370798914693, 0.10327650001272559,
+            0.10358070800430141, 0.10305737497401424, 0.1011885829793755,
+            0.10216533299535513
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 11           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         5 (args)\n              CALL                     1\n              STORE_FAST               7 (__beartype_args_len)\n\n 16           LOAD_FAST_BORROW         7 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         5 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 17   L1:     LOAD_FAST_BORROW         6 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 15   L2:     STORE_FAST               8 (__beartype_pith_0)\n\n 21           LOAD_FAST_BORROW_LOAD_FAST_BORROW 129 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 25           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4443846528)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 27           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 28           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 29           LOAD_CONST               1 ('value')\n\n 30           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 27           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 33           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 36   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         5 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         6 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               8 (__beartype_pith_0)\n\n 40           NOP\n\n 44           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4443846528)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 46           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 47           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 48           LOAD_CONST               3 ('return')\n\n 49           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 46           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 52           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 53   L4:     LOAD_FAST_BORROW         8 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "released",
+      "round": 2
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.01515862499945797,
+          "samples_us": [
+            0.014848291000816971, 0.01515862499945797, 0.014857458998449147,
+            0.015043583000078797, 0.015176625020103529, 0.015424209006596357,
+            0.01524758301093243
+          ]
+        },
+        "native": {
+          "median_us": 0.09436820799601264,
+          "samples_us": [
+            0.09436820799601264, 0.09437295800307766, 0.09456483300891705,
+            0.0942612919898238, 0.09681483299937099, 0.09427533301641233,
+            0.09385499998461455
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4402689152)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4402689152)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "correctness",
+      "round": 3
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.01514270799816586,
+          "samples_us": [
+            0.015364125021733344, 0.01514270799816586, 0.015162125026108697,
+            0.01509749999968335, 0.014785457984544337, 0.014721499988809228,
+            0.015149957995163277
+          ]
+        },
+        "native": {
+          "median_us": 0.10292879201006144,
+          "samples_us": [
+            0.10292879201006144, 0.10448262499994598, 0.10354874999029562,
+            0.1032943339960184, 0.10273175002657808, 0.0998018330137711,
+            0.10254458300187252
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 11           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         5 (args)\n              CALL                     1\n              STORE_FAST               7 (__beartype_args_len)\n\n 16           LOAD_FAST_BORROW         7 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         5 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 17   L1:     LOAD_FAST_BORROW         6 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 15   L2:     STORE_FAST               8 (__beartype_pith_0)\n\n 21           LOAD_FAST_BORROW_LOAD_FAST_BORROW 129 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 25           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4471748608)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 27           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 28           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 29           LOAD_CONST               1 ('value')\n\n 30           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 27           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 33           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 36   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         5 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         6 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               8 (__beartype_pith_0)\n\n 40           NOP\n\n 44           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 128 (__beartype_pith_0, __beartype_object_4471748608)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 46           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 47           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 48           LOAD_CONST               3 ('return')\n\n 49           LOAD_FAST_BORROW         8 (__beartype_pith_0)\n\n 46           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST               9 (__beartype_violation)\n\n 52           LOAD_FAST_BORROW         9 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 53   L4:     LOAD_FAST_BORROW         8 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "released",
+      "round": 3
+    },
+    {
+      "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+      "cases": {
+        "bare": {
+          "median_us": 0.015194416977465153,
+          "samples_us": [
+            0.015015124983619899, 0.015194416977465153, 0.01529958299943246,
+            0.01518295900314115, 0.015403958997922018, 0.01489116600714624,
+            0.015321582992328331
+          ]
+        },
+        "native": {
+          "median_us": 0.09592670798883773,
+          "samples_us": [
+            0.09670391702093184, 0.09583120900788344, 0.09649791699484922,
+            0.09591820801142603, 0.0953448340005707, 0.09668687501107343,
+            0.09592670798883773
+          ]
+        }
+      },
+      "disassembly": "  1           RESUME                   0\n\n 12           LOAD_GLOBAL              1 (len + NULL)\n              LOAD_FAST_BORROW         6 (args)\n              CALL                     1\n              STORE_FAST               8 (__beartype_args_len)\n\n 17           LOAD_FAST_BORROW         8 (__beartype_args_len)\n              LOAD_SMALL_INT           0\n              COMPARE_OP             148 (bool(>))\n              POP_JUMP_IF_FALSE       10 (to L1)\n              NOT_TAKEN\n              LOAD_FAST_BORROW         6 (args)\n              LOAD_SMALL_INT           0\n              BINARY_OP               26 ([])\n              JUMP_FORWARD            17 (to L2)\n\n 18   L1:     LOAD_FAST_BORROW         7 (kwargs)\n              LOAD_ATTR                3 (get + NULL|self)\n              LOAD_CONST               1 ('value')\n              LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              CALL                     2\n\n 16   L2:     STORE_FAST               9 (__beartype_pith_0)\n\n 22           LOAD_FAST_BORROW_LOAD_FAST_BORROW 145 (__beartype_pith_0, __beartype_get_violation)\n              IS_OP                    1 (is not)\n              POP_JUMP_IF_FALSE       31 (to L3)\n              NOT_TAKEN\n\n 26           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4407100800)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L3)\n              NOT_TAKEN\n\n 28           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 29           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 30           LOAD_CONST               1 ('value')\n\n 31           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 28           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 34           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 37   L3:     LOAD_FAST_BORROW         4 (__beartype_func)\n              PUSH_NULL\n              LOAD_FAST_BORROW         6 (args)\n              BUILD_MAP                0\n              LOAD_FAST_BORROW         7 (kwargs)\n              DICT_MERGE               1\n              CALL_FUNCTION_EX\n              STORE_FAST               9 (__beartype_pith_0)\n\n 41           NOP\n\n 45           LOAD_GLOBAL              5 (isinstance + NULL)\n              LOAD_FAST_BORROW_LOAD_FAST_BORROW 144 (__beartype_pith_0, __beartype_object_4407100800)\n              CALL                     2\n              TO_BOOL\n              POP_JUMP_IF_TRUE        14 (to L4)\n              NOT_TAKEN\n\n 47           LOAD_FAST_BORROW         1 (__beartype_get_violation)\n              PUSH_NULL\n\n 48           LOAD_FAST_BORROW         3 (__beartype_call_curr)\n\n 49           LOAD_CONST               3 ('return')\n\n 50           LOAD_FAST_BORROW         9 (__beartype_pith_0)\n\n 47           LOAD_CONST               2 (('decor_func', 'pith_name', 'pith_value'))\n              CALL_KW                  3\n              STORE_FAST              10 (__beartype_violation)\n\n 53           LOAD_FAST_BORROW        10 (__beartype_violation)\n              RAISE_VARARGS            1\n\n 54   L4:     LOAD_FAST_BORROW         9 (__beartype_pith_0)\n              RETURN_VALUE\n",
+      "variant": "optimized",
+      "round": 3
+    }
+  ],
+  "probe": "import json,sys,timeit,statistics,dis,io,hashlib\nfrom beartype import beartype\n@beartype\ndef native(value:int|str)->int|str:return value\ndef bare(value):return value\nresult={\"python\":sys.version,\"cases\":{}}\nfor name,fn in [(\"bare\",bare),(\"native\",native)]:\n call=lambda:fn(1)\n call()\n samples=[x*1e6/1000000 for x in timeit.repeat(call,number=1000000,repeat=7)]\n result[\"cases\"][name]={\"median_us\":statistics.median(samples),\"samples_us\":samples}\ns=io.StringIO();dis.dis(native,file=s);result[\"disassembly\"]=s.getvalue()\nprint(json.dumps(result))\n"
+}

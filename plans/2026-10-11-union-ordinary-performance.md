@@ -16,6 +16,12 @@ as the unoptimized correct proposal.
 ## Progress
 
 
+- [x] (2026-10-11) Integrate the invocation-isolation correction from #46 and
+  apply the same owner filter to the known-domain fast path.
+- [x] Rerun both installed endpoints, upstream tests, hooks and matched sequential
+  benchmarks; retain historical measurements and report fresh artifact hashes.
+- [x] Update the focused PR and unsent proposal with the corrected scope limits.
+
 - [x] (2026-10-11) Identify remaining tuple, mapping and nested-list overhead.
 - [x] (2026-10-11) Committed plan and opened draft PR #47 before implementation.
 - [x] (2026-10-11) Added known-domain and explicit atomic-leaf fast paths.
@@ -35,6 +41,14 @@ stateful hint into an expression that has already chosen the stateless path.
 
 ## Decision Log
 
+
+Decision: The known-domain fast path must only enroll into live transactions
+owned by the same public checking invocation. Reuse the parent's private owner
+lookup only when an active parent exists; preserve the path without a published
+ContextVar when domains are already known. No public API addition or eager scope
+allocation is needed. Rationale: optimization must retain the corrected isolation
+contract without introducing overhead when no parent can need enrollment.
+Author/date: Codex, 2026-10-11.
 
 Decision: Stack this PR on #46; keep the public scope API and rollback fixes in the
 parent. Rationale: reviewers can assess semantics before optimization.
@@ -57,8 +71,9 @@ atomic. Author/date: Codex, 2026-10-11.
 ## Outcomes & Retrospective
 
 
-Implementation is reopened for the isolation correction and fresh measurements.
-Earlier results below describe the previous artifact. This is local upstream proposal work,
+The isolation correction and refreshed tests/benchmarks are complete. The known-
+domain path enrolls only into the same public invocation and avoids owner lookup
+when there is no parent. Earlier results below describe the previous artifact. This is local upstream proposal work,
 not a dependency release or publication authorization.
 
 ## Context and Orientation
@@ -190,16 +205,40 @@ not a cross-platform performance guarantee or a release readiness claim.
 Revision note — 2026-10-11: Completed and validated the focused optimization,
 recorded raw matched measurements and exact artifacts, and retained explicit
 remaining costs. No existing regression or diagnostic was suppressed.
-- [ ] (2026-10-11) Integrate the invocation-isolation correction from #46 and
-  apply the same owner filter to the known-domain fast path.
-- [ ] Rerun both installed endpoints, upstream tests, hooks and matched sequential
-  benchmarks; retain historical measurements and report fresh artifact hashes.
-- [ ] Update the focused PR and unsent proposal with the corrected scope limits.
 
-Decision: The known-domain fast path must only enroll into live transactions
-owned by the same public checking invocation. Reuse the parent's private owner
-lookup only when an active parent exists; preserve the path without a published
-ContextVar when domains are already known. No public API addition or eager scope
-allocation is needed. Rationale: optimization must retain the corrected isolation
-contract without introducing overhead when no parent can need enrollment.
-Author/date: Codex, 2026-10-11.
+
+## Isolation correction evidence
+
+The optimized upstream head is `7d039bcbe49da0d23976429ccedeb7e13598c239`,
+based on corrected source `e44afa92`. Bearshape integration commit `dee5bb1`
+preserves the reviewed parent history and refreshes patches 0002/0003 with their
+manifest hashes. The correction adds no public API. The source design review is
+in `tools/upstream/DESIGN_REVIEW.md` from the parent PR.
+
+Fresh installed endpoint consumers pass 1,262 cases each with five explicit CPU
+skips, including all four static engines. Upstream units pass 484/492 with 15/7
+existing skips, and upstream pyright reports zero errors/warnings across 483
+files. All 41 added isolation cases pass; focused proposal coverage is now 119.
+The artifacts and full command logs are preserved under the main checkout's
+`build/union-isolation-revision/`. Exact wheel hashes are in the benchmark report.
+
+`tools/upstream/evidence/2026-10-11-isolation/` retains six transaction benchmark
+runs, six representative runtime runs, and a native-check stability probe. The
+same bearshape wheel is installed in all three variants. Each transaction run
+uses 20,000 calls and seven raw repeats; runtime runs use 10,000 and five. On
+3.11, released/corrected/optimized tuple medians are 0.685/1.600/0.171 microseconds;
+strict shape checks are 12.749/11.844/8.562. Correct fallback union checking is
+15.942/13.787 for corrected/optimized; the released implementation is incorrect.
+Remaining root/list overhead is about 0.08–0.09 microseconds on 3.11.
+
+The initial optimized native 3.14 result of 0.141 microseconds is retained. A
+rotated-order follow-up using one million calls per repeat measured optimized
+native medians of 0.094–0.096 versus released 0.101–0.103 across three rounds.
+The outlier did not reproduce. No measurement was discarded and there is no CI
+performance threshold. These results are local CPU evidence, not CUDA evidence
+or a cross-platform speed guarantee.
+
+Revision note — 2026-10-11: Finished the invocation-isolation fast-path correction,
+preserved the historical evidence, and refreshed the benchmark report. Hosted
+checks are verified on the pushed review heads; no upstream contact, main merge
+or publication is authorized.

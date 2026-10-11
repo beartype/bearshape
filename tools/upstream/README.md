@@ -69,7 +69,7 @@ invocation of each case. First-invocation samples include setup and may share
 previously resolved aliases, so they are not a statistical cold-start benchmark.
 Warm medians and raw samples use the same script and wheel inputs in all
 variants; there is no timing threshold in CI. See the
-[matched results and raw samples](evidence/2026-10-11/README.md).
+[current matched results and raw samples](evidence/2026-10-11-isolation/README.md).
 
 ## Historical proposal evidence
 
