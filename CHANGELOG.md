@@ -10,6 +10,8 @@ and this project follows
 
 - Normalize known builtin NumPy dtype classes without repeatedly calculating
     their names; preserve fresh metadata and custom dtype protocols.
+- Prepare immutable shape traversal once per array annotation, preserving live
+    Value arguments, memo bindings, complete Tree traversal and diagnostics.
 
 The next candidate is **0.1.0rc1**, independently versioned from beartype and
 not yet published. Python **3.11+** is required; the validated matrix is

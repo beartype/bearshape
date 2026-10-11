@@ -45,7 +45,7 @@ from ._shape import (
   ValueDim,
   VariadicDim,
   _AnonymousVariadic,
-  check_shape,
+  _ShapeChecker,
 )
 
 __all__ = ["make_array_like_type", "make_array_type"]
@@ -187,7 +187,14 @@ class _ArrayChecker:
   ``Float32Array[N, C]``) and reused across all functions that share it.
   """
 
-  __slots__ = ("_array_type", "_dtype_spec", "_needs_scope", "_repr", "_shape_spec")
+  __slots__ = (
+    "_array_type",
+    "_check_shape",
+    "_dtype_spec",
+    "_needs_scope",
+    "_repr",
+    "_shape_spec",
+  )
 
   def __init__(
     self,
@@ -204,6 +211,7 @@ class _ArrayChecker:
       self._dtype_spec = tp.cast("DtypeSpec", dtype_spec)
       self._shape_spec = shape_spec
 
+    self._check_shape = _ShapeChecker(self._shape_spec)
     self._needs_scope = any(isinstance(dim, ValueDim) for dim in self._shape_spec)
 
     # Pre-compute repr for beartype error messages
@@ -259,7 +267,7 @@ class _ArrayChecker:
     except Exception as exc:  # noqa: BLE001
       return ValidationFailure(f"invalid array metadata: {exc}")
 
-    err = check_shape(shape, self._shape_spec, memo, scope)
+    err = self._check_shape(shape, memo, scope)
     if err:
       return ValidationFailure(err)
     return None
@@ -363,6 +371,7 @@ class _ArrayLikeChecker:
   __slots__ = (
     "_asarray",
     "_casting",
+    "_check_shape",
     "_dtype_spec",
     "_is_structured",
     "_needs_scope",
@@ -383,6 +392,7 @@ class _ArrayLikeChecker:
   ) -> None:
     self._dtype_spec = dtype_spec
     self._shape_spec = shape_spec
+    self._check_shape = _ShapeChecker(shape_spec)
     self._needs_scope = any(isinstance(dim, ValueDim) for dim in shape_spec)
     self._casting = casting
     self._is_structured: bool = dtype_spec._structured is not None
@@ -487,7 +497,7 @@ class _ArrayLikeChecker:
     if failure is not None:
       return failure
 
-    err = check_shape(shape, self._shape_spec, memo, scope)
+    err = self._check_shape(shape, memo, scope)
     if err:
       return ValidationFailure(err)
     return None

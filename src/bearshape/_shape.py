@@ -193,51 +193,55 @@ def check_shape(
       ``""`` on success. A human-readable error message on mismatch.
 
   """
-  # Find the variadic dim (at most one allowed)
-  variadic_idx: int | None = None
-  for i, dim in enumerate(spec):
-    if isinstance(dim, (VariadicDim, _AnonymousVariadic)):
-      variadic_idx = i
-      break
+  return _ShapeChecker(spec)(shape, memo, scope)
 
-  if variadic_idx is None:
-    # No variadic — exact rank match required
-    if len(shape) != len(spec):
-      return f"expected {len(spec)} dimensions but got {len(shape)} (shape={shape})"
-    return _check_fixed_dims(spec, shape, memo, scope)
 
-  # Split around the variadic dim
-  n_prefix = variadic_idx
-  n_suffix = len(spec) - variadic_idx - 1
-  min_rank = n_prefix + n_suffix
+class _ShapeChecker:
+  """Prepared immutable annotation layout; all call state stays in the arguments."""
 
-  if len(shape) < min_rank:
-    return (
-      f"expected at least {min_rank} dimensions but got {len(shape)} (shape={shape})"
-    )
+  __slots__ = ("_prefix", "_rank", "_suffix", "_variadic")
 
-  # Check prefix
-  err = _check_fixed_dims(spec[:n_prefix], shape[:n_prefix], memo, scope)
-  if err:
-    return err
+  def __init__(self, spec: tuple[DimSpec, ...]) -> None:
+    self._prefix = spec
+    self._suffix: tuple[DimSpec, ...] = ()
+    self._variadic: VariadicDim | _AnonymousVariadic | None = None
+    self._rank = len(spec)
+    for i, dim in enumerate(spec):
+      if isinstance(dim, (VariadicDim, _AnonymousVariadic)):
+        self._prefix = spec[:i]
+        self._suffix = spec[i + 1 :]
+        self._variadic = dim
+        self._rank -= 1
+        break
 
-  # Check suffix
-  if n_suffix > 0:
-    err = _check_fixed_dims(spec[-n_suffix:], shape[-n_suffix:], memo, scope)
+  def __call__(
+    self,
+    shape: tuple[int, ...],
+    memo: ShapeMemo,
+    scope: Mapping[str, object] | None = None,
+  ) -> str:
+    variadic = self._variadic
+    if variadic is None:
+      if len(shape) != self._rank:
+        return f"expected {self._rank} dimensions but got {len(shape)} (shape={shape})"
+      return _check_fixed_dims(self._prefix, shape, memo, scope)
+
+    if len(shape) < self._rank:
+      return f"expected at least {self._rank} dimensions but got {len(shape)} (shape={shape})"
+
+    n_prefix, n_suffix = len(self._prefix), len(self._suffix)
+    err = _check_fixed_dims(self._prefix, shape[:n_prefix], memo, scope)
     if err:
       return err
+    if n_suffix:
+      err = _check_fixed_dims(self._suffix, shape[-n_suffix:], memo, scope)
+      if err:
+        return err
 
-  # Check variadic middle
-  variadic_dim = spec[variadic_idx]
-  suffix_start = len(shape) - n_suffix if n_suffix else len(shape)
-  middle_shape = shape[n_prefix:suffix_start]
-
-  if isinstance(variadic_dim, _AnonymousVariadic):
-    return ""
-
-  if not isinstance(variadic_dim, VariadicDim):
-    return f"internal error: expected variadic dim, got {variadic_dim!r}"
-  return _check_variadic(variadic_dim, middle_shape, memo)
+    if isinstance(variadic, _AnonymousVariadic):
+      return ""
+    suffix_start = len(shape) - n_suffix if n_suffix else len(shape)
+    return _check_variadic(variadic, shape[n_prefix:suffix_start], memo)
 
 
 # ---------------------------------------------------------------------------
