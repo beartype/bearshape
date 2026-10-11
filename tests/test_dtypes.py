@@ -530,3 +530,38 @@ def test_normalization_does_not_hash_user_dtype_classes(hashable: bool) -> None:
   metaclass = SideEffectHash if hashable else Unhashable
   custom = metaclass("CustomDtype", (), {"name": "float32"})
   assert extract_dtype_str(SimpleNamespace(dtype=custom())) == "float32"
+
+
+@pytest.mark.parametrize(
+  "name, expected",
+  [
+    ("void128", "void"),
+    ("bytes256", "bytes"),
+    ("str42", "str"),
+    ("datetime64[ns]", "datetime64"),
+    ("timedelta64[ms]", "timedelta64"),
+  ],
+)
+def test_custom_parameterized_dtype_names_keep_normalization(
+  name: str, expected: str
+) -> None:
+  from types import SimpleNamespace
+
+  assert (
+    extract_dtype_str(SimpleNamespace(dtype=SimpleNamespace(name=name))) == expected
+  )
+
+
+def test_builtin_preparation_waits_for_numpy(monkeypatch: pytest.MonkeyPatch) -> None:
+  import sys
+  from types import SimpleNamespace
+
+  from bearshape import _dtypes
+
+  monkeypatch.setattr(_dtypes, "_NUMPY_DTYPE_NAMES", {})
+  monkeypatch.delitem(sys.modules, "numpy")
+  assert extract_dtype_str(SimpleNamespace(dtype="float32")) == "float32"
+  assert not _dtypes._NUMPY_DTYPE_NAMES
+  monkeypatch.setitem(sys.modules, "numpy", np)
+  assert extract_dtype_str(np.ones(2, dtype=np.float32)) == "float32"
+  assert _dtypes._NUMPY_DTYPE_NAMES
