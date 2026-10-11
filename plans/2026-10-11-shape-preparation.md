@@ -17,10 +17,10 @@ checkout. Preserve every reviewed commit; no merge or publication is implicit.
 
 - [x] Read the current contract, profile and merged optimization evidence.
 - [x] Create this plan before implementation.
-- [ ] Open focused PR and add relevant semantic guards.
-- [ ] Prepare shape traversal without changing order, errors or rollback.
-- [ ] Validate source and installed consumers, then matched benchmarks.
-- [ ] Record evidence and submit a concrete review result.
+- [x] Open focused PR and add relevant semantic guards.
+- [x] Prepare shape traversal without changing order, errors or rollback.
+- [x] Validate source and installed consumers, then matched benchmarks.
+- [x] Record evidence and submit a concrete review result.
 
 ## Surprises & Discoveries
 
@@ -40,7 +40,7 @@ least 202 snapshots per 100-leaf input/return; preserve that guarantee.
 
 ## Outcomes & Retrospective
 
-Implementation pending. Baseline beartype 0.23.1 still requires supported
+Implementation and local validation are complete; the focused PR remains open for review. Baseline beartype 0.23.1 still requires supported
 upstream composition integration before release; this optimization cannot
 remove that external prerequisite.
 
@@ -102,3 +102,53 @@ rank/layout integers. Reuse existing _check_fixed_dims and _check_variadic.
 
 Revision note — 2026-10-11: Created before implementation to keep shape
 preparation separate from dtype normalization.
+
+
+## Completed validation and review evidence
+
+The final runtime heads are dtype `6ae31a27fd5a2a95991c29433585cd342f47a1a0`
+and shape `4c0a65be3ae737c13d82944b1c0592cd343cbe10`. The isolated combined
+head `e5eddd6aa0cab07a35e1ed4b25c00b2f6dade5cf` preserves both histories.
+Each focused implementation passed runtime tests and all four checker suites;
+both PRs passed all 36 hosted checks at those implementation heads. Later
+documentation commits rerun normal hooks and hosted checks without changing
+runtime artifacts.
+
+The combined wheel passes 1,323 normally installed baseline tests and 1,450
+proposal tests per endpoint (CPython 3.11.15 and 3.14.5), including all four
+consumer checkers, 69 composition cases and 58 upstream protocol/scope/mixin
+cases. The original union probe passes with the proposal. Source coverage is
+91.23%. Minimal installed consumers pass without optional backends. Documentation
+build/render checks and 95 snippets pass. Five local skips cover absent CuPy
+and platform-specific extended precision, not union behavior.
+
+Matched 5,000-call, nine-repeat measurements compare main, each PR independently,
+and their combination with released and proposal dependencies. They run
+sequentially on the same local host with identical normally installed inputs,
+reversing variant order on 3.14. Cold initialization uses 13 fresh subprocesses;
+root-only and ordinary beartype controls are recorded separately. The complete
+report, hashes, methods and raw samples are in PR #56 under
+`tools/evidence/2026-10-11-remaining-optimization/`. Local commands, logs and
+exact archives are preserved in the main checkout's ignored
+`build/remaining-optimization/`.
+
+The dtype implementation retains only known builtin class identities and names,
+not dtype instances or checked values. Review caught custom metaclass hashing
+and root-only string overhead; both have focused guards and are resolved in the
+final head. Shape preparation retains only annotation layout and preserves
+prefix/suffix/middle ordering, live Value scopes and every Tree snapshot.
+An extra upstream lookup cache was rejected after isolated measurements showed
+only about 20 ns best-case savings on 3.11 and a slowdown on 3.14, before cache
+maintenance costs. The upstream patch series is unchanged.
+
+Main remains at 28e8858. The old validation worktree was removed only after
+checking its conflict resolutions and parent reachability and preserving its
+complete Git history plus generated documentation. The new validation checkout
+is relevant to these still-open PRs. No publication, upstream contact or
+repository administration has occurred. The published dependency still lacks
+full union rollback; approved release controls and exact-wheel CUDA evidence
+remain external release prerequisites.
+
+Revision note — 2026-10-11: Record the finished implementation, protocol guards,
+matched performance tradeoffs and final installed validation; keep merge state
+and release readiness distinct.
