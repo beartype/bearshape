@@ -57,7 +57,8 @@ atomic. Author/date: Codex, 2026-10-11.
 ## Outcomes & Retrospective
 
 
-Implementation and measurements are complete in PR #47. This is local upstream proposal work,
+Implementation is reopened for the isolation correction and fresh measurements.
+Earlier results below describe the previous artifact. This is local upstream proposal work,
 not a dependency release or publication authorization.
 
 ## Context and Orientation
@@ -189,3 +190,16 @@ not a cross-platform performance guarantee or a release readiness claim.
 Revision note — 2026-10-11: Completed and validated the focused optimization,
 recorded raw matched measurements and exact artifacts, and retained explicit
 remaining costs. No existing regression or diagnostic was suppressed.
+- [ ] (2026-10-11) Integrate the invocation-isolation correction from #46 and
+  apply the same owner filter to the known-domain fast path.
+- [ ] Rerun both installed endpoints, upstream tests, hooks and matched sequential
+  benchmarks; retain historical measurements and report fresh artifact hashes.
+- [ ] Update the focused PR and unsent proposal with the corrected scope limits.
+
+Decision: The known-domain fast path must only enroll into live transactions
+owned by the same public checking invocation. Reuse the parent's private owner
+lookup only when an active parent exists; preserve the path without a published
+ContextVar when domains are already known. No public API addition or eager scope
+allocation is needed. Rationale: optimization must retain the corrected isolation
+contract without introducing overhead when no parent can need enrollment.
+Author/date: Codex, 2026-10-11.
