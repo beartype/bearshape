@@ -106,10 +106,10 @@ index dd4fef94..e236b898 100644
              # If this referent is *NOT* a supported type hint...
              #
 diff --git a/beartype/plug/_plugstate.py b/beartype/plug/_plugstate.py
-index b5c07cd8..8a59825d 100644
+index 209d6bf4..07a68da7 100644
 --- a/beartype/plug/_plugstate.py
 +++ b/beartype/plug/_plugstate.py
-@@ -122,9 +122,29 @@ _ACTIVE_CHECK_STATES: ContextVar[tuple[_HintCheckState, ...]] = ContextVar(
+@@ -129,9 +129,32 @@ _ACTIVE_CHECK_STATES: ContextVar[tuple[_HintCheckState, ...]] = ContextVar(
      'beartype_check_states', default=())
  
  
@@ -119,9 +119,12 @@ index b5c07cd8..8a59825d 100644
 +    __slots__ = ()
 +
 +    def __enter__(self) -> '_KnownHintCheckState':
-+        for parent in _ACTIVE_CHECK_STATES.get():
-+            if parent._token is not None:
-+                parent.register(self.getters, self.states)
++        parents = _ACTIVE_CHECK_STATES.get()
++        if parents:
++            owner_id = _get_hint_check_owner_id()
++            for parent in parents:
++                if parent._token is not None and parent._owner_id == owner_id:
++                    parent.register(self.getters, self.states)
 +        return self
 +
 +    def __exit__(self, *exception: object) -> None:
@@ -140,7 +143,7 @@ index b5c07cd8..8a59825d 100644
          state.begin()
          if isinstance(obj, hint):
              return state.commit()
-@@ -153,3 +173,66 @@ def is_bearable_delegated(obj, hint, *, conf) -> bool:
+@@ -160,3 +183,66 @@ def is_bearable_delegated(obj, hint, *, conf) -> bool:
          _delegate_tester_factory.cache_func_checker(
              hint, conf, 'is_bearable() ', _make_code_delegated_check))
      return checker(obj)

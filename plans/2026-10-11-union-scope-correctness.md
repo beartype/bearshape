@@ -17,6 +17,8 @@ supported scope interface and preserve all native composition and errors.
 ## Progress
 
 
+- [ ] (2026-10-11, follow-up) Fix transaction enrollment across independent invocation scopes; review simpler alternatives and record the decision.
+- [ ] (2026-10-11, follow-up) Run failing isolation regressions, endpoint consumers, upstream units and typing; update this PR and its dependent optimization evidence.
 - [x] (2026-10-11) Inspect the previous proposal and the additional failing cases.
 - [x] (2026-10-11) Committed plan and opened draft PR #46 before implementation.
 - [x] (2026-10-11) Implemented public lazy scope API and optional bearshape adapter.
@@ -28,6 +30,13 @@ supported scope interface and preserve all native composition and errors.
 ## Surprises & Discoveries
 
 
+A later source review found that transaction enrollment deduplicates by getter
+identity across independent invocations. If an inner public check registers a
+getter before an outer late alias resolves, the outer checkpoint retains the
+inner state object and fails to restore the outer binding. Both DOOR and nested
+decorated variants fail on both Python endpoints, while controls pass. Distinct
+public scope objects alone do not constrain the transaction stack.
+
 Composite forward references delegate to a generated DOOR checker. Treating that
 internal frame as a public DOOR invocation silently separates shape state. A
 boolean local marker demonstrated the distinction but is not a public integration
@@ -36,6 +45,17 @@ predicate catches the violation and succeeds.
 
 ## Decision Log
 
+
+Decision: Continue the existing PR and worktree under the owner's instruction to
+fix isolation, review simplicity/compatibility, rerun tests and benchmarks, and
+update the focused PRs and unsent Zulip draft. The implementation must enroll a
+late domain only into transactions belonging to the same live public checking
+invocation. Internal aliases remain transparent. First evaluate a private owner
+identity derived from the existing scope-boundary lookup, retaining neither the
+frame nor an invocation scope object for ordinary checks. Compare scope-object
+allocation and new wrapper/context plumbing before choosing a larger design.
+Keep public names and annotation syntax unchanged unless correctness requires a
+new owner decision. Date/author: 2026-10-11, Codex.
 
 Decision: Stack on PR #45, the combined release candidate, and keep optimization
 in a subsequent focused PR. Rationale: correctness must be reviewable independently
@@ -57,6 +77,11 @@ Author/date: Codex, 2026-10-11.
 
 ## Outcomes & Retrospective
 
+
+The later isolation finding reopens implementation completion. Historical passing
+results below remain evidence for their exact artifacts, but they do not include
+the newly demonstrated failure. The corrected candidate must pass this case and
+the expanded ownership matrix before completion is restored.
 
 The correctness implementation is complete in PR #46. Published beartype 0.23.1 still lacks the protocol.
 Passing proposal tests does not authorize changing release readiness or claiming
@@ -199,3 +224,28 @@ rewriting exclude the patch files; SHA256 checks protect their exact contents.
 Revision note — 2026-10-11: Completed correctness implementation and local/hosted
 validation, recorded exact artifacts, and retained the supported-upstream release
 prerequisite. No upstream PR, maintainer contact, main merge or upload occurred.
+
+## Isolation correction milestones
+
+
+First add focused generic and bearshape regressions covering late state discovery
+before and after independent public DOOR/decorated checks, recursive calls sharing
+one wrapper, caught failures, internal alias propagation and lifetime. Run them
+against the preserved candidate wheels and retain the expected failure evidence.
+
+Next factor the existing public-scope boundary traversal for private transaction
+ownership, filter enrollment by live invocation identity, and clear ownership on
+exit. Scope identity must distinguish recursive calls and copied contexts without
+retaining frames or allocating public scope objects for ordinary users. Validate
+the focused suite before integrating this change into upstream patch 0002.
+
+Finally use the existing clean-base proposal driver to build normally installed
+Python 3.11/3.14 consumers, run upstream unit tests and pyright, and run normal
+hooks. Update the dependent optimization PR without mixing its runtime changes
+into correctness. Preserve fresh commands, archives, hashes and benchmarks under
+the main checkout's ignored build/union-isolation-revision directory. Update PR
+descriptions and the unsent draft only from completed evidence; no upstream
+contact, main merge or publication is authorized.
+
+Revision note — 2026-10-11: Reopened correctness for the confirmed cross-invocation
+transaction defect and documented the owner-authorized correction before code.
