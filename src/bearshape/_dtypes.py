@@ -307,6 +307,11 @@ def extract_dtype_str(obj: object) -> str:
 
   names = _NUMPY_DTYPE_NAMES
   if not names:
+    # Plain dtype strings need no backend discovery. Keep root-only custom
+    # arrays cheap even when NumPy is absent; subclasses retain their protocol.
+    if type(dtype) is str:
+      _, _, tail = dtype.rpartition(".")
+      return tail or dtype
     _prepare_numpy_dtype_names()
   # Identity keys avoid invoking arbitrary metaclass hashing/equality. Keeping
   # the builtin class beside its name prevents reuse of its identity.

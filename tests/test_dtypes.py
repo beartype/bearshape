@@ -565,3 +565,13 @@ def test_builtin_preparation_waits_for_numpy(monkeypatch: pytest.MonkeyPatch) ->
   monkeypatch.setitem(sys.modules, "numpy", np)
   assert extract_dtype_str(np.ones(2, dtype=np.float32)) == "float32"
   assert _dtypes._NUMPY_DTYPE_NAMES
+
+
+def test_dtype_string_subclass_keeps_name_protocol() -> None:
+  from types import SimpleNamespace
+
+  class DtypeText(str):
+    __slots__ = ()
+    name = "int32"
+
+  assert extract_dtype_str(SimpleNamespace(dtype=DtypeText("float32"))) == "int32"
