@@ -2545,3 +2545,36 @@ def test_custom_metadata_cancellation_propagates(mode: str) -> None:
     with pytest.raises(KeyboardInterrupt):
       isinstance(Custom(), hint)
     assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+
+
+@pytest.mark.parametrize("native", [False, True])
+def test_root_like_releases_temporary_classes(*, native: bool) -> None:
+  import gc
+  import weakref
+
+  hint = make_array_like_type(FLOAT32)[N]
+
+  def validate_temporary() -> weakref.ReferenceType[type]:
+    if native:
+
+      class TemporaryArray(np.ndarray):
+        pass
+
+      value = np.ones(2, dtype=np.float32).view(TemporaryArray)
+      reference = weakref.ref(TemporaryArray)
+    else:
+
+      class TemporaryProtocol:
+        def __array__(self, dtype: object = None, copy: object = None) -> np.ndarray:  # noqa: PLW3201
+          return np.ones(2, dtype=np.float32)
+
+      value = TemporaryProtocol()
+      reference = weakref.ref(TemporaryProtocol)
+    assert is_bearable(value, hint)
+    return reference
+
+  references = [validate_temporary() for _ in range(32)]
+  gc.collect()
+  assert all(reference() is None for reference in references)
+  assert is_bearable(np.ones(3, dtype=np.float32), hint)
+  assert not is_bearable(np.ones(3, dtype=np.complex64), hint)

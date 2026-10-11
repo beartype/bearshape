@@ -27,6 +27,7 @@ from __future__ import annotations
 import typing as tp
 from collections.abc import Callable
 from operator import index
+from weakref import WeakKeyDictionary
 
 from ._dimensions import Dimension, _ValueExpr
 from ._dtypes import DtypeSpec
@@ -104,7 +105,7 @@ def _is_trusted_array_type(cls: type[object]) -> bool:
   return result
 
 
-_TRUSTED_ARRAY_TYPE_CACHE: dict[type[object], bool] = {}
+_TRUSTED_ARRAY_TYPE_CACHE: WeakKeyDictionary[type[object], bool] = WeakKeyDictionary()
 
 
 def _is_trusted_array(obj: object) -> bool:

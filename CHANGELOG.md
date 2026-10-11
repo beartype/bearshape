@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Let temporary classes be collected after default Like validation by keeping
+    weak keys in the trusted-array cache.
+
 - Validate custom shape metadata through the integer-index protocol and reject
     negative axes. Report ordinary metadata failures without swallowing
     cancellation, and let selected Like converters inspect untrusted inputs.

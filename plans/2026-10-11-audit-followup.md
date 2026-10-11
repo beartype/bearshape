@@ -46,9 +46,10 @@ is authorized by this implementation request.
   four malformed shapes, nine failing properties, converter-owned inspection,
   integer-index axes and cancellation. Failing-first evidence retained; NumPy,
   JAX, Torch and edge suites pass. Minimal consumer checks negative metadata.
-- [ ] M6 in progress: focused lifetime PR follows #52. Replace strong class
-  keys in the default Like trust cache with weak ownership; verify repeated
-  temporary protocol classes and native subclasses can be collected.
+- [x] (2026-10-11) M6: PR #53 uses weak keys in the root Like trust cache.
+  Both lifetime regressions failed first; all 64 temporary protocol/native
+  classes now collect, while stable native positive/negative checks still pass.
+  The NumPy suite passes with only platform precision skips.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
 - [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
