@@ -103,3 +103,15 @@ nested, tree and diagnostic paths. It also exercises expensive list conversion.
 Compare normal installs with matched Python/backend versions on the same idle
 host. Results are observations, not a portable performance guarantee or CI
 threshold. Keep benchmark outputs outside the tracked package.
+
+## Release evidence
+
+`check_release_evidence.py record` creates a manifest only after archive
+integrity checks. `verify` checks the exact source/version/run identity,
+canonical filenames and SHA256 bytes, rejecting missing/extra files and
+symlinks. The release workflow uses verification immediately before upload and
+never rebuilds in the publisher. See the
+[release runbook](../docs/maintainers/releasing.md) for commands, approval
+prerequisites and recovery. Candidate validation also requires the full native
+union probe and integration suite on both Python endpoints; a failure blocks
+publication even when baseline CI passes.

@@ -121,6 +121,11 @@ this consumer check; ordinary source validation continues to include `src`.
 
 ## Validate and publish a release
 
+The [maintainer release runbook](docs/maintainers/releasing.md) describes
+preparation, exact-artifact review, external prerequisites, future publication
+and failure recovery. Full native-union composition is an additional required
+release gate; published beartype 0.23.1 currently fails it.
+
 Run a validation-only workflow before making a release decision:
 
 ```bash

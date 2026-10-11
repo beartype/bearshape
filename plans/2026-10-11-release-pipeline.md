@@ -12,10 +12,10 @@ Maintainers need a repeatable route from a reviewed commit to tested wheel/sourc
 
 
 - [x] (2026-10-11) Reviewed current source/tag checks, reusable CI, archive validation and publishing workflow.
-- [ ] Commit the plan and open a draft PR before implementation.
-- [ ] Add explicit release-contract validation, archive evidence verification and publication concurrency.
-- [ ] Test positive/negative release inputs with disposable repositories and artifacts; run real hooks/actionlint.
-- [ ] Write developer/maintainer instructions, build and inspect rendered documentation, and prepare the administrative prerequisite list.
+- [x] (2026-10-11) Commit the plan and open a draft PR before implementation.
+- [x] (2026-10-11) Add explicit release-contract validation, archive evidence verification and publication concurrency.
+- [x] (2026-10-11) Test positive/negative release inputs with disposable repositories and artifacts; run real hooks/actionlint.
+- [x] (2026-10-11) Write developer/maintainer instructions, build and inspect rendered documentation, and prepare the administrative prerequisite list.
 - [ ] Validate the combined candidate without publication once an integration head exists.
 
 ## Surprises & Discoveries
@@ -35,7 +35,7 @@ Decision: Keep publication an explicit event after review and serialize publicat
 ## Outcomes & Retrospective
 
 
-Implementation and validation pending. Readiness remains blocked by supported upstream union integration and external release prerequisites; a working validation pipeline should expose those blockers rather than claim readiness.
+Implemented in PR #44. All 34 release identity/evidence tests pass. Normal hooks and manual actionlint pass; the docs build/render checks pass, and the new runbook navigation/headings were inspected. Both CLI modes passed against the real audited wheel/source archives in a clean directory. The initial CLI run correctly rejected uv build's extra .gitignore; downloaded GitHub distribution artifacts omit hidden files. The publisher receives exactly the two archives. Readiness remains blocked by supported upstream union integration and external release prerequisites; a working validation pipeline should expose those blockers rather than claim readiness.
 
 ## Context and Orientation
 
@@ -89,3 +89,5 @@ The October audit contains the current GitHub control snapshots and exact baseli
 Use standard-library release tooling, existing check_distribution/git_environment helpers, pinned GitHub actions and uv 0.11.17. Trusted publisher identity must be owner beartype, repository bearshape, workflow pypi.yml, environment pypi. No runtime bearshape API changes or new runtime dependencies belong in this PR.
 
 Revision note — 2026-10-11: Created the focused automation/runbook plan before implementation, preserving the explicit no-publication boundary.
+
+Revision note — 2026-10-11: Recorded implementation and local evidence; hosted validation-only integration remains pending and full composition remains blocked by published upstream.
