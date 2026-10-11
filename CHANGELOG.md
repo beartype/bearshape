@@ -11,6 +11,8 @@ and this project follows
 - Preserve runtime value scope in nested dimension arithmetic, including unary
     and attribute expressions.
 
+- Reject None and malformed custom Like converter results with useful errors.
+
 - Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
 
 - Correct installed-package origin checks for symlinked virtual environments.

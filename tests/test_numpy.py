@@ -2325,3 +2325,53 @@ class TestNestedValueScope:
 
     x = np.ones(5, dtype=np.float32)
     assert Model().shrink(x).shape == (3,)
+
+
+@pytest.mark.parametrize(
+  "shape,dtype",
+  [
+    (None, "float32"),
+    (3, "float32"),
+    (("3",), "float32"),
+    ((-1,), "float32"),
+    ((3,), None),
+  ],
+)
+def test_malformed_converter_metadata_is_rejected(shape: object, dtype: object) -> None:
+  from types import SimpleNamespace
+
+  result = SimpleNamespace(shape=shape, dtype=dtype)
+  hint = make_array_like_type(FLOAT32, asarray=lambda _obj: result)[N]
+  with bearshape.check_context():
+    assert not is_bearable("input", hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+  assert "converter returned" in type(hint).__instancecheck_str__(hint, "input")
+
+
+@pytest.mark.parametrize("result", [None, object()])
+def test_empty_converter_result_never_accepts_input(result: object) -> None:
+  hint = make_array_like_type(FLOAT32, asarray=lambda _obj: result)[5]
+  assert not is_bearable("input", hint)
+  called = False
+
+  @beartype
+  def consume(value: hint) -> None:
+    nonlocal called
+    called = True
+
+  with pytest.raises(BeartypeCallHintParamViolation, match="converter returned"):
+    consume("input")
+  assert not called
+
+
+def test_valid_custom_conversion_preserves_original_argument() -> None:
+  hint = make_array_like_type(
+    FLOAT32, asarray=lambda obj: np.asarray(obj, dtype=np.float32)
+  )[N]
+
+  @beartype
+  def consume(value: hint) -> object:
+    return value
+
+  value = [1.0, 2.0]
+  assert consume(value) is value

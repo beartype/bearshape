@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import typing as tp
 from collections.abc import Callable
+from operator import index
 
 from ._dimensions import Dimension, _ValueExpr
 from ._dtypes import DtypeSpec
@@ -57,10 +58,6 @@ _VALID_CASTINGS: frozenset[CastingMode] = frozenset({
   "same_kind",
   "unsafe",
 })
-
-
-class _HasShape(tp.Protocol):
-  shape: tp.Any
 
 
 def _is_valid_casting(casting: str) -> tp.TypeGuard[CastingMode]:
@@ -425,11 +422,20 @@ class _ArrayLikeChecker:
     # Use the selected backend converter; a different backend cannot establish
     # that this input satisfies the selected conversion contract.
     arr, failure = self._convert(obj)
-    if arr is None:
+    if failure is not None:
       return failure
 
-    converted = tp.cast("_HasShape", arr)
-    return self._check(arr, tuple(converted.shape), memo, scope)
+    try:
+      raw_shape = getattr(arr, "shape", None)
+      if raw_shape is None or getattr(arr, "dtype", None) is None:
+        return ValidationFailure("converter returned an object without shape and dtype")
+      shape = tuple(index(size) for size in raw_shape)
+      if any(size < 0 for size in shape):
+        return ValidationFailure("converter returned a shape with negative dimensions")
+    except Exception as exc:  # noqa: BLE001
+      # Custom converters can return arbitrary objects or failing properties.
+      return ValidationFailure(f"converter returned invalid array metadata: {exc}")
+    return self._check(arr, shape, memo, scope)
 
   def _convert(self, obj: object) -> tuple[object | None, ValidationFailure | None]:
     """Convert *obj* to an array with ``.shape`` and ``.dtype``."""
@@ -601,12 +607,15 @@ def make_array_like_type(
       Human-readable name for error messages.
   asarray:
       Optional callable ``(obj) -> array`` for backend-specific conversion.
-      When provided, it is tried before ``np.asarray`` on the slow path
-      (objects without ``.shape`` / ``.dtype``).  Use this to support
-      backend-specific protocols like ``__jax_array__``.
+      When provided, it is the only converter used on the slow path;
+      failures never fall back to NumPy. The result must expose an iterable
+      integer ``shape`` and a non-None ``dtype``. Without this callable,
+      conversion uses ``np.asarray``. Validation preserves the original argument.
   trusted_types:
       Optional tuple of types that get the fast path (skip conversion).
-      When ``None`` (default), all known array backends are trusted.
+      When ``None`` (default), known array backends are trusted only when
+      no custom ``asarray`` callable is supplied. With a custom converter,
+      inputs are converted unless explicitly included in ``trusted_types``.
       Set this to scope the fast path to a specific backend so that
       foreign-backend arrays fall through to the slow path where
       actual convertibility is verified.
