@@ -1,0 +1,164 @@
+{
+  "python": "3.11.15 (main, May 10 2026, 19:23:07) [Clang 22.1.3 ]",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "versions": {
+    "bearshape": "0.1.0rc1",
+    "beartype": "0.23.1",
+    "numpy": "2.4.6"
+  },
+  "calls": 20000,
+  "repeats": 7,
+  "results": [
+    {
+      "case": "native",
+      "correct": true,
+      "first_call_us": 0.833,
+      "median_us": 0.09209374984493479,
+      "samples_us": [
+        0.09009580098791048, 0.09070414962479845, 0.0927542001591064,
+        0.09326250001322478, 0.09362915006931871, 0.08976874960353598,
+        0.09209374984493479
+      ]
+    },
+    {
+      "case": "forward-resolved-stateless",
+      "correct": true,
+      "first_call_us": 22.166,
+      "median_us": 0.6355021003400907,
+      "samples_us": [
+        0.6393624993506819, 0.6407687498722225, 0.630995849496685,
+        0.6333312499918975, 0.6355021003400907, 0.6395374992280267,
+        0.6266062497161329
+      ]
+    },
+    {
+      "case": "forward-unselected",
+      "correct": true,
+      "first_call_us": 1.209,
+      "median_us": 0.08303545037051663,
+      "samples_us": [
+        0.0806271011242643, 0.08110000053420663, 0.08645624911878258,
+        0.08684585045557469, 0.08691459952387959, 0.08303545037051663,
+        0.08266250079032034
+      ]
+    },
+    {
+      "case": "forward-nested-stateless",
+      "correct": true,
+      "first_call_us": 10.625,
+      "median_us": 0.6828832993051037,
+      "samples_us": [
+        0.6888979492941871, 0.6828832993051037, 0.6763021010556258,
+        0.6969166512135416, 0.6875145496451296, 0.67279789946042,
+        0.6731999994372018
+      ]
+    },
+    {
+      "case": "forward-tuple",
+      "correct": true,
+      "first_call_us": 5.875,
+      "median_us": 0.6723229002091102,
+      "samples_us": [
+        0.6772353997803293, 0.6723229002091102, 0.6671020993962884,
+        0.6720208504702896, 0.679964548908174, 0.6790104496758431,
+        0.6701708494802006
+      ]
+    },
+    {
+      "case": "forward-mapping",
+      "correct": true,
+      "first_call_us": 11.75,
+      "median_us": 0.6925458495970815,
+      "samples_us": [
+        0.6972624993068166, 0.6850895995739847, 0.6919749997905456,
+        0.6925458495970815, 0.6995582996751182, 0.6921541498741135,
+        0.69638959976146
+      ]
+    },
+    {
+      "case": "forward-nested-lists",
+      "correct": true,
+      "first_call_us": 9.459,
+      "median_us": 0.7225458510220051,
+      "samples_us": [
+        0.7322541991015896, 0.7336916503845714, 0.7183520996477455,
+        0.7168937503593042, 0.7321729004615918, 0.7163562491768971,
+        0.7225458510220051
+      ]
+    },
+    {
+      "case": "plugin-leaf",
+      "correct": true,
+      "first_call_us": 3.416,
+      "median_us": 0.14865204866509885,
+      "samples_us": [
+        0.14935835060896352, 0.14981040003476664, 0.1457374994060956,
+        0.14342499925987795, 0.14865204866509885, 0.14893539919285104,
+        0.14311664999695495
+      ]
+    },
+    {
+      "case": "plugin-union-second",
+      "correct": false,
+      "reason": "Plugin union retained rejected state"
+    },
+    {
+      "case": "strict",
+      "correct": true,
+      "first_call_us": 85.459,
+      "median_us": 12.572322899359278,
+      "samples_us": [
+        12.708277099591214, 12.579216649464797, 12.831885399646126,
+        12.572322899359278, 12.562608349253424, 12.561985399224795,
+        12.547600000107195
+      ]
+    },
+    {
+      "case": "explicit",
+      "correct": true,
+      "first_call_us": 25.458,
+      "median_us": 8.292491651081946,
+      "samples_us": [
+        8.300797949777916, 8.296600000176113, 8.277097949758172,
+        8.286233349645045, 8.283129151095636, 8.361197900376283,
+        8.292491651081946
+      ]
+    },
+    {
+      "case": "union-first",
+      "correct": true,
+      "first_call_us": 37.625,
+      "median_us": 13.79377499979455,
+      "samples_us": [
+        13.86067295097746, 13.734164550260175, 13.706383299722802,
+        13.820262499211822, 13.714408349187579, 13.883912499295548,
+        13.79377499979455
+      ]
+    },
+    {
+      "case": "union-second",
+      "correct": false,
+      "reason": "Function __main__.union() parameter _last=\"array([1., 1., 1.], dtype=float32)\" violates type hint <class 'numpy.Float32[N]'>, as dimension 'N' expected 2 but got 3."
+    },
+    {
+      "case": "union-explicit-second",
+      "correct": false,
+      "reason": "Function __main__.union_explicit() parameter _last=\"array([1., 1., 1.], dtype=float32)\" violates type hint <class 'numpy.Float32[N]'>, as dimension 'N' expected 2 but got 3."
+    },
+    {
+      "case": "union-all-failed",
+      "correct": false,
+      "reason": "Failed union retained state"
+    },
+    {
+      "case": "union-nested",
+      "correct": false,
+      "reason": "Nested union retained rejected state"
+    }
+  ],
+  "script_sha256": "52363525b7b8785830527b467c79ae492b0f2a5ab2dd3dec133a75a86a8de969",
+  "bearshape_wheel_sha256": "fe593320362bee43e8f1f91bb3ec10d1b3f85a0ea1039a3b7f7b409302ad8026",
+  "variant": "released",
+  "beartype_wheel_sha256": "4461b4dc57e3fdd6c8a8464b22cf118002eea107c33e9fef651c69068ab3cce3",
+  "beartype_wheel_url": "https://files.pythonhosted.org/packages/1c/cb/2f6aa982e2860c1156830db3da7f823b71784ed7d533ca289ea9b6c6347a/beartype-0.23.1-py3-none-any.whl"
+}

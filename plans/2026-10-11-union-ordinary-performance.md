@@ -21,8 +21,8 @@ as the unoptimized correct proposal.
 - [x] (2026-10-11) Added known-domain and explicit atomic-leaf fast paths.
 - [x] (2026-10-11) Added plain-class specialization and weak cache invalidation listeners.
 - [x] (2026-10-11) Added eleven optimizer regressions; upstream units pass 467/475 cases on the endpoints.
-- [ ] Validate exact installed wheels and measure matched endpoint benchmarks.
-- [ ] Record performance limits and prepare PR review without upstream contact.
+- [x] (2026-10-11) Both installed endpoint suites pass 1,221 cases; matched sequential benchmarks are preserved.
+- [x] (2026-10-11) Recorded exact artifacts, raw repeats and limits; implementation head has 36 passing hosted checks.
 
 ## Surprises & Discoveries
 
@@ -57,7 +57,7 @@ atomic. Author/date: Codex, 2026-10-11.
 ## Outcomes & Retrospective
 
 
-Implementation and measurements are pending. This is local upstream proposal work,
+Implementation and measurements are complete in PR #47. This is local upstream proposal work,
 not a dependency release or publication authorization.
 
 ## Context and Orientation
@@ -145,3 +145,47 @@ on the existing proxy path. Extending specialization there changed the existing
 root expression-factory identity contract; that broader change is unnecessary
 for the requested composite overhead reduction. The small remaining state-hook
 lookup cost is explicit. No existing upstream test was weakened or removed.
+
+
+## Completed evidence
+
+
+Implementation head: 291af356856ce93ae87020cee8c4f18903e89d92. Local upstream head:
+01f32470, based on correctness head 5071616b. Patch digests are recorded in the
+series manifest. `tools/upstream/evidence/2026-10-11/README.md` contains matched
+results and six raw benchmark files, using the same bearshape wheel in every
+variant and sequential runs. All 17 runtime source files match that exact wheel.
+
+The optimized bearshape wheel SHA256 is
+fe593320362bee43e8f1f91bb3ec10d1b3f85a0ea1039a3b7f7b409302ad8026;
+its tested source archive is
+45465be260ff82d4baba1967613c1dcb4bdd90930706e820b693d0b62ba67e2b.
+The local upstream wheel SHA256 is
+777f5641545dc78c4eec30447c6ddfadec6144767e6466781210831ff50c85fa.
+Copies, commands and endpoint logs survive under the main checkout's ignored
+`build/union-scope-development/optimized/`. Subsequent documentation/evidence
+commits change source archive contents but not these runtime wheel inputs.
+
+Both Python 3.11.15 and 3.14.5 installed consumers pass 1,221 tests, with five
+explicit skips (absent CuPy and four extended-precision platform cases). CPU
+backend preflight and the unchanged union probe pass. Four checker consumers
+retain positive, negative and inference assertions. Upstream unit tests pass
+467/475 cases (15/7 interpreter or optional-dependency skips). Upstream pyright
+analyzes 483 files with zero errors or warnings. Normal hooks and actual push
+runtime/four-checker hooks pass. PR #47 implementation head has 36 passing hosted
+checks, including both proposal lanes in run 38142309440.
+
+On 3.11 warm tuple/mapping/nested-list calls change from 1.107/1.126/1.147
+microseconds in the correctness proposal to 0.162/0.193/0.213. Released 0.23.1 is
+0.672/0.693/0.723 on those same inputs. On 3.14 optimized medians are
+0.176/0.214/0.245. Strict shape checking falls from 9.816 to 7.600 on 3.11 and
+10.313 to 7.905 on 3.14. Correct fallback unions take 12.205/12.482; the released
+baseline is incorrect and is never presented as a valid timing comparison.
+Root references and simple sampled lists retain approximately 0.06–0.07
+microseconds extra cost on 3.11. Custom metaclasses and stateful aliases remain
+general. Native checks stay around 0.09 microseconds. This is local evidence,
+not a cross-platform performance guarantee or a release readiness claim.
+
+Revision note — 2026-10-11: Completed and validated the focused optimization,
+recorded raw matched measurements and exact artifacts, and retained explicit
+remaining costs. No existing regression or diagnostic was suppressed.
