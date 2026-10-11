@@ -1498,3 +1498,12 @@ def test_custom_jax_node_leaf_dtype_is_checked() -> None:
 
   with pytest.raises(BeartypeCallHintParamViolation):
     custom_node(Batch(np.ones(3, dtype=np.int32)))
+
+
+@pytest.mark.parametrize(
+  "spec",
+  [(T, ..., S), (..., ..., T), (T, ..., ...), (T, ..., S, ...)],
+)
+def test_invalid_ellipsis_placement_is_rejected(spec: tuple[object, ...]) -> None:
+  with pytest.raises(TypeError, match="ellipsis|Ellipsis|\\.\\.\\."):
+    Tree[int, *spec]

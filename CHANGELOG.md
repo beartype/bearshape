@@ -15,6 +15,8 @@ and this project follows
 
 - Support custom strict variadic broadcasting without importing NumPy.
 
+- Reject interior or repeated ellipses in Tree structure specifications.
+
 - Require Python 3.11+ and released beartype 0.23.1; validate Python 3.11–3.14.
 
 - Correct installed-package origin checks for symlinked virtual environments.

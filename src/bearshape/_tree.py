@@ -429,6 +429,11 @@ class _TreeFactory:
       msg = "Cannot have ... at both start and end of structure spec"
       raise TypeError(msg)
 
+    ellipses = [position for position, arg in enumerate(args) if arg is Ellipsis]
+    if len(ellipses) > 1 or (ellipses and not (has_leading or has_trailing)):
+      msg = "A structure spec permits one ellipsis (...) at the start or end only"
+      raise TypeError(msg)
+
     names = [
       _TreeFactory._normalize_structure_arg(arg, owner_name=owner_name)
       for arg in args
