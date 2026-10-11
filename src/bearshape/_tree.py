@@ -157,7 +157,7 @@ class _TreeChecker:
     check_leaf.__annotations__ = {"leaf": leaf_type}
     self._leaf_checker = tp.cast(
       "FunctionType",
-      beartype(check_leaf, conf=BeartypeConf(violation_param_type=_TreeLeafViolation)),
+      beartype(conf=BeartypeConf(violation_param_type=_TreeLeafViolation))(check_leaf),
     )
     self._structure_spec = structure_spec
     self._get_ops = get_ops
