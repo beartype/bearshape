@@ -400,3 +400,24 @@ class TestReprOutput:
   def test_anonymous_repr(self) -> None:
     assert repr(ANONYMOUS) == "__"
     assert repr(ANONYMOUS_VARIADIC) == "~__"
+
+
+def test_variadic_broadcast_matches_numpy_metadata() -> None:
+  import itertools
+
+  import numpy as np
+
+  shapes = [(), (0,), (1,), (2,), (1, 3), (2, 1), (0, 3), (2, 1, 3)]
+  for left, right in itertools.product(shapes, repeat=2):
+    memo = ShapeMemo()
+    spec = (VariadicDim("B", broadcastable=True),)
+    assert check_shape(left, spec, memo) == ""
+    before = memo.snapshot()
+    try:
+      expected = np.broadcast_shapes(left, right)
+    except ValueError:
+      assert "cannot broadcast" in check_shape(right, spec, memo)
+      assert memo.snapshot() == before
+    else:
+      assert check_shape(right, spec, memo) == ""
+      assert memo.variadic["B"] == (True, expected)

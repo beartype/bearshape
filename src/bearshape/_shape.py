@@ -34,6 +34,7 @@ import operator
 import typing as tp
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from itertools import zip_longest
 
 from ._memo import ShapeMemo
 
@@ -323,15 +324,20 @@ def _check_variadic(dim: VariadicDim, shape: tuple[int, ...], memo: ShapeMemo) -
 
   # Broadcasting logic
   if prev_broadcastable or dim.broadcastable:
-    try:
-      import numpy as np
-
-      broadcast = np.broadcast_shapes(shape, prev_shape)
-    except ValueError:
-      return (
-        f"variadic '~{dim.name}' shape {shape} cannot broadcast "
-        f"with existing {prev_shape}"
-      )
+    axes = []
+    for current, previous in zip_longest(
+      reversed(shape), reversed(prev_shape), fillvalue=1
+    ):
+      if current == 1:
+        axes.append(previous)
+      elif previous in {1, current}:
+        axes.append(current)
+      else:
+        return (
+          f"variadic '~{dim.name}' shape {shape} cannot broadcast "
+          f"with existing {prev_shape}"
+        )
+    broadcast = tuple(reversed(axes))
     # Update to the broadcast result
     memo.variadic[dim.name] = (prev_broadcastable and dim.broadcastable, broadcast)
     return ""

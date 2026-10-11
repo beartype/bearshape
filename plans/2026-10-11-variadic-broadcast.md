@@ -12,9 +12,9 @@ The metadata-only path in `src/bearshape/_shape.py::_check_variadic` imports Num
 
 
 - [x] (2026-10-11) Reproduced the defect during the whole-library audit; created the focused branch and plan.
-- [ ] Commit plan and open draft PR before implementation.
-- [ ] Add a failing behavioral regression, implement the surgical fix and update CHANGELOG.
-- [ ] Run focused existing tests, real hooks and four-checker consumers; record the before/after evidence.
+- [x] (2026-10-11) Commit plan and open draft PR before implementation.
+- [x] (2026-10-11) Add a failing behavioral regression, implement the surgical fix and update CHANGELOG.
+- [x] (2026-10-11) Focused tests and normal hooks passed; complete runtime/four-checker pre-push validation is recorded in the finish log.
 
 ## Surprises & Discoveries
 
@@ -29,7 +29,7 @@ Decision: Preserve public syntax, successful behavior and useful errors; fix onl
 ## Outcomes & Retrospective
 
 
-Implementation and validation pending. This PR does not authorize merging or publishing and does not claim to fix native union transactions.
+The minimal custom-array probe failed importing NumPy before. After: 421 focused tests passed with two platform skips; a normal sdist-derived wheel passed the expanded minimal smoke via /tmp, with no optional backends installed or imported. The shape test compares 64 combinations, including zero axes and differing ranks, with NumPy. Full runtime and checker validation is enforced by the real pre-push hooks; hosted integration evidence remains pending. This PR does not authorize merging or publishing and does not claim to fix native union transactions.
 
 ## Context and Orientation
 
@@ -75,3 +75,7 @@ Original audit evidence is `/Users/ale/Code/bearshape/build/audit-2026-10-11/`. 
 No new runtime dependency or public API. Retain Python 3.11–3.14, exact tested beartype 0.23.1, existing backend semantics and the four supported checker engines. Dimensions remain runtime constraints rather than static shape proofs.
 
 Revision note — 2026-10-11: Created the focused regression/fix plan before implementation.
+
+Revision note — 2026-10-11: Recorded before/after regression evidence and the surgical fix. Real commit/push hooks remain required before the implementation head is delivered.
+
+Revision note — 2026-10-11: Recorded before/after regression evidence and the surgical fix. Real commit/push hooks remain required before the implementation head is delivered.
