@@ -2,6 +2,11 @@
 
 ## Current correctness proposal
 
+PR #46 now also isolates transaction enrollment by live public invocation. The
+[design review](DESIGN_REVIEW.md) explains the correction and alternatives. Its
+current installed endpoint suites pass 1,251 tests each, including 41 added
+isolation cases. Earlier measurements below are historical.
+
 PR #46 supersedes the earlier ownership design. The previous proposal passed 22
 union cases but failed eleven additional alias and caught-failure regressions.
 The scope interface is now `beartype.plug.get_hint_check_scope()`: it returns an
@@ -14,9 +19,10 @@ plugin requests one. bearshape keeps its released-0.23.1 fallback.
 `patches/series.json` pins the released upstream base and SHA256 of each ordered
 patch. `0001-state.patch` preserves the original state protocol proposal;
 `0002-scope-correctness.patch` adds the public scope API and independent
-rollback for a rejected late leaf. These files are review artifacts, never
-runtime code loaded or automatically applied by bearshape. The local wheels
-still identify as 0.23.1; they are **not the published beartype 0.23.1 wheel**.
+rollback for a rejected late leaf, including invocation-owned enrollment. These
+files are review artifacts, never runtime code loaded or automatically applied
+by bearshape. The local wheels still identify as 0.23.1; they are **not the
+published beartype 0.23.1 wheel**.
 
 Create a disposable clean checkout of beartype at
 `f85b67d8b0b6bd9c910bd97f0d2d417c4550b038`. From this bearshape checkout, run:
