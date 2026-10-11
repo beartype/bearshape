@@ -11,6 +11,7 @@ from bearshape._shape import (
   SymbolicDim,
   ValueDim,
   VariadicDim,
+  _ShapeChecker,
   check_shape,
 )
 
@@ -463,3 +464,26 @@ def test_equal_strict_variadic_occurrence_pins_target() -> None:
   assert check_shape((1,), broadcast, memo) == ""
   assert check_shape((1,), strict, memo)
   assert memo.variadic["B"] == (False, (2,))
+
+
+class TestPreparedShapeSemantics:
+  def test_variadic_suffix_binds_before_middle(self) -> None:
+    spec = (NamedDim("N"), VariadicDim("axes"), SymbolicDim("N+1"))
+    memo = ShapeMemo()
+    memo.variadic["axes"] = (False, (9,))
+    assert check_shape((2, 8, 7), spec, memo) == (
+      "dimension 'N+1' evaluated to 3 but got 7"
+    )
+    assert memo.single == {"N": 2}
+    assert memo.variadic == {"axes": (False, (9,))}
+
+  def test_spec_reuse_keeps_value_arguments_and_memos_independent(self) -> None:
+    spec = (ValueDim("size"), VariadicDim("axes"), NamedDim("N"))
+    prepared = _ShapeChecker(spec)
+    first, second = ShapeMemo(), ShapeMemo()
+    assert prepared((2, 7, 3), first, {"size": 2}) == ""
+    assert prepared((4, 8, 5), second, {"size": 4}) == ""
+    assert first.single == {"N": 3}
+    assert second.single == {"N": 5}
+    assert first.variadic == {"axes": (False, (7,))}
+    assert second.variadic == {"axes": (False, (8,))}
