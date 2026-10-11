@@ -10,6 +10,15 @@ records validation and external prerequisites; the
 [performance evidence](https://github.com/beartype/bearshape/tree/codex/lazy-array-scope/tools/evidence/2026-10-11-audit-performance)
 contains matched installed measurements and artifact identities.
 
+The combined implementation passes **1,300 installed baseline tests** and
+**1,427 installed proposal tests** on each Python endpoint, including all four
+consumer checkers. All **23 original audit regressions** pass with both
+dependencies. Source coverage is **91.10%**; fresh minimal consumers, 95 docs
+snippets, 29 notebook cells on each endpoint and both dependency canaries pass.
+The plan records exact source/archive hashes and hosted runs. Five local skips
+cover unavailable CuPy and platform-specific extended precision, not union
+tests.
+
 **Release readiness remains withheld.** The published dependency still lacks
 full composite-union rollback. The local upstream proposal is separate evidence,
 not a released integration. Current runtime changes need fresh exact-wheel CUDA

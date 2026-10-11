@@ -64,10 +64,13 @@ is authorized by this implementation request.
   checkers, including explicit consumer-root resolution for Pyrefly. Current
   changelog/handoff and developer release guidance are refreshed. Normal hooks,
   actionlint, rendered docs/95 snippets and all 29 notebook cells pass.
-- [ ] M9 in progress: create `codex/audit-integration-review` from the complete
-  #55 stack. Validate exact archives on both Python endpoints against released
-  and proposed beartype, original audit cases, coverage, minimal consumers and
-  hosted matrix/canary. Present exact evidence and external prerequisites.
+- [x] (2026-10-11) M9: `codex/audit-integration-review` preserves all 21
+  open PR heads. Both Python endpoints pass 1,300 normally installed baseline
+  tests and 1,427 proposal tests, plus the original 23 audit regressions with
+  each dependency. Fresh minimal environments, 91.10% branch coverage, normal
+  hooks, actionlint, rendered docs and both notebook endpoints pass. All eight
+  focused PR heads have 36 successful hosted checks; both new hosted dependency
+  canaries pass. Exact identities and remaining release prerequisites follow.
 - [ ] External: supported upstream release, approved repository/PyPI controls, exact final
   CUDA evidence, merge approval and separately authorized publication.
 
@@ -111,19 +114,74 @@ invented. Date/author: 2026-10-11, Codex.
 ## Outcomes & Retrospective
 
 
-Implementation is in progress. Nothing has been merged or published. Completion
-of local changes will not itself establish release readiness.
+The six correctness fixes, measured optimizations and CI/docs work are implemented
+in PRs #48–#55. No additional public feature was necessary. Nothing has been
+merged, published or deployed; the upstream proposal has not been sent. Local
+and hosted CPU evidence is complete for the tested implementation below. Release
+readiness remains withheld for the supported upstream dependency, fresh CUDA
+evidence and owner-controlled prerequisites.
+
+### Final implementation validation
+
+Tested implementation: `dc3c58a936959440bbfb12fc8e45a536ba49e67f` (PR #55).
+The separate integration branch includes every original PR head (#32, #34, #35,
+#38–#47) and every audit-fix head (#48–#55). Main remains
+`c0874f34615ca3797b24601a91324f3c9beb462a`. Later plan/handoff-only commits do not
+change the package or copied consumer tests; verify identical archives when
+building them.
+
+- Source-derived bearshape wheel SHA256:
+  `1e0bf25f4ad018d661d28b84a9136ade8f4f809a5c54c745a213c22d52284897`.
+- Source archive SHA256:
+  `cb30f2b46cdec4e602fdeeff7372c1be9185cb43bdfe43cc33ed63f47d931527`.
+- Published beartype 0.23.1 wheel SHA256:
+  `4461b4dc57e3fdd6c8a8464b22cf118002eea107c33e9fef651c69068ab3cce3`.
+- Unchanged proposal beartype wheel SHA256:
+  `0580ede1fe87229728b42674d45fb8c32ce09a7e348f962cc2741304ef2f10d8`.
+
+`check_installed.py` passes 1,300 cases on CPython 3.11.15 and 3.14.5 with
+published beartype. `check_upstream_proposal.py` applies the hash-checked series
+to clean pinned source, builds normal installs, verifies origins, and passes
+1,427 cases on both endpoints: those baseline cases plus 69 bearshape composition
+cases and 58 upstream protocol/mixin cases. Both routes include all four static
+engines' positive, negative and inference consumers. The five skips are the
+missing CuPy module and four platform extended-precision cases; none is union
+or scope validation.
+
+All 23 original audit regressions pass on each endpoint with both published and
+proposed beartype. Fresh minimal venvs contain only the candidate and declared
+runtime dependencies, pass custom/variadic checks, and import no optional backend.
+Source runtime coverage is 91.10%, above the unchanged 90% floor. Normal hooks,
+actionlint, all 95 documentation snippets, changed rendered structures and all
+29 notebook cells on each endpoint pass. The final wheel is byte-identical to
+the measured optimized wheel, so the committed performance evidence applies.
+
+The complete published-dependency release suite still fails honestly: 58 failures
+and 11 passes out of 69 cases on each endpoint, plus the original failing probe.
+No case is hidden, skipped or marked xfail. The proposal passes all of them.
+The validation-only release run uses `publish=false`:
+[expanded release gate](https://github.com/beartype/bearshape/actions/runs/38170318585).
+Its conclusion and exact job evidence are retained in the local review packet;
+a deliberately blocked run is not release readiness.
+
+[PR CI](https://github.com/beartype/bearshape/actions/runs/38170264797) and
+[proposal CI](https://github.com/beartype/bearshape/actions/runs/38170264778)
+provide 36 successful checks on the implementation head. The two new
+[dependency canaries](https://github.com/beartype/bearshape/actions/runs/38170316908)
+pass and retain resolved locks, versions and test output. Local full logs,
+archive identities, original regressions and administrative snapshots are in the
+ignored `build/audit-followup/` review packet.
 
 ## Context and Orientation
 
 
 `src/bearshape/_dimensions.py` formats runtime and symbolic expressions;
 `src/bearshape/_shape.py` binds and compares dimensions. `src/bearshape/_memo.py`
-resolves per-invocation state; `_tree.py` currently pushes an unconditional memo
-while checking leaves. This shares intended leaf state but also captures
-independent public checks. `_array_types.py` validates strict/Like metadata and
-holds a strong class-keyed trust cache. Backend modules expose runtime factories
-and checker-only native aliases. `tools/upstream/` contains unshipped integration
+resolves per-invocation state; at the audited baseline, `_tree.py` pushed an
+unconditional memo while checking leaves. That shared intended leaf state but
+also captured independent public checks. `_array_types.py` validates strict/Like
+metadata and held a strong class-keyed trust cache at that baseline. Backend
+modules expose runtime factories and checker-only native aliases. `tools/upstream/` contains unshipped integration
 patches and tests, distinct from ordinary baseline tests in `tests/`.
 
 The candidate remains 0.1.0rc1. `docs/maintainers/production-readiness.md` contains
