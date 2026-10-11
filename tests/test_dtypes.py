@@ -513,3 +513,20 @@ def test_extension_dtype_keeps_its_own_name() -> None:
   for scalar in (ml_dtypes.bfloat16, ml_dtypes.float8_e4m3fn):
     dtype = np.dtype(scalar)
     assert extract_dtype_str(SimpleNamespace(dtype=dtype)) == dtype.name
+
+
+@pytest.mark.parametrize("hashable", [False, True])
+def test_normalization_does_not_hash_user_dtype_classes(hashable: bool) -> None:
+  from types import SimpleNamespace
+
+  class Unhashable(type):
+    __hash__ = None
+
+  class SideEffectHash(type):
+    def __hash__(cls) -> int:
+      message = "Normalization must not invoke a user metaclass hash"
+      raise AssertionError(message)
+
+  metaclass = SideEffectHash if hashable else Unhashable
+  custom = metaclass("CustomDtype", (), {"name": "float32"})
+  assert extract_dtype_str(SimpleNamespace(dtype=custom())) == "float32"

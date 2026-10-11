@@ -252,7 +252,7 @@ class DtypeSpec:
 
 # Only builtin dtype classes are retained, never dtype instances or checked
 # values. NumPy is discovered lazily so root imports stay backend-independent.
-_NUMPY_DTYPE_NAMES: dict[type, str] = {}
+_NUMPY_DTYPE_NAMES: dict[int, tuple[type, str]] = {}
 
 
 def _prepare_numpy_dtype_names() -> None:
@@ -289,7 +289,9 @@ def _prepare_numpy_dtype_names() -> None:
     dtype = dtype_factory(name)
     # Extended precision names depend on the platform. Flexible and temporal
     # names here have no size/unit suffix because the dtype is unparameterized.
-    names[type(dtype)] = dtype.name if name in {"longdouble", "clongdouble"} else name
+    dtype_type = type(dtype)
+    canonical = dtype.name if name in {"longdouble", "clongdouble"} else name
+    names[id(dtype_type)] = (dtype_type, canonical)
   _NUMPY_DTYPE_NAMES.update(names)
 
 
@@ -306,9 +308,11 @@ def extract_dtype_str(obj: object) -> str:
   names = _NUMPY_DTYPE_NAMES
   if not names:
     _prepare_numpy_dtype_names()
-  builtin_name = names.get(type(dtype))
-  if builtin_name is not None:
-    return builtin_name
+  # Identity keys avoid invoking arbitrary metaclass hashing/equality. Keeping
+  # the builtin class beside its name prevents reuse of its identity.
+  builtin = names.get(id(type(dtype)))
+  if builtin is not None:
+    return builtin[1]
 
   # NumPy / JAX: dtype.name gives canonical names like "float32", "float128",
   # "complex256", "datetime64", "str", ...
