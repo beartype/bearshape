@@ -133,10 +133,16 @@ publication even when baseline CI passes.
 
 `tools/benchmark_runtime.py` records raw samples, medians, ranges, versions and
 module origins. It covers native controls, strict/Like/Value, nested calls,
-plain/composite/Value Trees, diagnostics, decoration and Tree validator
-construction. Compare normally installed wheels with identical dependencies on
-the same idle host and interpreter; do not run validation concurrently. Retain
-both artifact hashes. Timings are evidence, not a CI threshold. The
+plain/composite/Value Trees, multi-axis and variadic shapes, dtype extraction,
+casting, diagnostics, decoration and array/Tree validator construction. Compare
+normally installed wheels with identical dependencies on the same idle host and
+interpreter; do not run validation concurrently. Retain both artifact hashes.
+Timings are evidence, not a CI threshold. The
 [October audit comparison](evidence/2026-10-11-audit-performance/README.md)
 records the corrected baseline and optimized candidate separately from the
 unchanged upstream proposal.
+
+The
+[remaining optimization comparison](evidence/2026-10-11-remaining-optimization/README.md)
+separates dtype and shape preparation, records their combination, and includes
+first-use costs, root-only consumers and ordinary beartype overhead.
