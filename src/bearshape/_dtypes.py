@@ -12,6 +12,7 @@ numpy, JAX, PyTorch, and TensorFlow arrays into a canonical string like
 
 from __future__ import annotations
 
+import sys
 import typing as tp
 from dataclasses import dataclass, field
 
@@ -249,6 +250,49 @@ class DtypeSpec:
     )
 
 
+# Only builtin dtype classes are retained, never dtype instances or checked
+# values. NumPy is discovered lazily so root imports stay backend-independent.
+_NUMPY_DTYPE_NAMES: dict[type, str] = {}
+
+
+def _prepare_numpy_dtype_names() -> None:
+  numpy = sys.modules.get("numpy")
+  dtype_factory = getattr(numpy, "dtype", None)
+  if dtype_factory is None:
+    return  # Retry after a later NumPy import.
+
+  names = {}
+  for name in (
+    "bool",
+    "int8",
+    "int16",
+    "int32",
+    "int64",
+    "uint8",
+    "uint16",
+    "uint32",
+    "uint64",
+    "float16",
+    "float32",
+    "float64",
+    "longdouble",
+    "complex64",
+    "complex128",
+    "clongdouble",
+    "object",
+    "void",
+    "bytes",
+    "str",
+    "datetime64",
+    "timedelta64",
+  ):
+    dtype = dtype_factory(name)
+    # Extended precision names depend on the platform. Flexible and temporal
+    # names here have no size/unit suffix because the dtype is unparameterized.
+    names[type(dtype)] = dtype.name if name in {"longdouble", "clongdouble"} else name
+  _NUMPY_DTYPE_NAMES.update(names)
+
+
 def extract_dtype_str(obj: object) -> str:
   """Extract a canonical dtype string from a numpy / JAX / PyTorch array.
 
@@ -258,6 +302,13 @@ def extract_dtype_str(obj: object) -> str:
   dtype = getattr(obj, "dtype", None)
   if dtype is None:
     return ""
+
+  names = _NUMPY_DTYPE_NAMES
+  if not names:
+    _prepare_numpy_dtype_names()
+  builtin_name = names.get(type(dtype))
+  if builtin_name is not None:
+    return builtin_name
 
   # NumPy / JAX: dtype.name gives canonical names like "float32", "float128",
   # "complex256", "datetime64", "str", ...

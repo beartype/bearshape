@@ -424,3 +424,92 @@ class TestExtendedPrecisionDtypes:
     assert extract_dtype_str(arr) in COMPLEX256.allowed
     assert COMPLEX256.matches(arr)
     assert COMPLEX.matches(arr)
+
+
+@pytest.mark.parametrize(
+  "dtype, expected",
+  [
+    ("S13", "bytes"),
+    ("U11", "str"),
+    ("V7", "void"),
+    ("datetime64[ns]", "datetime64"),
+    ("timedelta64[ms]", "timedelta64"),
+    (">f4", "float32"),
+    ("<i8", "int64"),
+    ("O", "object"),
+  ],
+)
+def test_normalization_preserves_parameterized_builtin_names(
+  dtype: str, expected: str
+) -> None:
+  from types import SimpleNamespace
+
+  assert extract_dtype_str(SimpleNamespace(dtype=np.dtype(dtype))) == expected
+
+
+def test_normalization_reads_mutable_custom_dtype_every_time() -> None:
+  from types import SimpleNamespace
+
+  class Float32DType:
+    __module__ = "numpy.dtypes"
+    __hash__ = None
+
+    def __init__(self) -> None:
+      self.current = "float32"
+      self.reads = 0
+
+    @property
+    def name(self) -> str:
+      self.reads += 1
+      return self.current
+
+  dtype = Float32DType()
+  value = SimpleNamespace(dtype=dtype)
+  assert FLOAT32.matches(value)
+  dtype.current = "int32"
+  assert not FLOAT32.matches(value)
+  assert dtype.reads == 2
+
+
+def test_normalization_reads_replaced_array_dtype() -> None:
+  value = np.ones(3, dtype=np.float32)
+  assert FLOAT32.matches(value)
+  value.dtype = np.int32
+  assert not FLOAT32.matches(value)
+  assert extract_dtype_str(value) == "int32"
+
+
+def test_normalization_does_not_retain_dtype_metadata_or_custom_objects() -> None:
+  import gc
+  import weakref
+  from types import SimpleNamespace
+
+  class Payload:
+    pass
+
+  def normalize() -> tuple[weakref.ReferenceType[object], ...]:
+    payload = Payload()
+    dtype = np.dtype("float32", metadata={"payload": payload})
+    assert extract_dtype_str(SimpleNamespace(dtype=dtype)) == "float32"
+
+    class EphemeralDtype:
+      name = "float32"
+
+    custom = EphemeralDtype()
+    assert extract_dtype_str(SimpleNamespace(dtype=custom)) == "float32"
+    return weakref.ref(payload), weakref.ref(custom), weakref.ref(EphemeralDtype)
+
+  references = normalize()
+  gc.collect()
+  assert all(reference() is None for reference in references)
+
+
+def test_extension_dtype_keeps_its_own_name() -> None:
+  from types import SimpleNamespace
+
+  dtype = np.dtypes.StringDType()
+  assert extract_dtype_str(SimpleNamespace(dtype=dtype)) == dtype.name
+  ml_dtypes = pytest.importorskip("ml_dtypes")
+  for scalar in (ml_dtypes.bfloat16, ml_dtypes.float8_e4m3fn):
+    dtype = np.dtype(scalar)
+    assert extract_dtype_str(SimpleNamespace(dtype=dtype)) == dtype.name

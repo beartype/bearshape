@@ -526,14 +526,12 @@ class _ArrayLikeChecker:
 
     import numpy as np
 
-    def _can_cast_to_target(target: str) -> bool:
-      try:
-        return np.can_cast(source, target, casting=self._casting)
-      except TypeError:
-        return False
-
     for target in self._dtype_spec.allowed:
-      if _can_cast_to_target(target):
+      try:
+        can_cast = np.can_cast(source, target, casting=self._casting)
+      except TypeError:
+        continue
+      if can_cast:
         if self._dtype_spec._check_byteorder(obj):
           return None
         return _dtype_mismatch(self._dtype_spec, obj, casting=self._casting)
