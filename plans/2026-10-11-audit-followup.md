@@ -58,13 +58,16 @@ is authorized by this implementation request.
   strict checks about 44–62% faster and Tree/100 about 50–61% faster. Raw samples,
   construction costs, limitations and hashes are in
   `tools/evidence/2026-10-11-audit-performance/`.
-- [ ] M8 in progress: focused CI/docs PR follows #54. Release validation
-  must collect every composition module, the separate canary upgrades compatible
-  runtime/backend dependencies without changing locked acceptance, and native
-  TYPE_CHECKING aliases gain positive/negative/inference consumers. Refresh
-  current-facing handoff/changelog and document remaining owner prerequisites.
-- [ ] M9: Validate the complete stack, exact archives and both dependency configurations;
-  present PRs and remaining external prerequisites for review.
+- [x] (2026-10-11) M8: PR #55 collects all four composition modules,
+  adds the separate compatible-dependency nightly canary and tests its strict
+  preflight boundary. Native custom/Structured alias consumers pass all four
+  checkers, including explicit consumer-root resolution for Pyrefly. Current
+  changelog/handoff and developer release guidance are refreshed. Normal hooks,
+  actionlint, rendered docs/95 snippets and all 29 notebook cells pass.
+- [ ] M9 in progress: create `codex/audit-integration-review` from the complete
+  #55 stack. Validate exact archives on both Python endpoints against released
+  and proposed beartype, original audit cases, coverage, minimal consumers and
+  hosted matrix/canary. Present exact evidence and external prerequisites.
 - [ ] External: supported upstream release, approved repository/PyPI controls, exact final
   CUDA evidence, merge approval and separately authorized publication.
 

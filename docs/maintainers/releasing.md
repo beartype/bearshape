@@ -15,9 +15,12 @@ Do not skip, mark xfail, or remove these gates to publish.
 
 Ordinary CI and nightly validate the selected Python/dependency baseline and all
 existing functionality. Release validation additionally requires the complete
-composition contract from the normally installed candidate wheel. Once supported
-upstream integration is adopted, promote the transaction cases into the normal
-source and installed-archive suites as well.
+composition contract from the normally installed candidate wheel. The gate
+collects `tools/upstream/` as a directory so union, scope, isolation and audit
+composition modules all run. Tests from the optional patched upstream source are
+not substituted for this published-dependency gate. Once supported upstream
+integration is adopted, promote the transaction cases into the normal source and
+installed-archive suites as well.
 
 ## Prerequisites owned by maintainers
 
@@ -51,6 +54,17 @@ GitHub `pypi` environment reviewer is a separate approval: preventing
 self-approval requires someone other than the person starting the release.
 Choose that reviewer before enabling publication; keep the choice pending while
 preparing the candidate.
+
+## Dependency canary
+
+Nightly also runs a separate latest-compatible dependency canary at both Python
+endpoints. It upgrades beartype, NumPy, JAX/jaxlib, Torch, optree and
+`typing-extensions` within the declared constraints in a disposable lock, keeps
+the maintained checker toolchain and records the resolved inputs. Failures are
+visible and must be investigated before proposing a lock update. The canary uses
+`validate_runtime.py --latest-compatible`; normal/release acceptance keeps the
+exact preflight. A passing canary neither repairs the known union blocker nor
+authorizes publishing.
 
 ## Prepare a candidate
 
@@ -94,6 +108,24 @@ source folder. Minimal consumers must use fresh environments with no optional
 backend. The shared hosted matrix also checks platform endpoints, all four
 static engines, backend/checker floors, coverage, rendered docs and notebook
 execution.
+
+### Final CUDA evidence
+
+Use an owner-approved CUDA environment with a fresh virtual environment and a
+CuPy distribution compatible with its driver. Install the exact reviewed wheel
+normally, plus the copied source archive's test dependencies; do not install the
+bearshape checkout in editable mode. Record `pip freeze` (or `uv pip list`),
+source SHA and the wheel's SHA256, then run the environment's interpreter:
+
+```bash
+python -I -c "import cupy; assert cupy.cuda.runtime.getDeviceCount() > 0; cupy.show_config()"
+python -I -c "import bearshape, pathlib, sys; assert pathlib.Path(bearshape.__file__).resolve().is_relative_to(pathlib.Path(sys.prefix).resolve())"
+python -I -m pytest <copied-consumer>/tests/test_cupy.py -n 0
+```
+
+Repeat at both supported endpoint interpreters, retain device/driver details and
+complete test results, and investigate any skip. CPU-only skips, prior wheels
+and historical GPU reports cannot substitute for this evidence.
 
 ## Run validation without publishing
 

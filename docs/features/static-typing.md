@@ -178,6 +178,48 @@ def embed(tokens: I64[N], table: F32[Vocab, Embed]) -> F32[N, Embed]:
 This is the simplest checker-only alias pattern and the one most users should
 keep in their toolbox first.
 
+## Custom factories and structured arrays
+
+A dynamic `make_array_type(...)` or `Structured(...)` factory is a runtime
+object. Constructing it successfully does not make its subscripts native static
+types. Give each complete runtime contract a checker-only native alias:
+
+```python
+from typing import TYPE_CHECKING
+import numpy as np
+from numpy.typing import NDArray
+from beartype import beartype
+from bearshape import DtypeSpec, N, make_array_type
+from bearshape.numpy import Structured
+
+if TYPE_CHECKING:
+  CustomVector = NDArray[np.float32]
+  PointVector = NDArray[np.void]
+else:
+  CustomVector = make_array_type(
+    np.ndarray, DtypeSpec("Float32", frozenset({"float32"}))
+  )[N]
+  PointVector = Structured([("x", np.float32), ("y", np.float32)])[N]
+
+@beartype
+def custom_identity(value: CustomVector) -> CustomVector:
+  return value
+
+@beartype
+def point_identity(value: PointVector) -> PointVector:
+  return value
+```
+
+All four engines test real positive and negative calls and infer the native
+`NDArray` result and its dtype. Runtime tests execute the same recipe and reject
+wrong rank, dtype and structured fields. For another custom backend, use its
+native class or an accurate protocol in the checker branch.
+
+The alias describes the whole annotation; do not subscript `CustomVector` with
+dimensions again. Static `np.void` preserves the native array interface but does
+not prove field names/layout, just as `NDArray` does not prove shape. Those
+constraints remain runtime checks.
+
 ## Tree annotations
 
 `Tree[Leaf]` supports ordinary leaves, lists, tuples (including named tuples),

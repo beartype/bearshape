@@ -15,3 +15,51 @@ concurrency:
 jobs:
   validate:
     uses: ./.github/workflows/validate.yml
+
+  dependency-canary:
+    name: Latest compatible dependencies (${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.14"]
+    defaults:
+      run:
+        shell: bash
+    env:
+      UV_TORCH_BACKEND: cpu
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.11.17"
+          python-version: ${{ matrix.python }}
+      - name: Resolve compatible runtime upgrades in this disposable checkout
+        run: >-
+          uv lock --upgrade-package beartype --upgrade-package numpy
+          --upgrade-package jax --upgrade-package jaxlib --upgrade-package torch
+          --upgrade-package optree --upgrade-package typing-extensions
+      - name: Install upgraded runtime with the maintained checker toolchain
+        run: >-
+          uv sync --locked --no-default-groups --group optional --group test
+          --group static
+      - name: Record exact canary inputs and validate the declared dependency range
+        run: |
+          git rev-parse HEAD > canary-source.txt
+          uv pip list --format json > canary-packages.json
+          uv run --no-sync python tools/validate_runtime.py cpu --latest-compatible > canary-runtime.json
+      - name: Test runtime and all four consumer checkers
+        run: uv run --no-sync pytest tests/ -n auto | tee canary-tests.log
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: dependency-canary-${{ matrix.python }}
+          path: |
+            uv.lock
+            canary-source.txt
+            canary-packages.json
+            canary-runtime.json
+            canary-tests.log
+          if-no-files-found: error

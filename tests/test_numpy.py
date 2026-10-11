@@ -2578,3 +2578,14 @@ def test_root_like_releases_temporary_classes(*, native: bool) -> None:
   assert all(reference() is None for reference in references)
   assert is_bearable(np.ones(3, dtype=np.float32), hint)
   assert not is_bearable(np.ones(3, dtype=np.complex64), hint)
+
+
+def test_custom_boolean_axes_follow_integer_index_semantics() -> None:
+  class Custom:
+    shape = (False, True)
+    dtype = "float32"
+
+  strict = make_array_type(Custom, FLOAT32)[0, 1]
+  converted = make_array_like_type(FLOAT32, asarray=lambda _obj: Custom())[0, 1]
+  trusted = make_array_like_type(FLOAT32, trusted_types=(Custom,))[0, 1]
+  assert all(is_bearable(Custom(), hint) for hint in (strict, converted, trusted))

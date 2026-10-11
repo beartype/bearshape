@@ -84,8 +84,8 @@ jobs:
           uv pip install --no-deps --reinstall dist/*.whl
       - name: Require full native union semantics from the installed wheel
         run: |
+          .venv/bin/python -I -m pytest tools/upstream/ -n 0
           .venv/bin/python -I tools/probe_union.py
-          .venv/bin/python -I -m pytest tools/upstream/test_union_transactions.py -n 0
 
   evidence:
     needs: [resolve, validate, contract]

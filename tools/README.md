@@ -13,15 +13,25 @@ versions and import paths. A backend tox name, such as `py311-bt0231-numpy22`,
 selects its expected backend. This is a CPU preflight, not a CUDA or full
 behavioral test.
 
+Only the separate dependency canary uses `--latest-compatible`, which checks
+beartype against the installed bearshape metadata. The default still enforces
+exact 0.23.1; do not pass the canary flag to release acceptance. Nightly
+upgrades only runtime/backend packages in its disposable lock, keeps the
+maintained checker versions, runs runtime and all four consumers, and uploads
+the resolved lock, versions, source SHA and results. Canary failures need
+review; they do not silently update the committed lock or authorize release.
+
 `uv run --locked python tools/validate_tox_env.py py311-bt0231-numpy22` checks
 the factor vocabulary. It does not prove that a dependency combination is
 installable. Use `uv run --locked tox list` for the maintained matrix.
 
 `uv run --locked pytest tests/test_typecheck.py -q` is the four-checker entry
 point. It checks source and positive consumers, then matches deliberate errors
-by file, line and category. Missing engines or crashes fail. Tox selects one
-checker through its explicit factor; ordinary runs require all four. Keep each
-Python target paired with its own interpreter and compatible dependency stubs.
+by file, line and category. The harness gives Pyrefly the explicit consumer root
+so cross-file fixtures resolve both in source and copied archive consumers.
+Missing engines or crashes fail. Tox selects one checker through its explicit
+factor; ordinary runs require all four. Keep each Python target paired with its
+own interpreter and compatible dependency stubs.
 
 ## Documentation and notebook
 
@@ -118,3 +128,15 @@ never rebuilds in the publisher. See the
 prerequisites and recovery. Candidate validation also requires the full native
 union probe and integration suite on both Python endpoints; a failure blocks
 publication even when baseline CI passes.
+
+## Runtime performance
+
+`tools/benchmark_runtime.py` records raw samples, medians, ranges, versions and
+module origins. It covers native controls, strict/Like/Value, nested calls,
+plain/composite/Value Trees, diagnostics, decoration and Tree validator
+construction. Compare normally installed wheels with identical dependencies on
+the same idle host and interpreter; do not run validation concurrently. Retain
+both artifact hashes. Timings are evidence, not a CI threshold. The
+[October audit comparison](evidence/2026-10-11-audit-performance/README.md)
+records the corrected baseline and optimized candidate separately from the
+unchanged upstream proposal.

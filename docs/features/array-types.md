@@ -181,6 +181,10 @@ MixedExact = make_array_like_type(MIXED, casting="no", name="MixedExact")
 broader input-contract factory and is covered in more detail on
 [Like Types](like-types.md).
 
+For custom or `Structured(...)` factories in checker-visible signatures, use the
+[native alias recipe](static-typing.md#custom-factories-and-structured-arrays).
+A constructed runtime factory alone does not prove native method inference.
+
 ### `DtypeSpec`
 
 `DtypeSpec` is the root abstraction behind these aliases:

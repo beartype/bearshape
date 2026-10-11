@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 _BACKEND_TESTS: dict[str, set[str]] = {
   "numpy": {
     "test_numpy.py",
+    "test_factory_aliases.py",
     "test_beartype_compatibility.py",
     "test_claw.py",
     "test_dtypes.py",

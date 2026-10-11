@@ -196,3 +196,17 @@ old repository links, but
 [does not redirect transferred Pages sites](https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository).
 Use the new website address for saved links. Do not recreate the old repository
 to add a redirect, because that would replace GitHub's repository redirect.
+
+## Dependency canary and custom annotations
+
+Nightly keeps the locked validation matrix and adds a separate latest-compatible
+runtime/backend canary on Python 3.11 and 3.14. Its temporary lock and version
+artifacts explain failures before any dependency update is proposed. The
+canary's range-based preflight is not release acceptance; normal CI and releases
+keep exact beartype 0.23.1 until supported upstream integration is adopted.
+
+Dynamic custom/Structured factory examples must include real positive, negative
+and native inference consumers in the four-checker harness. Use the tested
+[complete native alias recipe](docs/features/static-typing.md#custom-factories-and-structured-arrays)
+and execute its runtime branch as well. Constructor/repr checks and inferred
+`Any` are not evidence of native consumer support.

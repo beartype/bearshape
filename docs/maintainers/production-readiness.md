@@ -1,5 +1,22 @@
 # Production review and ownership handoff
 
+**Latest audit follow-up, 11 October 2026:** candidate **0.1.0rc1** targets
+Python **3.11–3.14** and exact released beartype **0.23.1**. PRs
+[#48–#55](https://github.com/beartype/bearshape/pull/55) add the six audit
+fixes, measured scope/Tree optimizations, complete release composition gates and
+tested native factory aliases. The current
+[execution plan](https://github.com/beartype/bearshape/blob/codex/audit-ci-docs/plans/2026-10-11-audit-followup.md)
+records validation and external prerequisites; the
+[performance evidence](https://github.com/beartype/bearshape/tree/codex/lazy-array-scope/tools/evidence/2026-10-11-audit-performance)
+contains matched installed measurements and artifact identities.
+
+**Release readiness remains withheld.** The published dependency still lacks
+full composite-union rollback. The local upstream proposal is separate evidence,
+not a released integration. Current runtime changes need fresh exact-wheel CUDA
+evidence; earlier GPU results below do not cover them. Repository/PyPI controls,
+merge approval and separately authorized publication remain outstanding. The
+dated sections below retain their original evidence.
+
 This is the 8 September 2026 review record for **bearshape 0.1.0rc0**. The
 candidate is independently versioned from beartype and requires
 `beartype>=0.23.0rc0,<0.24`. Exact `0.23.0rc0` was the required test target for
@@ -30,8 +47,9 @@ original versions; they do not validate the changed candidate. Full native-union
 rollback is still blocked in released 0.23.1. Publication remains explicitly
 unauthorized.
 
-The October candidate's ordinary validation is now complete: 1,142 installed
-consumer cases passed on each Python endpoint, source coverage was 92.05%, and
+**Earlier October integration through PR #45:** ordinary validation recorded
+1,142 installed consumer cases passed on each Python endpoint, source coverage
+was 92.05%, and
 [hosted CI](https://github.com/beartype/bearshape/actions/runs/38133983895)
 passed the Linux/macOS/Windows, four-checker, compatibility-floor, docs/notebook
 and archive matrix. Its exact wheel passed all 95 CuPy tests at both endpoints.
