@@ -128,7 +128,8 @@ def push_memo(
   owner_code:
       When set, this entry is only visible to frames whose ``f_code``
       matches.  Untagged entries (``None``) are unconditional and used
-      by :class:`check_context` and :class:`_TreeChecker`.
+      by :class:`check_context`. Tree leaf entries are tagged with the
+      private leaf wrapper code.
 
   """
   if memo is None:
@@ -241,7 +242,7 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
     owners = _explicit_owner_stack.get()
     owner_code = owners[-1] if owners else None
     if owner_code is None:
-      # Untagged entry (check_context / TreeChecker) — always visible
+      # Untagged entry (check_context) — always visible
       return explicit[-1]
     # Tagged entry — only visible if the caller's frame matches
     frame = _nearest_runtime_frame(_depth)

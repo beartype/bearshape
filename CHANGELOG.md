@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Isolate independent public checks inside Tree predicates while preserving
+    cross-leaf dimensions and enclosing Value arguments.
+
 - Keep strict variadic targets fixed when mixed with broadcastable occurrences,
     including equal-shape transitions and return checks.
 

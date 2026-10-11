@@ -56,13 +56,15 @@ from __future__ import annotations
 
 import typing as tp
 from collections.abc import Callable
+from types import FunctionType
 
+from beartype import BeartypeConf, beartype
 from beartype.door import TypeHint
+from beartype.roar import BeartypeCallHintParamViolation
 
 from ._memo import ShapeMemo
 from ._runtime_hints import (
   ValidationFailure,
-  get_runtime_validator,
   hint_label,
   make_runtime_hint,
 )
@@ -131,10 +133,14 @@ class Structure(str):
 # ---------------------------------------------------------------------------
 
 
+class _TreeLeafViolation(BeartypeCallHintParamViolation):
+  """Distinguish an invalid leaf from exceptions raised by user predicates."""
+
+
 class _TreeChecker:
   """Beartype validator for tree leaf types and structure consistency."""
 
-  __slots__ = ("_get_ops", "_leaf_type", "_repr", "_structure_spec")
+  __slots__ = ("_get_ops", "_leaf_checker", "_leaf_type", "_repr", "_structure_spec")
 
   def __init__(
     self,
@@ -144,6 +150,15 @@ class _TreeChecker:
     get_ops: Callable[[], tp.Any],
   ) -> None:
     self._leaf_type = leaf_type
+
+    def check_leaf(leaf: object) -> None:
+      pass
+
+    check_leaf.__annotations__ = {"leaf": leaf_type}
+    self._leaf_checker = tp.cast(
+      "FunctionType",
+      beartype(check_leaf, conf=BeartypeConf(violation_param_type=_TreeLeafViolation)),
+    )
     self._structure_spec = structure_spec
     self._get_ops = get_ops
     spec_str = f", {structure_spec}" if structure_spec else ""
@@ -160,7 +175,7 @@ class _TreeChecker:
     scope = get_scope()
     snap = memo.snapshot()
     valid = False
-    push_memo(memo, scope=scope)
+    push_memo(memo, scope=scope, owner_code=self._leaf_checker.__code__)
     try:
       valid = self._validate(obj, tree_ops, memo) is None
     finally:
@@ -176,7 +191,7 @@ class _TreeChecker:
     memo = get_memo()
     scope = get_scope()
     snap = memo.snapshot()
-    push_memo(memo, scope=scope)
+    push_memo(memo, scope=scope, owner_code=self._leaf_checker.__code__)
     try:
       failure = self._validate(obj, tree_ops, memo)
     finally:
@@ -218,21 +233,13 @@ class _TreeChecker:
     return self._check_top_down(names, obj, tree_ops, memo, wildcard=False)
 
   def _check_leaf(self, leaf: object, leaf_type: object) -> ValidationFailure | None:
-    validator = get_runtime_validator(leaf_type)
-    if validator is not None:
-      if validator.instancecheck(leaf):
-        return None
+    try:
+      self._leaf_checker(leaf)
+    except _TreeLeafViolation as failure:
       return ValidationFailure(
-        f"tree leaf {leaf!r} violates {hint_label(leaf_type)}: {validator.instancecheck_str(leaf)}"
+        f"tree leaf {leaf!r} violates {hint_label(leaf_type)}: {failure}"
       )
-
-    from beartype.door import is_bearable
-
-    if is_bearable(leaf, tp.cast("tp.Any", leaf_type)):
-      return None
-    return ValidationFailure(
-      f"tree leaf {leaf!r} does not match {hint_label(leaf_type)}"
-    )
+    return None
 
   def _bind_or_check(
     self, name: str, tree_spec: object, memo: ShapeMemo

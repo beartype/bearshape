@@ -1507,3 +1507,92 @@ def test_custom_jax_node_leaf_dtype_is_checked() -> None:
 def test_invalid_ellipsis_placement_is_rejected(spec: tuple[object, ...]) -> None:
   with pytest.raises(TypeError, match="ellipsis|Ellipsis|\\.\\.\\."):
     Tree[int, *spec]
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+@pytest.mark.parametrize("kind", ["decorated", "door"])
+def test_tree_predicate_independent_checks(backend: str, mode: str, kind: str) -> None:
+  from typing import Annotated
+
+  from beartype import BeartypeConf
+  from beartype.vale import Is
+
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+
+  @beartype
+  def independent(size: int, value: F32[N, Value("size")]) -> bool:
+    return True
+
+  calls = []
+
+  def predicate(value: object) -> bool:
+    calls.append(True)
+    other = np.ones((3, 4), dtype=np.float32)
+    if kind == "decorated":
+      return independent(4, other)
+    return is_bearable(other, F32[N, 4])
+
+  predicate.__qualname__ += f"_{backend}_{mode}_{kind}"
+  hint = tree[Annotated[F32[N, Value("size")], Is[predicate]]]
+
+  def consume(size: int, value: hint, last: F32[N]) -> hint:
+    return value
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  leaf = np.ones((2, 5), dtype=np.float32)
+  data = [leaf, leaf]
+  assert checked(5, data, np.ones(2, dtype=np.float32)) is data
+  assert calls
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(5, data, np.ones(3, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(5, [leaf, np.ones((4, 5), dtype=np.float32)], np.ones(2, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(6, data, np.ones(2, dtype=np.float32))
+
+
+@pytest.mark.parametrize("error_type", [ValueError, KeyboardInterrupt])
+def test_tree_predicate_exception_restores_state(
+  error_type: type[BaseException],
+) -> None:
+  from typing import Annotated
+
+  from beartype.vale import Is
+
+  def explode(value: object) -> bool:
+    message = "predicate interrupted"
+    raise error_type(message)
+
+  explode.__qualname__ += error_type.__name__
+  hint = Tree[Annotated[F32[N], Is[explode]]]
+  with bearshape.check_context():
+    with pytest.raises(error_type, match="predicate interrupted"):
+      is_bearable([np.ones(2, dtype=np.float32)], hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+
+
+def test_tree_checks_do_not_retain_values() -> None:
+  import gc
+  import weakref
+
+  @beartype
+  def consume(size: int, value: Tree[F32[Value("size")]]) -> None:
+    pass
+
+  leaf = np.ones(3, dtype=np.float32)
+  reference = weakref.ref(leaf)
+  consume(3, [leaf])
+  del leaf
+  gc.collect()
+  assert reference() is None

@@ -31,9 +31,11 @@ is authorized by this implementation request.
 - [x] (2026-10-11) M2: PR #49 retains strict variadic targets. Five new tests
   failed first; the 676-pair matrix, equal-shape transition and public decorator/
   return checks now pass. The minimal consumer also checks strict transitions.
-- [ ] M3 in progress: start the focused Tree ownership PR after #49.
-  Reproduce nested DOOR/decorated checks for both tree backends and all decorator
-  modes; preserve outer Value arguments, cross-leaf sharing and exception rollback.
+- [x] (2026-10-11) M3: PR #50 uses a public beartype leaf wrapper with
+  explicit memo ownership. All 12 isolation cases failed first, then passed;
+  cross-leaf/outer Value, parameter/return, exception rollback and lifetime tests
+  pass. Tree/JAX baseline suites pass; 189 Tree/proposal source tests pass with
+  the optimized upstream patch. Exact installed validation follows in M9.
 - [ ] M4: Open Tree suffix PR, implement documented leaf-adjacent ragged semantics.
 - [ ] M5: Open metadata PR, validate custom shapes and malformed properties consistently.
 - [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
