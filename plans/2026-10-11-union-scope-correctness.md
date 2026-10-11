@@ -22,8 +22,8 @@ supported scope interface and preserve all native composition and errors.
 - [x] (2026-10-11) Implemented public lazy scope API and optional bearshape adapter.
 - [x] (2026-10-11) Old proposal: eleven failures and five passes. Revised proposal: 67 focused passes on each endpoint.
 - [x] (2026-10-11) Added pinned, hashed patch series and proposal-only installed-consumer CI.
-- [ ] Validate exact installed wheels, upstream units, runtime consumers and checkers.
-- [ ] Update evidence and prepare review. No main merge or publishing.
+- [x] (2026-10-11) Validated installed endpoint wheels, upstream units and all runtime/four-checker consumers.
+- [x] (2026-10-11) Prepared review evidence; all 36 hosted checks passed. No main merge or publishing.
 
 ## Surprises & Discoveries
 
@@ -58,7 +58,7 @@ Author/date: Codex, 2026-10-11.
 ## Outcomes & Retrospective
 
 
-Implementation is pending. Published beartype 0.23.1 still lacks the protocol.
+The correctness implementation is complete in PR #46. Published beartype 0.23.1 still lacks the protocol.
 Passing proposal tests does not authorize changing release readiness or claiming
 support in the published dependency.
 
@@ -151,3 +151,51 @@ with `snapshot()` and `restore(token)`; the snapshot token is opaque to beartype
 Optimization-specific promises are deferred to the next PR.
 
 Revision note — 2026-10-11: Created the correctness and scope plan before code.
+
+
+## Completed validation evidence
+
+
+The adapter and driver are commit c7350f3d5e6b6b44d32370586b6c17e9e60367fb.
+The local upstream correctness head is 5071616b, based on the preserved original
+proposal d0fe6e67 and released base f85b67d8. Exact patches and SHA256 digests are
+committed in `tools/upstream/patches/series.json`. Subsequent changes to this plan
+record evidence only.
+
+Fresh normally installed wheels built by `tools/check_upstream_proposal.py`
+passed 1,210 tests on EACH Python 3.11.15 and 3.14.5, including the original union
+probe and all four positive/negative/inference checker consumers. Five skips are
+absent CuPy and four platform-specific extended-precision cases. The focused
+scope/integration/protocol set passed 67 cases without skips on both endpoints;
+the old proposal fails eleven of the sixteen added integration cases. Upstream
+unit suites passed 456/464 cases with 15/7 interpreter or optional-dependency skips.
+Upstream pyright analyzed 483 files with zero errors or warnings. Ordinary locked
+runtime/checker push hooks, normal hooks and manual actionlint passed.
+
+Hosted run 38141512170 passed all 34 shared validation jobs; proposal run
+38141512210 passed both normally installed CPU endpoint lanes. Together PR #46
+has 36 successful checks. These verify published-baseline compatibility and the
+separate local proposal, respectively; only the proposal closes the regressions.
+
+The normally installed bearshape wheel SHA256 is
+b80d0b473274ec0dbad4e31e4180eaaf7bbbdb34769d8c19d2dd54ccaef67037;
+its source archive is
+5ad73a416dcc2f1a5a84af057d8f5703ddb00731453b18b67d2cd19ab4922dea.
+The local beartype wheel is
+29bfe7ac44e8b8fd6157ac02853a933c256db88184dace6e4d85d01698e66342.
+These exact archives, commands, imported paths, logs and endpoint evidence files
+are preserved under the main checkout's ignored
+`build/union-scope-development/correctness/`. They are test artifacts, not an
+upstream release. Later documentation changes do not alter runtime wheel inputs.
+
+The first driver trial omitted the existing `--installed-package` pytest option:
+all runtime cases passed but three checkers correctly rejected the absent `src`
+target in the copied-consumer directory. The driver now uses that option and
+requires the CPU-backend preflight. Fresh full reruns on both endpoints passed;
+no diagnostics were suppressed. Diff artifacts also need their context whitespace
+and exact upstream identifiers preserved, so only whitespace rewriting and typo
+rewriting exclude the patch files; SHA256 checks protect their exact contents.
+
+Revision note — 2026-10-11: Completed correctness implementation and local/hosted
+validation, recorded exact artifacts, and retained the supported-upstream release
+prerequisite. No upstream PR, maintainer contact, main merge or upload occurred.
