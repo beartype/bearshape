@@ -1,4 +1,4 @@
-"""Check rendered documentation structures and the Python 3.10 example syntax."""
+"""Check rendered documentation structures and the Python 3.11 example syntax."""
 
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ def main() -> None:
   snippets = 0
   for path in (ROOT / "docs").rglob("*.md"):
     for code in re.findall(r"```python\n(.*?)\n\s*```", path.read_text(), re.DOTALL):
-      ast.parse(textwrap.dedent(code), filename=str(path), feature_version=(3, 10))
+      ast.parse(textwrap.dedent(code), filename=str(path), feature_version=(3, 11))
       snippets += 1
   for page in TABLE_ROWS.keys() | ADMONITIONS.keys():
     parsed = _Structures()
@@ -67,7 +67,7 @@ def main() -> None:
     message = "Rendered logo/favicon is missing"
     raise FileNotFoundError(message)
   sys.stdout.write(
-    f"Verified rendered tables, admonitions, favicon and {snippets} Python 3.10 snippets\n"
+    f"Verified rendered tables, admonitions, favicon and {snippets} Python 3.11 snippets\n"
   )
 
 

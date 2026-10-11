@@ -301,3 +301,65 @@ class TestIndependentCheckLifetime:
 
     with ThreadPoolExecutor(max_workers=2) as pool:
       assert all(pool.map(worker, (2, 7)))
+
+
+class TestStateProtocol:
+  def test_shared_getter_restores_the_active_context(self) -> None:
+    from bearshape import check_context
+
+    getter = F32[N].__beartype_state__
+    assert getter is F32[C].__beartype_state__
+    with check_context():
+      memo = get_memo()
+      memo.single["earlier"] = 7
+      state = getter()
+      assert state is memo
+      snapshot = state.snapshot()
+      assert isinstance(np.ones(2, dtype=np.float32), F32[N])
+      memo.variadic["axes"] = (False, (2, 3))
+      memo.structures["tree"] = ("leaf",)
+      state.restore(snapshot)
+      assert memo.single == {"earlier": 7}
+      assert memo.variadic == {}
+      assert memo.structures == {}
+
+
+class TestFrameDiscoveryCost:
+  def test_unrelated_frame_does_not_materialize_locals(self) -> None:
+    import types
+    import typing as tp
+
+    from bearshape._memo import _is_beartype_wrapper_frame
+
+    class UnrelatedFrame:
+      f_code = (lambda: None).__code__
+
+      @property
+      def f_locals(self) -> dict[str, object]:
+        msg = "An unrelated frame must be rejected before reading its locals"
+        raise AssertionError(msg)
+
+    assert not _is_beartype_wrapper_frame(tp.cast("types.FrameType", UnrelatedFrame()))
+
+
+@pytest.mark.parametrize("kind", ["strict", "like"])
+def test_annotations_without_value_do_not_bind_arguments(
+  monkeypatch: pytest.MonkeyPatch, kind: str
+) -> None:
+  import bearshape._array_types as array_types
+  import bearshape._memo as memo_module
+  from bearshape.numpy import F32Like
+
+  hint = {"strict": F32[N], "like": F32Like[N]}[kind]
+
+  @beartype
+  def consume(value: hint) -> hint:
+    return value
+
+  def unused_scope() -> dict[str, object]:
+    pytest.fail("An annotation without Value requested runtime arguments")
+
+  monkeypatch.setattr(array_types, "get_scope", unused_scope)
+  monkeypatch.setattr(memo_module, "get_scope", unused_scope)
+  value = np.ones(2, dtype=np.float32)
+  assert consume(value) is value

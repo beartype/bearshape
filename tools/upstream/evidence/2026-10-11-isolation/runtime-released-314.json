@@ -1,0 +1,194 @@
+{
+  "python": "3.14.5 (main, May 10 2026, 19:20:57) [Clang 22.1.3 ]",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "bearshape_origin": "/private/tmp/isolation-bench-released-314/lib/python3.14/site-packages/bearshape/__init__.py",
+  "versions": {
+    "bearshape": "0.1.0rc1",
+    "beartype": "0.23.1",
+    "numpy": "2.4.6",
+    "optree": "0.19.1"
+  },
+  "results": [
+    {
+      "case": "bare/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 0.017499999376013875,
+      "min_us": 0.016541601507924497,
+      "max_us": 0.019275001250207424
+    },
+    {
+      "case": "native/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 0.08840000082273036,
+      "min_us": 0.08792080043349415,
+      "max_us": 0.08869160083122551
+    },
+    {
+      "case": "strict/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 13.251183301326819,
+      "min_us": 13.176679197931662,
+      "max_us": 14.78864170203451
+    },
+    {
+      "case": "explicit/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 8.323341701179743,
+      "min_us": 7.974104199092835,
+      "max_us": 8.78571670036763
+    },
+    {
+      "case": "like/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 7.131604198366404,
+      "min_us": 7.067095799720846,
+      "max_us": 8.393487500143237
+    },
+    {
+      "case": "nested/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 26.664716697996482,
+      "min_us": 24.969583298661746,
+      "max_us": 44.67981250199955
+    },
+    {
+      "case": "value/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 10.47614999988582,
+      "min_us": 9.451512500527315,
+      "max_us": 10.857045798911713
+    },
+    {
+      "case": "like-sequence/3",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 9.374379200744443,
+      "min_us": 8.178370899986476,
+      "max_us": 10.480904200812802
+    },
+    {
+      "case": "diagnostic/3",
+      "calls_per_repeat": 1000,
+      "repeats": 5,
+      "median_us": 118.1911249877885,
+      "min_us": 100.25083299842663,
+      "max_us": 133.03966700914316
+    },
+    {
+      "case": "bare/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 0.017283399938605726,
+      "min_us": 0.017187499906867743,
+      "max_us": 0.017933300114236772
+    },
+    {
+      "case": "native/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 0.0880292005604133,
+      "min_us": 0.08748749969527125,
+      "max_us": 0.09672090236563236
+    },
+    {
+      "case": "strict/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 16.663912500371225,
+      "min_us": 14.550583399250172,
+      "max_us": 17.492629200569354
+    },
+    {
+      "case": "explicit/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 9.425637501408346,
+      "min_us": 8.309720800025389,
+      "max_us": 9.79824579844717
+    },
+    {
+      "case": "like/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 7.6650000002700835,
+      "min_us": 7.2019458981230855,
+      "max_us": 9.623174997977912
+    },
+    {
+      "case": "nested/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 26.831241699983366,
+      "min_us": 25.688908298616298,
+      "max_us": 27.433362501324154
+    },
+    {
+      "case": "value/1000000",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 9.386387499398552,
+      "min_us": 9.237500000745058,
+      "max_us": 12.196774999029003
+    },
+    {
+      "case": "like-sequence/1000000",
+      "calls_per_repeat": 5,
+      "repeats": 5,
+      "median_us": 12017.550005111843,
+      "min_us": 11865.550000220537,
+      "max_us": 14703.358401311561
+    },
+    {
+      "case": "diagnostic/1000000",
+      "calls_per_repeat": 1000,
+      "repeats": 5,
+      "median_us": 108.51049999473616,
+      "min_us": 100.2717919764109,
+      "max_us": 130.96799998311326
+    },
+    {
+      "case": "tree/1",
+      "calls_per_repeat": 10000,
+      "repeats": 5,
+      "median_us": 18.820429197512567,
+      "min_us": 18.647149999742396,
+      "max_us": 22.301595800672658
+    },
+    {
+      "case": "tree/100",
+      "calls_per_repeat": 100,
+      "repeats": 5,
+      "median_us": 369.9504100950435,
+      "min_us": 343.1175000150688,
+      "max_us": 394.9391600326635
+    }
+  ],
+  "evidence": {
+    "variant": "released",
+    "script": "tools/benchmark_runtime.py",
+    "script_sha256": "ff0f6cb59229bc1ddf3dfd47ea2b3b3aceac5d1db878fcb8479934b5d513887b",
+    "wheel_sha256": {
+      "bearshape": "fe593320362bee43e8f1f91bb3ec10d1b3f85a0ea1039a3b7f7b409302ad8026",
+      "beartype": "4461b4dc57e3fdd6c8a8464b22cf118002eea107c33e9fef651c69068ab3cce3"
+    },
+    "origins": {
+      "beartype": "/private/tmp/isolation-bench-released-314/lib/python3.14/site-packages/beartype/__init__.py",
+      "bearshape": "/private/tmp/isolation-bench-released-314/lib/python3.14/site-packages/bearshape/__init__.py"
+    },
+    "installed_files_verified": {
+      "beartype": 482,
+      "bearshape": 18
+    },
+    "upstream_commit": "f85b67d8b0b6bd9c910bd97f0d2d417c4550b038",
+    "bearshape_commit": "dee5bb1",
+    "sequential": true
+  }
+}

@@ -1,6 +1,6 @@
 """Tox-aware test filtering.
 
-When running under tox with a factor-based env name (e.g. ``py310-bt023rc0-numpy24``),
+When running under tox with a factor-based env name (e.g. ``py311-bt0231-numpy24``),
 only the tests relevant to the active backend are collected. When running
 ``uv run pytest`` directly (no ``TOX_ENV_NAME``), all tests run unfiltered.
 """
@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 _BACKEND_TESTS: dict[str, set[str]] = {
   "numpy": {
     "test_numpy.py",
+    "test_factory_aliases.py",
+    "test_beartype_compatibility.py",
     "test_claw.py",
     "test_dtypes.py",
     "test_decorator.py",

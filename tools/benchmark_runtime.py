@@ -11,15 +11,18 @@ import timeit
 from collections.abc import Callable
 from functools import partial
 from importlib.metadata import version
+from typing import Annotated
 
 import numpy as np
 from beartype import BeartypeConf, beartype
 from beartype.roar import BeartypeCallHintParamViolation
+from beartype.vale import Is
 
 import bearshape
 from bearshape import N, Value, check
+from bearshape._tree import _TreeChecker
 from bearshape.numpy import F32, F32Like
-from bearshape.optree import Tree
+from bearshape.optree import Tree, _get_optree
 
 
 def bare(value: np.ndarray) -> np.ndarray:
@@ -62,6 +65,27 @@ def tree(value: Tree[F32[N]]) -> Tree[F32[N]]:
   return value
 
 
+@beartype
+def tree_value(size: int, value: Tree[F32[Value("size")]]) -> Tree[F32[Value("size")]]:  # noqa: ARG001
+  return value
+
+
+@beartype
+def tree_composite(value: Tree[Annotated[F32[N], Is[lambda _value: True]]]) -> object:
+  return value
+
+
+def decorate_array() -> object:
+  def consume(value: F32[N]) -> F32[N]:
+    return value
+
+  return beartype(consume)
+
+
+def construct_tree_validator() -> object:
+  return _TreeChecker(F32[N], get_ops=_get_optree)
+
+
 def diagnostic(value: np.ndarray) -> None:
   try:
     strict(value)
@@ -73,7 +97,7 @@ def diagnostic(value: np.ndarray) -> None:
 
 def measure(
   label: str, call: Callable[[], object], *, calls: int, repeats: int
-) -> dict[str, str | int | float]:
+) -> dict[str, str | int | float | list[float]]:
   call()
   samples = [
     seconds * 1_000_000 / calls
@@ -83,6 +107,7 @@ def measure(
     "case": label,
     "calls_per_repeat": calls,
     "repeats": repeats,
+    "samples_us": samples,
     "median_us": statistics.median(samples),
     "min_us": min(samples),
     "max_us": max(samples),
@@ -144,6 +169,24 @@ def main() -> None:
         repeats=args.repeats,
       )
     )
+    for label, call in (
+      ("tree-value", partial(tree_value, 3, arrays)),
+      ("tree-composite", partial(tree_composite, arrays)),
+    ):
+      results.append(
+        measure(
+          f"{label}/{leaves}",
+          call,
+          calls=max(1, args.calls // leaves),
+          repeats=args.repeats,
+        )
+      )
+  results.extend(
+    measure(
+      function.__name__, function, calls=min(args.calls, 1_000), repeats=args.repeats
+    )
+    for function in (decorate_array, construct_tree_validator)
+  )
   evidence = {
     "python": sys.version,
     "platform": platform.platform(),

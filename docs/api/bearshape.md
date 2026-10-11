@@ -136,7 +136,15 @@ def f(x: MyF32[N, C]) -> MyF32[N, C]:
   return x
 ```
 
-The `array_type` only needs `.shape` and `.dtype` at runtime.
+The `array_type` needs `.shape` and `.dtype` at runtime. Shape axes must support
+Python's integer-index protocol and be nonnegative. Ordinary failures while
+reading shape or dtype metadata produce validation failures; cancellation still
+propagates. A Like converter owns untrusted input inspection and must return
+valid array metadata. Boolean axes retain Python's integer-index meaning
+(`False` is zero, `True` is one).
+
+For native static inference from a dynamic factory, use the tested
+[complete annotation alias recipe](../features/static-typing.md#custom-factories-and-structured-arrays).
 
 ## `make_array_like_type`
 

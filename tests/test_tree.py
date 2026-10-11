@@ -1498,3 +1498,233 @@ def test_custom_jax_node_leaf_dtype_is_checked() -> None:
 
   with pytest.raises(BeartypeCallHintParamViolation):
     custom_node(Batch(np.ones(3, dtype=np.int32)))
+
+
+@pytest.mark.parametrize(
+  "spec",
+  [(T, ..., S), (..., ..., T), (T, ..., ...), (T, ..., S, ...)],
+)
+def test_invalid_ellipsis_placement_is_rejected(spec: tuple[object, ...]) -> None:
+  with pytest.raises(TypeError, match="ellipsis|Ellipsis|\\.\\.\\."):
+    Tree[int, *spec]
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+@pytest.mark.parametrize("kind", ["decorated", "door"])
+@pytest.mark.parametrize("nested_rejects", [False, True])
+def test_tree_predicate_independent_checks(
+  backend: str, mode: str, kind: str, *, nested_rejects: bool
+) -> None:
+  from typing import Annotated
+
+  from beartype import BeartypeConf
+  from beartype.vale import Is
+
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+
+  @beartype
+  def independent(size: int, value: F32[N, Value("size")], last: F32[N]) -> bool:
+    return True
+
+  calls = []
+
+  def predicate(value: object) -> bool:
+    calls.append(True)
+    other = np.ones((3, 4), dtype=np.float32)
+    last = np.ones(7 if nested_rejects else 3, dtype=np.float32)
+    if kind == "decorated":
+      if nested_rejects:
+        with pytest.raises(BeartypeCallHintParamViolation):
+          independent(4, other, last)
+        return True
+      return independent(4, other, last)
+    return is_bearable((other, last), tuple[F32[N, 4], F32[N]]) is not nested_rejects
+
+  predicate.__qualname__ += f"_{backend}_{mode}_{kind}_{nested_rejects}"
+  hint = tree[Annotated[F32[N, Value("size")], Is[predicate]]]
+
+  def consume(size: int, value: hint, last: F32[N]) -> hint:
+    return value
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  leaf = np.ones((2, 5), dtype=np.float32)
+  data = [leaf, leaf]
+  assert checked(5, data, np.ones(2, dtype=np.float32)) is data
+  assert calls
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(5, data, np.ones(3, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(5, [leaf, np.ones((4, 5), dtype=np.float32)], np.ones(2, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(6, data, np.ones(2, dtype=np.float32))
+
+
+@pytest.mark.parametrize("error_type", [ValueError, KeyboardInterrupt])
+def test_tree_predicate_exception_restores_state(
+  error_type: type[BaseException],
+) -> None:
+  from typing import Annotated
+
+  from beartype.vale import Is
+
+  def explode(value: object) -> bool:
+    message = "predicate interrupted"
+    raise error_type(message)
+
+  explode.__qualname__ += error_type.__name__
+  hint = Tree[Annotated[F32[N], Is[explode]]]
+  with bearshape.check_context():
+    with pytest.raises(error_type, match="predicate interrupted"):
+      is_bearable([np.ones(2, dtype=np.float32)], hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+
+
+def test_tree_checks_do_not_retain_values() -> None:
+  import gc
+  import weakref
+
+  @beartype
+  def consume(size: int, value: Tree[F32[Value("size")]]) -> None:
+    pass
+
+  leaf = np.ones(3, dtype=np.float32)
+  reference = weakref.ref(leaf)
+  consume(3, [leaf])
+  del leaf
+  gc.collect()
+  assert reference() is None
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+@pytest.mark.parametrize(
+  "value, names, expected",
+  [
+    ({"shallow": [1, 2], "deep": [[3, 4]]}, (T,), True),
+    ({"shallow": [1, 2], "deep": [[3, 4, 5]]}, (T,), False),
+    ({"shallow": {"a": 1}, "deep": [[3, 4]]}, (T,), False),
+    ({"shallow": [], "deep": [[]]}, (T,), True),
+    ({"shallow": [], "deep": [[1]]}, (T,), False),
+    ({"shallow": {"a": [1, 2]}, "deep": [[{"a": [3, 4]}]]}, (T, S), True),
+    ({"shallow": {"a": [1, 2]}, "deep": [[{"b": [3, 4]}]]}, (T, S), False),
+    ({"shallow": [1, 2], "deep": [{"a": [3, 4]}]}, (T, S), False),
+    ([1, [[2]]], (T, S), False),
+    ([[], [[]]], (T, S), False),
+  ],
+)
+def test_ragged_suffix_paths(
+  backend: str, value: object, names: tuple[Structure, ...], *, expected: bool
+) -> None:
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+  assert is_bearable(value, tree[int, ..., *names]) is expected
+
+
+@pytest.mark.parametrize("backend", ["optree", "jax"])
+def test_ragged_suffix_bindings_and_rollback(backend: str) -> None:
+  tree = Tree
+  if backend == "jax":
+    pytest.importorskip("jax")
+    from bearshape.jax import Tree as JaxTree
+
+    tree = JaxTree
+  hint = tree[int, ..., T]
+  with bearshape.check_context():
+    assert not is_bearable({"a": [1, 2], "b": [[3, 4, 5]]}, hint)
+    assert is_bearable({"a": [1, 2, 3], "b": [[4, 5, 6]]}, hint)
+    assert not is_bearable([1, 2], hint)
+    assert is_bearable([1, 2, 3], hint)
+
+
+def test_array_leaf_reuse_preserves_snapshots(monkeypatch: pytest.MonkeyPatch) -> None:
+  from bearshape._array_types import _ArrayChecker
+  from bearshape._memo import ShapeMemo
+
+  @beartype
+  def consume(value: Tree[F32[N]]) -> Tree[F32[N]]:
+    return value
+
+  original_snapshot = ShapeMemo.snapshot
+  snapshots = []
+
+  def record_snapshot(memo: ShapeMemo) -> object:
+    snapshots.append(True)
+    return original_snapshot(memo)
+
+  def unused_discovery(checker: _ArrayChecker, value: object) -> bool:
+    pytest.fail("An owned array leaf repeated standalone context discovery")
+
+  monkeypatch.setattr(ShapeMemo, "snapshot", record_snapshot)
+  monkeypatch.setattr(_ArrayChecker, "instancecheck", unused_discovery)
+  data = [np.ones(2, dtype=np.float32) for _ in range(100)]
+  assert consume(data) is data
+  assert len(snapshots) >= 202  # each leaf and each enclosing Tree, input + return
+
+
+def test_owned_custom_array_leaf_keeps_metadata_fresh_and_nested_calls_isolated() -> (
+  None
+):
+  from bearshape import make_array_type
+  from bearshape._dtypes import FLOAT32
+
+  @beartype
+  def independent(value: F32[N]) -> None:
+    pass
+
+  class Custom:
+    size = 2
+    dtype = "float32"
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+      independent(np.ones(7, dtype=np.float32))
+      return (self.size,)
+
+  hint = Tree[make_array_type(Custom, FLOAT32)[N]]
+
+  @beartype
+  def consume(value: hint, last: F32[N]) -> hint:
+    return value
+
+  value = Custom()
+  consume([value, value], np.ones(2, dtype=np.float32))
+  value.size = 3
+  consume([value], np.ones(3, dtype=np.float32))
+  with pytest.raises(BeartypeCallHintParamViolation):
+    consume([value], np.ones(2, dtype=np.float32))
+  value.dtype = "int32"
+  with pytest.raises(BeartypeCallHintParamViolation, match="dtype"):
+    consume([value], np.ones(3, dtype=np.float32))
+
+
+def test_tree_without_value_does_not_bind_arguments(
+  monkeypatch: pytest.MonkeyPatch,
+) -> None:
+  import bearshape._array_types as array_types
+  import bearshape._memo as memo_module
+
+  @beartype
+  def consume(value: Tree[F32[N]]) -> Tree[F32[N]]:
+    return value
+
+  def unused_scope() -> dict[str, object]:
+    pytest.fail("A Tree without Value requested runtime arguments")
+
+  monkeypatch.setattr(array_types, "get_scope", unused_scope)
+  monkeypatch.setattr(memo_module, "get_scope", unused_scope)
+  value = [np.ones(2, dtype=np.float32)]
+  assert consume(value) is value

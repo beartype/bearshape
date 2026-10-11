@@ -1,0 +1,1203 @@
+diff --git a/beartype/_check/cls/hint/tree/hinttreecode.py b/beartype/_check/cls/hint/tree/hinttreecode.py
+index e4ec7587..2adc3682 100644
+--- a/beartype/_check/cls/hint/tree/hinttreecode.py
++++ b/beartype/_check/cls/hint/tree/hinttreecode.py
+@@ -13,6 +13,7 @@ This private submodule is *not* intended for importation by downstream callers.
+ '''
+ 
+ # ....................{ IMPORTS                            }....................
++from beartype.plug._plugstate import StateGetter
+ from beartype.roar import BeartypeDecorHintRecursionException
+ from beartype._check.cls.call.calldataabc import BeartypeCallDataABC
+ from beartype._check.cls.call.calldataexternal import (
+@@ -190,6 +191,8 @@ class HintTreeCode(HintTreeABC):
+     # called @beartype decorations. Slotting has been shown to reduce read and
+     # write costs by approximately ~10%, which is non-trivial.
+     __slots__ = (
++        'check_state_getters',
++        'check_root_stateless_expr',
+         'func_curr_code',
+         'func_wrapper_locals',
+         'hint_curr_expr',
+@@ -207,6 +210,8 @@ class HintTreeCode(HintTreeABC):
+     # Squelch false negatives from mypy. This is absurd. This is mypy. See:
+     #     https://github.com/python/mypy/issues/5941
+     if TYPE_CHECKING:
++        check_state_getters: dict[int, StateGetter]
++        check_root_stateless_expr: Optional[str]
+         func_curr_code: str
+         func_wrapper_locals: LexicalScope
+         hint_curr : HintDataCode
+@@ -250,6 +255,8 @@ class HintTreeCode(HintTreeABC):
+         '''
+ 
+         # Nullify all instance variables for safety.
++        self.check_state_getters = {}
++        self.check_root_stateless_expr = None
+         self.call_curr = (  # type: ignore[assignment]
+         self.conf) = (  # pyright: ignore
+         self.func_curr_code) = (  # pyright: ignore
+diff --git a/beartype/_check/cls/hint/tree/hinttreeerror.py b/beartype/_check/cls/hint/tree/hinttreeerror.py
+index cac290c2..fe955aa6 100644
+--- a/beartype/_check/cls/hint/tree/hinttreeerror.py
++++ b/beartype/_check/cls/hint/tree/hinttreeerror.py
+@@ -51,6 +51,7 @@ This private submodule is *not* intended for importation by downstream callers.
+ #excellent start, anyway. Great job for finally doing something, us! \o/
+ 
+ # ....................{ IMPORTS                            }....................
++from beartype.plug._plugstate import _HintCheckState
+ from beartype.roar._roarexc import _BeartypeCallHintPepRaiseException
+ from beartype._cave._cavemap import NoneTypeOr
+ from beartype._check.convert.convmain import sanify_hint_child
+@@ -149,6 +150,7 @@ class HintTreeError(HintTreeABC):
+     # * Prevent accidental declaration of erroneous instance variables.
+     # * Minimize space and time complexity.
+     __slots__ = (
++        'check_state',
+         'cause_indent',
+         'cause_str_or_none',
+         'exception_cls',
+@@ -161,6 +163,7 @@ class HintTreeError(HintTreeABC):
+     # Squelch false negatives from mypy. This is absurd. This is mypy. See:
+     #     https://github.com/python/mypy/issues/5941
+     if TYPE_CHECKING:
++        check_state: Optional[_HintCheckState]
+         cause_indent: str
+         cause_str_or_none: Optional[str]
+         exception_cls: TypeException
+@@ -173,6 +176,7 @@ class HintTreeError(HintTreeABC):
+     # ..................{ CLASS VARIABLES ~ set              }..................
+     _COPY_VAR_NAMES = frozenset((
+         'call_curr',
++        'check_state',
+         'cause_indent',
+         'cause_str_or_none',
+         'conf',
+@@ -218,6 +222,7 @@ class HintTreeError(HintTreeABC):
+ 
+         # Optional parameters.
+         cause_str_or_none: Optional[str] = None,
++        check_state: Optional[_HintCheckState] = None,
+     ) -> None:
+         '''
+         Initialize this violation cause.
+@@ -249,6 +254,7 @@ class HintTreeError(HintTreeABC):
+         )
+ 
+         # Classify all passed parameters.
++        self.check_state = check_state
+         self.cause_indent = cause_indent
+         self.cause_str_or_none = cause_str_or_none
+         self.exception_cls = exception_cls
+@@ -498,7 +504,19 @@ class HintTreeError(HintTreeABC):
+         # ..................{ RETURN                         }..................
+         # Call this getter function with ourselves and return the string
+         # returned by this getter.
+-        return cause_finder(self)
++        state = self.check_state
++        if state is None:
++            return cause_finder(self)
++        state.begin()
++        result = None
++        try:
++            result = cause_finder(self)
++            return result
++        finally:
++            if result is not None and result.cause_str_or_none is None:
++                state.commit()
++            else:
++                state.rollback()
+ 
+     # ..................{ PERMUTERS                          }..................
+     def permute_cause(self, **kwargs) -> 'HintTreeError':
+diff --git a/beartype/_check/cls/scope/checkexprscope.py b/beartype/_check/cls/scope/checkexprscope.py
+index 65191405..5836b74d 100644
+--- a/beartype/_check/cls/scope/checkexprscope.py
++++ b/beartype/_check/cls/scope/checkexprscope.py
+@@ -13,6 +13,7 @@ This private submodule is *not* intended for importation by downstream callers.
+ '''
+ 
+ # ....................{ IMPORTS                            }....................
++from beartype.plug._plugstate import StateGetter
+ from beartype._cave._cavemap import NoneTypeOr
+ from beartype._check.forward.reference.fwdreftest import is_beartype_ref_proxy
+ from beartype._check.forward.reference.fwdreftyping import (
+@@ -35,6 +36,9 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+ 
+     Attributes
+     ----------
++    check_state_getters : tuple[Callable, ...]
++        Identity-deduplicated snapshot getters discovered while generating this
++        expression. These locate runtime state; they never hold snapshots.
+     beartype_ref_proxies : tuple[BeartypeForwardRefMetaclass, ...]
+         Tuple of all :mod:`beartype`-specific **forward reference proxies**
+         (i.e., classes whose metaclass defers the resolution of forward
+@@ -53,6 +57,7 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+     # called @beartype decorations. Slotting has been shown to reduce read and
+     # write costs by approximately ~10%, which is non-trivial.
+     __slots__ = (
++        'check_state_getters',
+         'beartype_ref_proxies',
+         'is_check_expr_cacheable',
+     )
+@@ -60,6 +65,7 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+     # Squelch false negatives from mypy. This is absurd. This is mypy. See:
+     #     https://github.com/python/mypy/issues/5941
+     if TYPE_CHECKING:
++        check_state_getters: tuple[StateGetter, ...]
+         beartype_ref_proxies: TupleBeartypeForwardRefs
+         is_check_expr_cacheable: bool
+ 
+@@ -73,6 +79,7 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+         # Optional keyword-only parameters.
+         beartype_ref_proxies: Optional[TupleBeartypeForwardRefs] = None,
+         is_check_expr_cacheable: bool = False,
++        check_state_getters: tuple[StateGetter, ...] = (),
+         **kwargs
+     ) -> None:
+         '''
+@@ -122,6 +129,7 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+ 
+         # Classify all remaining parameters.
+         self.is_check_expr_cacheable = is_check_expr_cacheable
++        self.check_state_getters = check_state_getters
+ 
+     # ..................{ REFREEZERS                         }..................
+     def refreeze(self, *args, **kwargs) -> 'BeartypeCheckExprScope':
+@@ -152,5 +160,6 @@ class BeartypeCheckExprScope(FrozenDictStrToAny):
+             # scope, for efficiency.
+             beartype_ref_proxies=self.beartype_ref_proxies,
+             is_check_expr_cacheable=self.is_check_expr_cacheable,
++            check_state_getters=self.check_state_getters,
+             **kwargs
+         )
+diff --git a/beartype/_check/code/_pep/pep484/codepep484604union.py b/beartype/_check/code/_pep/pep484/codepep484604union.py
+index 04daea12..ae5c02e5 100644
+--- a/beartype/_check/code/_pep/pep484/codepep484604union.py
++++ b/beartype/_check/code/_pep/pep484/codepep484604union.py
+@@ -12,6 +12,7 @@ This private submodule is *not* intended for importation by downstream callers.
+ '''
+ 
+ # ....................{ IMPORTS                            }....................
++from beartype._check.forward.reference.fwdreftest import is_beartype_ref_proxy
+ from beartype._check.code.codescope import add_hints_meta_scope_type_or_types
+ from beartype._check.cls.hint.tree.hinttreecode import HintTreeCode
+ from beartype._check.cls.hint.hintsane import (
+@@ -42,7 +43,9 @@ from beartype._util.hint.pep.utilpepsign import get_hint_pep_sign_or_none
+ from beartype._util.hint.pep.utilpeptest import is_hint_pep
+ 
+ # ....................{ FACTORIES                          }....................
+-def make_hint_pep484604_check_expr(hint_tree: HintTreeCode) -> None:
++def make_hint_pep484604_check_expr(
++    hint_tree: HintTreeCode, *, is_root: bool = False,
++) -> None:
+     '''
+     Either a Python code snippet type-checking the current pith against the
+     passed :pep:`484`- or :pep:`604`-compliant union type hint if this union is
+@@ -205,6 +208,39 @@ def make_hint_pep484604_check_expr(hint_tree: HintTreeCode) -> None:
+     # generate and append efficient code type-checking these child hints
+     # *BEFORE* less efficient code type-checking any PEP-compliant child hints
+     # subscripting this union.
++    if is_root:
++        # A leading stateless success needs no transaction at all. Preserve
++        # existing ordering, and stop before the first participating class.
++        stateless_prefix = []
++        for child in sorted(hint_childs_nonpep, key=is_beartype_ref_proxy):
++            if is_beartype_ref_proxy(child) or getattr(child, '__beartype_state__', None) is not None:
++                break
++            stateless_prefix.append(child)
++        if stateless_prefix and (hint_childs_sane_pep or len(stateless_prefix) < len(hint_childs_nonpep)):
++            prefix_types = add_hints_meta_scope_type_or_types(
++                hint_tree=hint_tree, type_or_types=tuple(stateless_prefix))
++            hint_tree.check_root_stateless_expr = (
++                f'isinstance({hint_tree.hint_curr.pith_expr}, {prefix_types})')
++            for child in stateless_prefix:
++                del hint_childs_nonpep[child]
++
++    if hint_childs_nonpep and any(
++        is_beartype_ref_proxy(child) or
++        getattr(child, '__beartype_state__', None) is not None
++        for child in hint_childs_nonpep
++    ):
++        # Native isinstance(obj, (A, B)) has no per-class failure boundary.
++        # Enqueue these classes individually only when one opts into state.
++        pep_children = tuple(hint_childs_sane_pep)
++        hint_childs_sane_pep.clear()
++        # Match the existing isinstance tuple optimization: resolvable
++        # classes precede lazy proxies, even when the annotation lists a
++        # forward reference first (notably Optional["NotYetDefined"]).
++        for child in sorted(hint_childs_nonpep, key=is_beartype_ref_proxy):
++            hint_childs_sane_pep[HintSane(child)] = None
++        hint_childs_sane_pep.update(dict.fromkeys(pep_children))
++        hint_childs_nonpep.clear()
++
+     if hint_childs_nonpep:
+         # Python expression evaluating to a tuple of these arguments.
+         #
+@@ -256,7 +292,7 @@ def make_hint_pep484604_check_expr(hint_tree: HintTreeCode) -> None:
+         # Code deeply type-checking this child hint.
+         hint_tree.func_curr_code += CODE_PEP484604_UNION_CHILD_PEP_format(
+             # Expression yielding the value of this pith.
+-            hint_child_placeholder=hint_tree.enqueue_hint_child_sane(
++            hint_child_placeholder="__BEARTYPE_SNAPSHOT_START__" + hint_tree.enqueue_hint_child_sane(
+                 hint_sane=hint_child_sane_pep,
+                 pith_expr=(
+                     # If either...
+@@ -288,7 +324,7 @@ def make_hint_pep484604_check_expr(hint_tree: HintTreeCode) -> None:
+                     # that constraint here.
+                     hint_tree.pith_curr_assign_expr
+                 ),
+-            ),
++            ) + "__BEARTYPE_SNAPSHOT_END__",
+         )
+ 
+     # ....................{ RETURN                         }....................
+diff --git a/beartype/_check/code/codemain.py b/beartype/_check/code/codemain.py
+index 14be8144..9719dcef 100644
+--- a/beartype/_check/code/codemain.py
++++ b/beartype/_check/code/codemain.py
+@@ -43,6 +43,7 @@ from beartype.roar import (
+ from beartype._data.check.code.datacodename import (
+     ARG_NAME_GETRANDBITS,
+     VAR_NAME_PITH_ROOT,
++    VAR_NAME_RANDOM_INT,
+ )
+ from beartype._check.cls.hint.hintsane import HINT_SANE_IGNORABLE
+ from beartype._check.cls.hint.tree.hinttreecode import HintTreeCode
+@@ -652,7 +653,8 @@ def make_check_expr(
+                 if hint_curr_sign in HINT_SIGNS_UNION:
+                     # Python code snippet type-checking the current pith against
+                     # this union if this union is unignorable *OR* "None".
+-                    make_hint_pep484604_check_expr(hint_tree)
++                    make_hint_pep484604_check_expr(
++                        hint_tree, is_root=hints_meta_index_curr == 0)
+                 # Else, this hint is *NOT* a union.
+                 #
+                 # ..........{ CONTAINERS                           }............
+@@ -1509,6 +1511,62 @@ def make_check_expr(
+             f'{EXCEPTION_PREFIX_HINT}{repr(hint_sane)} unchecked.')
+     # Else, the breadth-first search above successfully generated code.
+ 
++    # Resolve deferred transaction boundaries after visiting every child.
++    state_getters = tuple(hint_tree.check_state_getters.values())
++    from beartype._check.forward.reference.fwdreftest import is_beartype_ref_proxy
++    has_forward_refs = any(
++        is_beartype_ref_proxy(value)
++        for value in hint_tree.func_wrapper_locals.values())
++    if state_getters or (has_forward_refs and not is_beartype_ref_proxy(hint_sane.hint)):
++        from beartype.plug._plugstate import _HintCheckState
++        from beartype._util.func.utilfuncmake import make_func
++        func_wrapper_code = func_wrapper_code.replace(
++            '__BEARTYPE_SNAPSHOT_START__',
++            '(__beartype_state.begin() and (',
++        ).replace(
++            '__BEARTYPE_SNAPSHOT_END__',
++            ') and __beartype_state.commit() or __beartype_state.rollback())',
++        )
++        # Compile once. Keeping the entire expression in one function preserves
++        # assignment scope and sampling without allocating a closure per check.
++        parameters = VAR_NAME_PITH_ROOT
++        if hint_tree.is_var_random_int_needed:
++            parameters += f', {VAR_NAME_RANDOM_INT}'
++        check_globals = dict(hint_tree.func_wrapper_locals)
++        check_globals['__beartype_state_factory'] = _HintCheckState
++        check_globals['__beartype_state_getters'] = state_getters
++        from beartype._util.hint.pep.utilpepsign import get_hint_pep_sign_or_none
++        is_root_union = get_hint_pep_sign_or_none(hint_sane.hint) in HINT_SIGNS_UNION
++        check_body = (
++            f'        return {func_wrapper_code}\n'
++            if is_root_union else
++            '        __beartype_state.begin()\n'
++            f'        if {func_wrapper_code}:\n'
++            '            return __beartype_state.commit()\n'
++            '        return False\n'
++        )
++        checker = make_func(
++            func_name='__beartype_stateful',
++            func_code=(
++                f'def __beartype_stateful({parameters}):\n'
++                '    with __beartype_state_factory(__beartype_state_getters) as __beartype_state:\n'
++                f'{check_body}'
++            ),
++            func_globals=check_globals,
++            is_debug=conf.is_debug,
++        )
++        check_name = add_func_scope_attr(
++            attr=checker, func_scope=hint_tree.func_wrapper_locals)
++        func_wrapper_code = f'{check_name}({parameters})'
++    else:
++        func_wrapper_code = func_wrapper_code.replace(
++            '__BEARTYPE_SNAPSHOT_START__', '').replace(
++            '__BEARTYPE_SNAPSHOT_END__', '')
++
++    if hint_tree.check_root_stateless_expr is not None:
++        func_wrapper_code = (
++            f'({hint_tree.check_root_stateless_expr} or {func_wrapper_code})')
++
+     # ..................{ SCOPE                              }..................
+     # If type-checking this hint requires a pseudo-random integer, pass a hidden
+     # parameter to this wrapper function exposing the random.getrandbits()
+@@ -1530,6 +1588,7 @@ def make_check_expr(
+         # otherwise impossible to debug memoization issues. Debugging wins! \o/
+         BeartypeCheckExprScope(
+             hint_tree.func_wrapper_locals,
++            check_state_getters=state_getters,
+             is_check_expr_cacheable=hint_tree.is_check_expr_cacheable
+         ),
+     )
+diff --git a/beartype/_check/code/codescope.py b/beartype/_check/code/codescope.py
+index e11bc2d0..81e621f6 100644
+--- a/beartype/_check/code/codescope.py
++++ b/beartype/_check/code/codescope.py
+@@ -37,7 +37,8 @@ from beartype._util.cls.utilclstest import is_type_builtin
+ from beartype._util.func.utilfuncscope import add_func_scope_attr
+ from beartype._util.utilobjget import get_object_type_basename
+ from collections.abc import Set
+-from typing import Optional
++from typing import Optional, cast
++from beartype.plug._plugstate import StateGetter
+ 
+ # ....................{ ADDERS ~ type                      }....................
+ #FIXME: Unit test us up, please.
+@@ -79,6 +80,19 @@ def add_hints_meta_scope_type_or_types(
+     assert isinstance(hint_tree, HintTreeCode), (
+         f'{repr(hint_tree)} not "HintTreeCode" object.')
+ 
++    # Inspect classes already reached by the sanitized traversal. Do not
++    # resolve lazy forward-reference proxies merely to look for an opt-in hook.
++    classes = (type_or_types,) if isinstance(type_or_types, type) else type_or_types
++    for cls in classes:
++        if is_beartype_ref_proxy(cls):
++            continue
++        state_getter = getattr(cls, '__beartype_state__', None)
++        if state_getter is not None:
++            if not callable(state_getter):
++                raise BeartypeDecorHintNonpepException(
++                    f'{cls!r} __beartype_state__ is not callable.')
++            hint_tree.check_state_getters[id(state_getter)] = cast(StateGetter, state_getter)
++
+     # Defer to the lower-level add_func_scope_type_or_types() adder.
+     return add_func_scope_type_or_types(
+         type_or_types=type_or_types,
+diff --git a/beartype/_check/error/_pep/errpep484604.py b/beartype/_check/error/_pep/errpep484604.py
+index 2fe1bcdc..a6abf7ea 100644
+--- a/beartype/_check/error/_pep/errpep484604.py
++++ b/beartype/_check/error/_pep/errpep484604.py
+@@ -159,7 +159,9 @@ def find_cause_pep484604_union(cause: HintTreeError) -> HintTreeError:
+ 
+             # If this pith is an instance of this type, this pith satisfies this
+             # hint. In this case, return this cause as is.
+-            if isinstance(cause.pith, hint_child):
++            child_cause = cause.permute_cause(
++                hint_curr=HintDataError(hint_child_sane)).find_cause()
++            if child_cause.cause_str_or_none is None:
+                 return cause
+             # Else, this pith is *NOT* an instance of this type, implying this
+             # pith to *NOT* satisfy this hint.
+diff --git a/beartype/_check/error/errmain.py b/beartype/_check/error/errmain.py
+index 1d36ae69..c8d44456 100644
+--- a/beartype/_check/error/errmain.py
++++ b/beartype/_check/error/errmain.py
+@@ -601,6 +601,26 @@ def _find_hint_object_violation_cause(
+         exception_prefix=exception_prefix,
+     )
+ 
++    from contextlib import ExitStack
++    from beartype._check.code.codemain import make_check_expr
++    from beartype.plug._plugstate import _HintCheckState
++    from typing import NoReturn
++    has_forward_refs = False
++    if hint_sane.hint is NoReturn:
++        # NoReturn has a dedicated return-check path, not a boolean expression.
++        getters = ()
++    elif isinstance(hint_sane.hint, tuple):
++        # Legacy tuple unions are likewise checked outside make_check_expr().
++        getters = tuple({
++            id(getter): getter for child in hint_sane.hint
++            if (getter := getattr(child, '__beartype_state__', None)) is not None
++        }.values())
++    else:
++        scope = make_check_expr(call_curr, conf, hint_sane)[1]
++        getters = scope.check_state_getters
++        has_forward_refs = bool(scope.beartype_ref_proxies)
++    state = _HintCheckState(getters) if getters or has_forward_refs else None
++
+     # Cause describing the failure of this pith to satisfy this hint.
+     violation_cause = HintTreeError(
+         call_curr=call_curr,
+@@ -612,7 +632,13 @@ def _find_hint_object_violation_cause(
+         random_int=random_int,
+         exception_cls=exception_cls,
+         exception_prefix=exception_prefix,
+-    ).find_cause()
++        check_state=state,
++    )
++    with ExitStack() as diagnostic:
++        if state is not None:
++            diagnostic.enter_context(state)
++            state.begin()
++        violation_cause = violation_cause.find_cause()
+ 
+     # If this pith satisfies this hint, *SOMETHING HAS GONE VERY TERRIBLY AWRY.*
+     # In theory, this should never happen, as the parent wrapper function
+diff --git a/beartype/_check/forward/reference/_cls/fwdrefmeta.py b/beartype/_check/forward/reference/_cls/fwdrefmeta.py
+index 79c85b25..494827b1 100644
+--- a/beartype/_check/forward/reference/_cls/fwdrefmeta.py
++++ b/beartype/_check/forward/reference/_cls/fwdrefmeta.py
+@@ -446,6 +446,10 @@ class BeartypeForwardRefMetaclass(type):
+         #   is thus on the hot path for @beartype. If optimization is warranted
+         #   anywhere in the @beartype codebase, it is here.
+             # print(f'Isinstanceable resolved hint detected: {repr(resolved_hint)}')
++            state_getter = getattr(resolved_hint, '__beartype_state__', None)
++            if state_getter is not None:
++                from beartype.plug._plugstate import isinstance_stateful
++                return isinstance_stateful(obj, resolved_hint, state_getter)
+             return isinstance(obj, resolved_hint)
+         # Else, this hint is either:
+         # * Not isinstanceable, in which case this hint is *NOT* safely passable
+diff --git a/beartype/plug/_plugstate.py b/beartype/plug/_plugstate.py
+new file mode 100644
+index 00000000..662f4e95
+--- /dev/null
++++ b/beartype/plug/_plugstate.py
+@@ -0,0 +1,138 @@
++#!/usr/bin/env python3
++# --------------------( LICENSE                            )--------------------
++# Copyright (c) 2014-2026 Beartype authors.
++# See "LICENSE" for further details.
++
++"""Invocation-owned transactions for opt-in stateful runtime hints."""
++
++from beartype._data.typing.datatyping import Pep3119Checkable
++from collections.abc import Callable
++from contextlib import ExitStack
++from contextvars import ContextVar, Token
++from typing import Any, Protocol
++
++
++class HintState(Protocol):
++    """A library-owned state domain; snapshot tokens are opaque to beartype."""
++
++    def snapshot(self) -> Any: ...
++    def restore(self, snapshot: Any) -> None: ...
++
++
++StateGetter = Callable[[], HintState]
++Rollback = tuple[Callable[[Any], None], Any]
++
++
++class _HintCheckState:
++    """Nested checkpoints sharing state located once per checking expression."""
++
++    __slots__ = ('getters', 'states', 'transactions', '_token')
++
++    def __init__(self, getters: tuple[StateGetter, ...]) -> None:
++        self.getters = getters
++        states = []
++        for getter in getters:
++            state = getter()
++            _validate_state(state)
++            states.append(state)
++        self.states = tuple(states)
++        self.transactions: list[list[Rollback]] = []
++        self._token: Token[tuple['_HintCheckState', ...]] | None = None
++
++    def __enter__(self) -> '_HintCheckState':
++        parents = _ACTIVE_CHECK_STATES.get()
++        if parents:
++            parents = tuple(parent for parent in parents if parent._token is not None)
++        # Resolved aliases enrol their domains before mutating shared state.
++        for parent in parents:
++            parent.register(self.getters, self.states)
++        self._token = _ACTIVE_CHECK_STATES.set((*parents, self))
++        return self
++
++    def __exit__(self, *exception: object) -> None:
++        try:
++            if self.transactions:
++                self.close()
++        finally:
++            assert self._token is not None
++            token = self._token
++            self._token = None
++            # copy_context() can outlive this check. Do not let a copied
++            # context retain invocation state or enrol into a finished check.
++            self.getters = ()
++            self.states = ()
++            _ACTIVE_CHECK_STATES.reset(token)
++
++    def register(
++        self, getters: tuple[StateGetter, ...], states: tuple[HintState, ...] = (),
++    ) -> None:
++        for index, getter in enumerate(getters):
++            if not any(getter is known for known in self.getters):
++                state = states[index] if states else getter()
++                _validate_state(state)
++                self.getters += (getter,)
++                self.states += (state,)
++                for transaction in self.transactions:
++                    transaction.append((state.restore, state.snapshot()))
++
++    def begin(self) -> bool:
++        transaction: list[Rollback] = []
++        self.transactions.append(transaction)
++        for state in self.states:
++            transaction.append((state.restore, state.snapshot()))
++        return True
++
++    def commit(self) -> bool:
++        self.transactions.pop()
++        return True
++
++    def rollback(self) -> bool:
++        _restore(self.transactions.pop())
++        return False
++
++    def close(self) -> None:
++        callbacks = [restore for transaction in self.transactions for restore in transaction]
++        self.transactions.clear()
++        _restore(callbacks)
++
++
++def _validate_state(state: HintState) -> None:
++    if not callable(getattr(state, 'snapshot', None)) or not callable(getattr(state, 'restore', None)):
++        raise TypeError(
++            '__beartype_state__() must return an object with callable '
++            'snapshot and restore methods.')
++
++
++def _restore(callbacks: list[Rollback]) -> None:
++    while callbacks:
++        restore, snapshot = callbacks.pop()
++        try:
++            restore(snapshot)
++        except BaseException:
++            # Keep general context-manager machinery off the successful path,
++            # but still unwind every domain when a broken plugin raises.
++            with ExitStack() as pending:
++                for restore, snapshot in callbacks:
++                    pending.callback(restore, snapshot)
++                callbacks.clear()
++            raise
++
++
++_ACTIVE_CHECK_STATES: ContextVar[tuple[_HintCheckState, ...]] = ContextVar(
++    'beartype_check_states', default=())
++
++
++def isinstance_stateful(obj: object, hint: Pep3119Checkable, getter: StateGetter) -> bool:
++    """Check a resolved root reference without another generated wrapper."""
++    parents = _ACTIVE_CHECK_STATES.get()
++    if parents:
++        parents = tuple(parent for parent in parents if parent._token is not None)
++    if parents:
++        for parent in parents:
++            parent.register((getter,))
++        return isinstance(obj, hint)
++    with _HintCheckState((getter,)) as state:
++        state.begin()
++        if isinstance(obj, hint):
++            return state.commit()
++        return False
+diff --git a/beartype_test/a00_unit/a40_api/plug/test_plugstate.py b/beartype_test/a00_unit/a40_api/plug/test_plugstate.py
+new file mode 100644
+index 00000000..145f1be8
+--- /dev/null
++++ b/beartype_test/a00_unit/a40_api/plug/test_plugstate.py
+@@ -0,0 +1,477 @@
++#!/usr/bin/env python3
++# --------------------( LICENSE                            )--------------------
++# Copyright (c) 2014-2026 Beartype authors.
++# See "LICENSE" for further details.
++
++"""Opt-in stateful hints compose without changing ordinary union checks."""
++
++import pytest
++
++
++def _run_check(check, getters):
++    from beartype.plug._plugstate import _HintCheckState
++
++    with _HintCheckState(getters) as state:
++        state.begin()
++        if check(state):
++            return state.commit()
++        return False
++
++
++@pytest.fixture
++def stateful_hints():
++    bindings = {}
++    snapshots = []
++
++    class State:
++        def snapshot(self):
++            before = bindings.copy()
++            snapshots.append(before)
++            return before
++
++        def restore(self, before):
++            bindings.clear()
++            bindings.update(before)
++
++    state = State()
++
++    def get_state():
++        return state
++
++    def hint(name, *, reject=False, raises=None):
++        class Meta(type):
++            __beartype_state__ = staticmethod(get_state)
++
++            def __instancecheck__(cls, value):
++                if not isinstance(value, list):
++                    return False
++                previous = bindings.setdefault(name, len(value))
++                if raises is not None:
++                    raise raises
++                return previous == len(value) and not reject
++
++            def __instancecheck_str__(cls, value):
++                return f'{name} expected {bindings.get(name)} but got {len(value)}'
++
++        return Meta(f'{name}_{id(bindings)}', (), {})
++
++    return bindings, snapshots, hint
++
++
++def test_composite_union_rollback(stateful_hints):
++    from beartype import beartype
++    from beartype.roar import BeartypeCallHintParamViolation
++
++    bindings, snapshots, hint = stateful_hints
++    N, C = hint('N'), hint('C')
++
++    @beartype
++    def choose(pair: tuple[N, str] | tuple[C, int], last: N):
++        pass
++
++    choose(([1, 2], 1), [1, 2, 3])
++    assert bindings == {'C': 2, 'N': 3}
++    # Two alternatives and the last parameter each need one checkpoint;
++    # the top-level union needs no duplicate snapshot around its alternatives.
++    assert len(snapshots) == 3
++    with pytest.raises(BeartypeCallHintParamViolation):
++        choose(([1, 2], 1), [1, 2, 3, 4])
++    assert bindings == {'C': 2, 'N': 3}
++
++
++def test_plain_class_union_rollback(stateful_hints):
++    from beartype.door import is_bearable
++
++    bindings, _, hint = stateful_hints
++    Failed, Success = hint('failed', reject=True), hint('success')
++    assert is_bearable([1, 2], Failed | Success)
++    assert bindings == {'success': 2}
++
++
++def test_failed_plain_class_union_rollback(stateful_hints):
++    from beartype.door import die_if_unbearable, is_bearable
++    from beartype.roar import BeartypeDoorHintViolation
++
++    bindings, _, hint = stateful_hints
++    A, B = hint('a', reject=True), hint('b', reject=True)
++    assert not is_bearable([1], A | B)
++    assert bindings == {}
++    with pytest.raises(BeartypeDoorHintViolation):
++        die_if_unbearable([1], A | B)
++    assert bindings == {}
++
++
++@pytest.mark.parametrize('error', [ValueError('validator failed'), KeyboardInterrupt()])
++def test_validator_exception_restores_state(stateful_hints, error):
++    from beartype.door import is_bearable
++
++    bindings, _, hint = stateful_hints
++    First, Raises = hint('first'), hint('throws', raises=error)
++    bindings['existing'] = 3
++    with pytest.raises(type(error)):
++        is_bearable(([1], [2]), tuple[First, Raises] | str)
++    assert bindings == {'existing': 3}
++
++
++def test_nested_transaction_restores_selected_inner_branch(stateful_hints):
++    from beartype.door import is_bearable
++
++    bindings, _, hint = stateful_hints
++    N, C = hint('N'), hint('C')
++    Nested = tuple[tuple[N, str] | tuple[C, int], str] | tuple[tuple[N, int], int]
++    assert is_bearable((([1, 2], 1), 1), Nested)
++    assert bindings == {'N': 2}
++
++
++def test_diagnostics_reconstruct_bindings_without_retaining_them(stateful_hints):
++    from beartype.door import die_if_unbearable
++    from beartype.roar import BeartypeDoorHintViolation
++
++    bindings, _, hint = stateful_hints
++    N, C = hint('N'), hint('C')
++    with pytest.raises(BeartypeDoorHintViolation, match='expected 2 but got 3'):
++        die_if_unbearable(([1, 2], [1, 2, 3]), tuple[N, N] | tuple[C, str])
++    assert bindings == {}
++
++
++def test_multiple_state_domains_restore_in_reverse_order():
++    from types import SimpleNamespace
++
++    events = []
++    a = SimpleNamespace(
++        snapshot=lambda: events.append('save-a'),
++        restore=lambda token: events.append('restore-a'))
++    b = SimpleNamespace(
++        snapshot=lambda: events.append('save-b'),
++        restore=lambda token: events.append('restore-b'))
++    assert not _run_check(lambda state: False, (lambda: a, lambda: b))
++    assert events == ['save-a', 'save-b', 'restore-b', 'restore-a']
++
++
++def test_snapshot_failure_restores_previously_saved_domains():
++    from types import SimpleNamespace
++
++    restored = []
++
++    def fail():
++        raise RuntimeError('snapshot failed')
++
++    a = SimpleNamespace(snapshot=lambda: None, restore=lambda token: restored.append(True))
++    b = SimpleNamespace(snapshot=fail, restore=lambda token: None)
++    with pytest.raises(RuntimeError, match='snapshot failed'):
++        _run_check(lambda state: True, (lambda: a, lambda: b))
++    assert restored == [True]
++
++
++def test_ordinary_union_keeps_native_expression():
++    from beartype import BeartypeConf
++    from beartype._check.cls.call.calldataexternal import BEARTYPE_CALL_EXTERNAL_META
++    from beartype._check.cls.hint.hintsane import HintSane
++    from beartype._check.code.codemain import make_check_expr
++
++    expression, scope = make_check_expr(
++        BEARTYPE_CALL_EXTERNAL_META, BeartypeConf(), HintSane(tuple[str, int] | float))
++    assert scope.check_state_getters == ()
++    assert 'lambda' not in expression
++    assert 'SNAPSHOT' not in expression
++    assert '__beartype_state' not in expression
++
++
++def test_unselected_forward_reference_stays_unresolved():
++    from beartype import beartype
++
++    @beartype
++    def choose(value: 'int | UndefinedSnapshotAlternative'):
++        return value
++
++    assert choose(3) == 3
++
++
++def test_lazy_stateful_forward_reference(stateful_hints, monkeypatch):
++    from beartype import beartype
++    import sys
++
++    bindings, _, hint = stateful_hints
++
++    @beartype
++    def choose(pair: 'tuple[LateSnapshotN, str] | tuple[LateSnapshotC, int]', last: 'LateSnapshotN'):
++        pass
++
++    monkeypatch.setattr(sys.modules[__name__], 'LateSnapshotN', hint('N'), raising=False)
++    monkeypatch.setattr(sys.modules[__name__], 'LateSnapshotC', hint('C'), raising=False)
++    choose(([1, 2], 1), [1, 2, 3])
++    assert bindings == {'C': 2, 'N': 3}
++
++
++def test_invalid_state_result_cleans_up_context():
++    from beartype.plug._plugstate import _ACTIVE_CHECK_STATES
++
++    with pytest.raises(TypeError, match='callable snapshot and restore'):
++        _run_check(lambda state: True, (lambda: None,))
++    assert _ACTIVE_CHECK_STATES.get() == ()
++
++
++def test_rollback_failure_still_restores_other_domains():
++    from beartype.plug._plugstate import _ACTIVE_CHECK_STATES
++    from types import SimpleNamespace
++
++    restored = []
++
++    def broken_restore(token):
++        raise RuntimeError('broken rollback')
++
++    a = SimpleNamespace(snapshot=lambda: None, restore=lambda token: restored.append(True))
++    b = SimpleNamespace(snapshot=lambda: None, restore=broken_restore)
++    with pytest.raises(RuntimeError, match='broken rollback'):
++        _run_check(lambda state: False, (lambda: a, lambda: b))
++    assert restored == [True]
++    assert _ACTIVE_CHECK_STATES.get() == ()
++
++
++def test_state_is_located_once_for_nested_branches():
++    from beartype import beartype
++    from types import SimpleNamespace
++
++    calls = []
++    state = SimpleNamespace(snapshot=lambda: None, restore=lambda token: None)
++
++    def get_state():
++        calls.append(True)
++        return state
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(get_state)
++
++        def __instancecheck__(cls, obj):
++            return isinstance(obj, list)
++
++    class A(metaclass=Meta):
++        pass
++
++    @beartype
++    def choose(value: tuple[tuple[A, str] | tuple[A, int], str] | tuple[A, int]):
++        pass
++
++    choose(([1], 1))
++    assert calls == [True]
++
++
++def test_stateless_root_alternative_does_not_locate_state():
++    from beartype import beartype
++
++    def get_state():
++        raise AssertionError('unselected state was located')
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(get_state)
++
++    class A(metaclass=Meta):
++        pass
++
++    @beartype
++    def choose(value: int | tuple[A, str]):
++        pass
++
++    choose(3)
++
++
++def test_rejected_stateless_prefix_is_checked_once(stateful_hints):
++    from beartype import beartype
++
++    bindings, _, hint = stateful_hints
++    N = hint('N')
++    calls = []
++
++    class Meta(type):
++        def __instancecheck__(cls, obj):
++            calls.append(obj)
++            return False
++
++    class Reject(metaclass=Meta):
++        pass
++
++    @beartype
++    def choose(value: Reject | tuple[N, int]):
++        pass
++
++    calls.clear()
++    value = ([1, 2], 3)
++    choose(value)
++    assert calls == [value]
++    assert bindings == {'N': 2}
++
++
++def test_resolved_root_reference_failure_rolls_back(stateful_hints, monkeypatch):
++    from beartype import beartype
++    from beartype.roar import BeartypeCallHintParamViolation
++    import sys
++
++    bindings, _, hint = stateful_hints
++
++    @beartype
++    def choose(value: 'LaterRejectedState'):
++        pass
++
++    monkeypatch.setattr(sys.modules[__name__], 'LaterRejectedState', hint('N', reject=True), raising=False)
++    with pytest.raises(BeartypeCallHintParamViolation):
++        choose([1, 2])
++    assert bindings == {}
++
++
++def test_nested_union_bindings_match_independent_reference(stateful_hints):
++    from beartype.door import is_bearable
++    from random import Random
++    from types import UnionType
++    from typing import get_args, get_origin
++
++    bindings, _, hint = stateful_hints
++    N, C = hint('N'), hint('C')
++    inner = tuple[N, str] | tuple[C, int]
++    hints = (
++        inner, tuple[inner, N], tuple[N, inner],
++        tuple[inner, str] | tuple[tuple[N, int], int],
++    )
++    random = Random(9231)
++
++    def value(depth):
++        if depth and random.randrange(2):
++            return value(depth - 1), value(depth - 1)
++        return random.choice((0, 's', None, [], [1], [1, 2]))
++
++    def reference(obj, annotation, state):
++        before = state.copy()
++        origin = get_origin(annotation)
++        if origin is UnionType:
++            valid = any(reference(obj, child, state) for child in get_args(annotation))
++        elif origin is tuple:
++            children = get_args(annotation)
++            valid = isinstance(obj, tuple) and len(obj) == len(children) and all(
++                reference(item, child, state) for item, child in zip(obj, children))
++        elif annotation in (N, C):
++            name = 'N' if annotation is N else 'C'
++            valid = isinstance(obj, list) and state.setdefault(name, len(obj)) == len(obj)
++        else:
++            valid = isinstance(obj, annotation)
++        if not valid:
++            state.clear()
++            state.update(before)
++        return valid
++
++    for annotation in hints:
++        for _ in range(150):
++            obj = value(3)
++            initial = {'earlier': 9}
++            if random.randrange(2):
++                initial['N'] = random.randrange(3)
++            bindings.clear()
++            bindings.update(initial)
++            expected = initial.copy()
++            result = reference(obj, annotation, expected)
++            assert is_bearable(obj, annotation) is result
++            assert bindings == expected
++
++
++def test_unhashable_state_getters_are_distinct_by_identity():
++    from beartype.door import is_bearable
++    from types import SimpleNamespace
++
++    restored = []
++
++    class Getter:
++        __hash__ = None
++
++        def __init__(self, name):
++            self.state = SimpleNamespace(
++                snapshot=lambda: name,
++                restore=lambda token: restored.append(token))
++
++        def __call__(self):
++            return self.state
++
++        def __eq__(self, other):
++            return True
++
++    class MetaA(type):
++        __beartype_state__ = Getter('a')
++
++        def __instancecheck__(cls, obj):
++            return isinstance(obj, list)
++
++    class MetaB(type):
++        __beartype_state__ = Getter('b')
++
++        def __instancecheck__(cls, obj):
++            return isinstance(obj, list)
++
++    class A(metaclass=MetaA):
++        pass
++
++    class B(metaclass=MetaB):
++        pass
++
++    assert not is_bearable(([], [], None), tuple[A, B, int])
++    assert restored == ['b', 'a']
++
++
++def test_copied_context_does_not_retain_finished_state():
++    from beartype.door import is_bearable
++    from contextvars import copy_context
++    import gc
++    import weakref
++
++    captured = []
++    holder = []
++
++    class State:
++        def snapshot(self):
++            return None
++
++        def restore(self, token):
++            pass
++
++    def get_state():
++        return holder[-1]
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(get_state)
++
++        def __instancecheck__(cls, obj):
++            if not isinstance(obj, list):
++                return False
++            captured.append(copy_context())
++            return True
++
++    class A(metaclass=Meta):
++        pass
++
++    state = State()
++    ref = weakref.ref(state)
++    holder.append(state)
++    assert is_bearable([], A)
++    holder.clear()
++    del state
++    gc.collect()
++    assert captured
++    assert ref() is None
++
++
++def test_copied_context_ignores_finished_transactions(stateful_hints, monkeypatch):
++    from beartype import beartype
++    from beartype.roar import BeartypeCallHintParamViolation
++    from contextvars import copy_context
++    import sys
++
++    bindings, _, hint = stateful_hints
++    captured = []
++    first = hint('first')
++    _run_check(lambda state: captured.append(copy_context()) or True,
++               (first.__beartype_state__,))
++
++    @beartype
++    def choose(value: 'CopiedContextFailure'):
++        pass
++
++    monkeypatch.setattr(sys.modules[__name__], 'CopiedContextFailure', hint('leaked', reject=True), raising=False)
++    with pytest.raises(BeartypeCallHintParamViolation):
++        captured[0].run(choose, [1, 2])
++    assert bindings == {}
+diff --git a/doc/src/api.rst b/doc/src/api.rst
+index dbfc0015..7f0a311c 100644
+--- a/doc/src/api.rst
++++ b/doc/src/api.rst
+@@ -56,6 +56,7 @@ begins with :func:`beartype.beartype`, just like all rivers run to the sea.
+    Beartype Validators <api_vale>
+    Beartype Introspectors <api_door>
+    Beartype Errors <api_roar>
++   Beartype Plugins <api_plug>
+ 
+ .. #FIXME: Uncomment *AFTER* re-enabling "autoapi" support in "conf.py" and
+ .. #resolving outstanding issues with that support. *gulp*
+diff --git a/doc/src/api_plug.rst b/doc/src/api_plug.rst
+new file mode 100644
+index 00000000..7ca24330
+--- /dev/null
++++ b/doc/src/api_plug.rst
+@@ -0,0 +1,101 @@
++.. # Copyright (c) 2014-2026 Beartype authors.
++.. # See "LICENSE" for further details.
++
++################
++Beartype Plugins
++################
++
++Stateful runtime hints
++======================
++
++A runtime hint can opt into transactional checking by exposing a callable
++``__beartype_state__`` attribute. Calling it returns the library's active state
++object, which provides ``snapshot()`` and ``restore(token)`` methods. No beartype
++base class is required. The snapshot token can be any object, including None;
++beartype only passes it back to the corresponding restore method.
++
++This is useful for hints that bind named dimensions or other shared constraints.
++For ``tuple[N, str] | tuple[C, int]``, checking the first tuple may bind ``N``
++before discovering that the second item is not a string. That rejected
++alternative must discard its bindings before checking the second alternative.
++
++For example, a library managing a context-local state object can expose::
++
++    class ShapeState:
++        def __init__(self):
++            self.bindings = {}
++
++        def snapshot(self):
++            return self.bindings.copy()
++
++        def restore(self, before):
++            self.bindings.clear()
++            self.bindings.update(before)
++
++    def get_state():
++        return current_state.get()
++
++    class ShapeHintMeta(type):
++        __beartype_state__ = staticmethod(get_state)
++
++        def __instancecheck__(cls, value):
++            # Validate and bind dimensions in current_state.get().bindings.
++            ...
++
++Here, ``current_state`` is the library's context variable containing its active
++``ShapeState``. Hints sharing a state domain expose the **same getter object**.
++The getter locates state; it must not perform validation or mutate bindings.
++It returns a state object that remains valid throughout this checking expression.
++Beartype locates known domains once per expression and reuses their objects
++across union alternatives. Getters are deduplicated by identity. All methods
++are synchronous, and restore must restore the token without raising.
++
++The library owns state lifetime, including thread and task isolation. Cached
++hints and generated code must not retain any invocation's snapshots or argument
++objects. The getter may create invocation-local state if none exists yet.
++
++Transaction boundaries
++----------------------
++
++Successful alternatives retain state; rejected alternatives restore it before
++trying the next alternative. Failure of an outer alternative also undoes
++successful checks nested inside it. A failed parameter, return or DOOR check
++restores its entry state. Exceptions unwind all open checkpoints, including
++exceptions outside the stateful hint's own instance check. Successful earlier
++parameters remain bound if a later parameter fails.
++
++The implementation avoids a duplicate outer checkpoint when a top-level union's
++alternatives already protect the whole check. Leading stateless native
++alternatives can succeed before locating any state. These optimizations preserve
++existing alternative ordering, short-circuiting and container sampling. No
++alternative is evaluated twice. There is no backtracking to a different earlier
++parameter alternative, and sampling remains sampling.
++
++Diagnostics retain successful sibling bindings while explaining a failure,
++then restore all diagnostic changes. A later mismatch therefore reports the
++correct earlier dimension without leaving state in the caller's context.
++
++Discovery and forward references
++--------------------------------
++
++Beartype discovers the hook on classes reached by its sanitized hint traversal,
++including classes inside containers, generic bases and ``Annotated``. It does
++not introspect arbitrary Python predicates for hidden state changes.
++
++An evaluated lazy reference may introduce a domain after code generation. That
++domain joins open transactions before validation mutates it. Unselected
++references remain unresolved. A root reference delegates to its resolved hint;
++ordinary root references do not allocate a transaction. Nested expressions with
++unresolved references still require deferred transaction tracking. Context-local
++tracking keeps concurrent checks isolated. Copied contexts ignore finished
++checks, and finished checks release their state objects even when a copied
++context outlives them.
++
++Ordinary hints without participating classes or references retain their direct
++checking path. Transactional expressions are compiled once at decoration rather
++than allocating a checking closure on each invocation. Each checkpoint stores
++restore methods and opaque tokens; general exception-unwinding machinery is only
++needed if a plugin's restore method itself raises.
++
++Python's bare ``isinstance`` does not invoke this protocol. Libraries should
++preserve any individual-check guarantees they need outside beartype.

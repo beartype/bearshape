@@ -1,14 +1,14 @@
 [project]
 name = "bearshape"
-version = "0.1.0rc0"
+version = "0.1.0rc1"
 description = "Elegant runtime shape and dtype checking for NumPy, JAX, PyTorch, and CuPy arrays — powered by beartype."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "acecchini", email = "ale.cecchini.valette@gmail.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "beartype>=0.23.0rc0,<0.24", # Exact candidate tested in tox.toml
+  "beartype>=0.23.1,<0.24", # Exact candidate tested in tox.toml
   "typing_extensions>=4.6",
 ]
 keywords = [
@@ -26,7 +26,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -109,16 +108,16 @@ reportUnusedClass = false
 reportPrivateUsage = false
 reportUnusedImport = "warning"
 # Check the oldest supported Python, not the interpreter running the checker.
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 pythonPlatform = "Linux"
 
 [tool.pyrefly]
 preset = "default"
 project-includes = ["src", "tests/typing"]
-python-version = "3.10"
+python-version = "3.11"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 warn_unreachable = true

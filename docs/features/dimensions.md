@@ -62,8 +62,10 @@ shape positions. Keep them for runtime correctness and either:
 
 ## Symbolic dimensions
 
-Dimensions support arithmetic. Expressions are evaluated against already-bound
-shape names:
+Dimensions support arithmetic. Each operand retains its grouping, including raw
+expressions passed to `Value`: `Value("size + 1") * 2` means `(size + 1) * 2`,
+and `(-N) ** 2` squares the negative value. Expressions are evaluated against
+already-bound shape names:
 
 ```python
 from bearshape import N, C
@@ -226,6 +228,13 @@ broadcast_add(np.ones((4, 3), dtype=np.float32),
 
 Broadcastable also works with variadic dimensions: `~+B` matches zero or more
 dims where each can be `1` or the bound value.
+
+When `~+B` and strict `~B` occur together, every strict occurrence must equal
+the common broadcast target. Before a strict occurrence, compatible broadcast
+shapes may expand that target; once strict, it stays fixed. For example,
+broadcastable `(1, 3)` can accompany strict `(2, 3)`, but strict `(1, 3)` cannot
+be enlarged by a later broadcastable `(2, 3)`. An equal-shape strict occurrence
+also pins the target. This rule applies to parameters and returns.
 
 ## Anonymous dimensions
 

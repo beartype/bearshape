@@ -81,3 +81,32 @@ def test_instruments_caller_package(tmp_path: Path, custom_conf: bool) -> None:
     timeout=30,
   )
   assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize("competing_hook", [False, True])
+def test_public_inactive_hook_diagnostic(competing_hook: bool) -> None:
+  script = textwrap.dedent(f"""\
+    import sys
+    import warnings
+    from importlib.machinery import FileFinder, SourceFileLoader, SOURCE_SUFFIXES
+    from beartype.claw import beartype_package, warn_if_beartype_claw_inactive
+    from beartype.roar import BeartypeClawImportlibFileFinderPathHookInactiveWarning
+    from bearshape.claw import bearshape_this_package
+    from beartype.claw import beartype_this_package
+
+    assert bearshape_this_package is beartype_this_package
+    beartype_package('unused_diagnostic_test_package')
+    if {competing_hook!r}:
+        sys.path_hooks.insert(0, FileFinder.path_hook((SourceFileLoader, SOURCE_SUFFIXES)))
+        sys.path_importer_cache.clear()
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        warn_if_beartype_claw_inactive()
+    relevant = [w for w in caught if issubclass(
+        w.category, BeartypeClawImportlibFileFinderPathHookInactiveWarning)]
+    assert bool(relevant) is {competing_hook!r}, caught
+    """)
+  result = subprocess.run(
+    [sys.executable, "-c", script], capture_output=True, text=True, timeout=30
+  )
+  assert result.returncode == 0, result.stdout + result.stderr

@@ -22,33 +22,33 @@ CuPy users need evidence from actual GPU arrays. Prove strict shape/dtype valida
 - [x] (2026-09-08) Created codex/cupy-runtime and matching worktree from b2a1df0.
 - [x] (2026-09-08) Opened draft PR #26 and added 12 conversion/device/tree cases.
 - [x] (2026-09-08) Published 51aa332 and verified all 18 package files plus tests against the public commit before transfer.
-- [x] (2026-09-08) All 95 GPU cases passed without skips on Python 3.10.20 and 3.14.3 with exact rc0, CuPy 14.2.0 and optree on H200/CUDA 12.9.
+- [x] (2026-09-08) All 95 GPU cases passed without skips on Python 3.10.20 and 3.14.3 with exact rc0, CuPy 14.2.0 and optree with CUDA 12.9.
 - [x] (2026-09-08) Hooks and applicable hosted checks pass.
 - [x] (2026-09-08) Obtain user validation before merge.
 
 ## Surprises & Discoveries
 
 
-The baseline already passed 83 CuPy tests on H200 with CuPy 14.2.0 and both Python endpoints. That artifact predates the lifetime/conversion corrections, so it is insufficient evidence for the combined candidate. The first corrected-candidate run passed 94 tests and exposed one incorrect new test assumption: CuPy 14.2.0 accepts structured host arrays. Verified dtype preservation and generic Shaped/Like acceptance, then corrected the test and stale module comment. Native CuPy 14.2.0 has no py.typed marker or ndarray stubs; the static support decision remains separate and pending.
+The baseline already passed 83 CuPy tests with CuPy 14.2.0 and both Python endpoints. That artifact predates the lifetime/conversion corrections, so it is insufficient evidence for the combined candidate. The first corrected-candidate run passed 94 tests and exposed one incorrect new test assumption: CuPy 14.2.0 accepts structured host arrays. Verified dtype preservation and generic Shaped/Like acceptance, then corrected the test and stale module comment. Native CuPy 14.2.0 has no py.typed marker or ndarray stubs; the static support decision remains separate and pending.
 
 ## Decision Log
 
 
 Decision: Add GPU behavioral tests to tests/test_cupy.py without changing runtime or static promises. Rationale: the combined corrections require device-backed verification; this milestone does not authorize a reduced static contract. Date: 2026-09-08.
 
-Decision: Use the configured h200 host, its isolated /tmp/bearshape-production-2026-09-08 environments and CUDA_VISIBLE_DEVICES=6 after checking availability. Rationale: use a free GPU without touching other users' processes or global packages. Transfer only public committed package/test content with recorded provenance.
+Decision: Validate normally installed candidate archives in isolated CUDA environments. Record package provenance and keep project validation independent of machine-specific administration.
 
 ## Outcomes & Retrospective
 
 
-The normally installed corrected wheel passes all 95 CuPy tests at both Python endpoints. Native device/stream identity, host conversion, generic structured dtype acceptance and nested optree validation are proven on H200 with CuPy 14.2.0. Multi-GPU transfer behavior and other CUDA/CuPy combinations are not established. A04 native union rollback and CuPy static support remain separate release decisions; successful GPU tests cannot close them.
+The normally installed corrected wheel passes all 95 CuPy tests at both Python endpoints. Native device/stream identity, host conversion, generic structured dtype acceptance and nested optree validation are proven with CuPy 14.2.0. Multi-GPU transfer behavior and other CUDA/CuPy combinations are not established. A04 native union rollback and CuPy static support remain separate release decisions; successful GPU tests cannot close them.
 
 ## Context and Orientation
 
 
 Worktree /Users/ale/Code/bearshape-worktrees/cupy-runtime, branch codex/cupy-runtime. tests/test_cupy.py owns existing GPU tests. src/bearshape/cupy.py selects cp.asarray and trusts only native CuPy arrays. src/bearshape/_array_types.py now obeys the selected converter and rolls back failed leaf validation. bearshape.optree.Tree validates all leaves and shared structure using optree's default registry.
 
-The isolated remote Python 3.14 environment is /tmp/bearshape-production-2026-09-08/cupy-baseline/.venv; Python 3.10 is /tmp/bearshape-production-2026-09-08/cupy-python310. CUDA_PATH is /usr/local/cuda-12.9. Existing baseline tests and artifacts are public; verify new file bytes against the new public commit before transfer.
+Use isolated environments for each Python endpoint. Verify archive hashes against the candidate commit before validation. Machine-specific locations are not part of the project setup.
 
 ## Plan of Work
 
@@ -62,7 +62,7 @@ Build a source archive and wheel from that archive. Normally install the wheel w
 
 From the worktree run uv build --sdist and uv build --wheel with the resulting archive, then tools/check_distribution.py. Publish the authorized draft PR commit first and verify public provenance before transferring the wheel and tests.
 
-On h200 run the selected environment's Python with CUDA_VISIBLE_DEVICES=6 and CUDA_PATH=/usr/local/cuda-12.9. Normally install the candidate and beartype==0.23.0rc0. Use python -I -m pytest against the copied test_cupy.py. Run the maintained hooks and inspect hosted PR checks locally.
+In an appropriately provisioned CUDA environment, normally install the candidate and beartype==0.23.0rc0. Use python -I -m pytest against the copied test_cupy.py. Run the maintained hooks and inspect hosted PR checks locally.
 
 ## Validation and Acceptance
 
@@ -90,3 +90,5 @@ Revision note (2026-09-08): reconciled completed milestone/hosted evidence and
 explicit owner merge approval. The combined artifact, checker and GPU proofs
 are in `docs/maintainers/production-readiness.md`; this update does not mark
 the unresolved native-union integration or release administration complete.
+
+Revision note — 2026-10-11: Removed machine-specific operational details; dated package versions, artifact hashes and test results remain historical evidence.

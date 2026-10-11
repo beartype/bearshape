@@ -56,9 +56,13 @@ from __future__ import annotations
 
 import typing as tp
 from collections.abc import Callable
+from types import FunctionType
 
+from beartype import BeartypeConf, beartype
 from beartype.door import TypeHint
+from beartype.roar import BeartypeCallHintParamViolation
 
+from ._array_types import _ArrayChecker, _ArrayLikeChecker
 from ._memo import ShapeMemo
 from ._runtime_hints import (
   ValidationFailure,
@@ -131,10 +135,22 @@ class Structure(str):
 # ---------------------------------------------------------------------------
 
 
+class _TreeLeafViolation(BeartypeCallHintParamViolation):
+  """Distinguish an invalid leaf from exceptions raised by user predicates."""
+
+
 class _TreeChecker:
   """Beartype validator for tree leaf types and structure consistency."""
 
-  __slots__ = ("_get_ops", "_leaf_type", "_repr", "_structure_spec")
+  __slots__ = (
+    "_get_ops",
+    "_leaf_checker",
+    "_leaf_type",
+    "_leaf_validator",
+    "_needs_scope",
+    "_repr",
+    "_structure_spec",
+  )
 
   def __init__(
     self,
@@ -144,6 +160,27 @@ class _TreeChecker:
     get_ops: Callable[[], tp.Any],
   ) -> None:
     self._leaf_type = leaf_type
+
+    validator = get_runtime_validator(leaf_type)
+    self._leaf_validator = (
+      validator if isinstance(validator, (_ArrayChecker, _ArrayLikeChecker)) else None
+    )
+    self._needs_scope = (
+      self._leaf_validator is None or self._leaf_validator._needs_scope
+    )
+    self._leaf_checker: FunctionType | None = None
+    if self._leaf_validator is None:
+
+      def check_leaf(leaf: object) -> None:
+        pass
+
+      check_leaf.__annotations__ = {"leaf": leaf_type}
+      self._leaf_checker = tp.cast(
+        "FunctionType",
+        beartype(conf=BeartypeConf(violation_param_type=_TreeLeafViolation))(
+          check_leaf
+        ),
+      )
     self._structure_spec = structure_spec
     self._get_ops = get_ops
     spec_str = f", {structure_spec}" if structure_spec else ""
@@ -157,14 +194,16 @@ class _TreeChecker:
     from ._memo import get_memo, get_scope, pop_memo, push_memo
 
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     valid = False
-    push_memo(memo, scope=scope)
+    if self._leaf_checker is not None:
+      push_memo(memo, scope=scope, owner_code=self._leaf_checker.__code__)
     try:
-      valid = self._validate(obj, tree_ops, memo) is None
+      valid = self._validate(obj, tree_ops, memo, scope) is None
     finally:
-      pop_memo()
+      if self._leaf_checker is not None:
+        pop_memo()
       if not valid:
         memo.restore(snap)
     return valid
@@ -174,20 +213,26 @@ class _TreeChecker:
     from ._memo import get_memo, get_scope, pop_memo, push_memo
 
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
-    push_memo(memo, scope=scope)
+    if self._leaf_checker is not None:
+      push_memo(memo, scope=scope, owner_code=self._leaf_checker.__code__)
     try:
-      failure = self._validate(obj, tree_ops, memo)
+      failure = self._validate(obj, tree_ops, memo, scope)
     finally:
-      pop_memo()
+      if self._leaf_checker is not None:
+        pop_memo()
       memo.restore(snap)
     if failure is None:
       return f"unexpectedly accepted {obj!r} for {self!r}"
     return failure.message
 
   def _validate(
-    self, obj: object, tree_ops: tp.Any, memo: ShapeMemo
+    self,
+    obj: object,
+    tree_ops: tp.Any,
+    memo: ShapeMemo,
+    scope: dict[str, object] | None,
   ) -> ValidationFailure | None:
     if obj is None and self._structure_spec is not None:
       return ValidationFailure("tree structure checks require a non-None tree")
@@ -197,7 +242,7 @@ class _TreeChecker:
     # Check leaves
     leaves = tree_ops.tree_leaves(obj)
     for leaf in leaves:  # pyright: ignore[reportArgumentType]
-      failure = self._check_leaf(leaf, leaf_type)
+      failure = self._check_leaf(leaf, leaf_type, memo, scope)
       if failure is not None:
         return failure
 
@@ -217,22 +262,37 @@ class _TreeChecker:
       return self._bind_or_check(names[0], tree_ops.tree_structure(obj), memo)
     return self._check_top_down(names, obj, tree_ops, memo, wildcard=False)
 
-  def _check_leaf(self, leaf: object, leaf_type: object) -> ValidationFailure | None:
-    validator = get_runtime_validator(leaf_type)
+  def _check_leaf(
+    self,
+    leaf: object,
+    leaf_type: object,
+    memo: ShapeMemo,
+    scope: dict[str, object] | None,
+  ) -> ValidationFailure | None:
+    validator = self._leaf_validator
     if validator is not None:
-      if validator.instancecheck(leaf):
+      snapshot = memo.snapshot()
+      valid = False
+      try:
+        failure = validator._validate(leaf, memo, scope)
+        valid = failure is None
+      finally:
+        if not valid:
+          memo.restore(snapshot)
+      if failure is None:
         return None
       return ValidationFailure(
-        f"tree leaf {leaf!r} violates {hint_label(leaf_type)}: {validator.instancecheck_str(leaf)}"
+        f"tree leaf {leaf!r} violates {hint_label(leaf_type)}: {failure.message}"
       )
 
-    from beartype.door import is_bearable
-
-    if is_bearable(leaf, tp.cast("tp.Any", leaf_type)):
-      return None
-    return ValidationFailure(
-      f"tree leaf {leaf!r} does not match {hint_label(leaf_type)}"
-    )
+    checker = tp.cast("FunctionType", self._leaf_checker)
+    try:
+      checker(leaf)
+    except _TreeLeafViolation as failure:
+      return ValidationFailure(
+        f"tree leaf {leaf!r} violates {hint_label(leaf_type)}: {failure}"
+      )
+    return None
 
   def _bind_or_check(
     self, name: str, tree_spec: object, memo: ShapeMemo
@@ -302,44 +362,30 @@ class _TreeChecker:
     container level, the second-to-last matches the level above, etc.
     Outer levels beyond the names are unchecked.
     """
-    levels = self._collect_levels(obj, tree_ops)
-    if len(levels) < len(names):
-      return ValidationFailure(
-        f"tree structure spec '{' '.join(names)}' requires {len(names)} container levels but got {len(levels)}"
+    pending: list[tuple[object, tuple[object, ...]]] = [(obj, ())]
+    while pending:
+      node, ancestors = pending.pop()
+      children, top_spec = tree_ops.tree_flatten(
+        node, is_leaf=lambda child, parent=node: child is not parent
       )
-    for i, name in enumerate(reversed(names)):
-      level_specs = levels[len(levels) - 1 - i]
-      first = level_specs[0]
-      if not all(s == first for s in level_specs):
+      is_leaf = len(children) == 1 and children[0] is node
+      if not is_leaf:
+        ancestors = (*ancestors, top_spec)[-len(names) :]
+        if children:
+          pending.extend((child, ancestors) for child in children)
+          continue
+      # A leaf or an empty container terminates this path. Keep only the
+      # suffix so uneven outer depths do not hide shallower constraints.
+      if len(ancestors) < len(names):
         return ValidationFailure(
-          f"tree structure '{name}' has inconsistent sibling structures at one level"
+          f"tree structure spec '{' '.join(names)}' requires {len(names)} container levels "
+          f"on every path but got {len(ancestors)}"
         )
-      failure = self._bind_or_check(name, first, memo)
-      if failure is not None:
-        return failure
+      for name, tree_spec in zip(reversed(names), reversed(ancestors)):
+        failure = self._bind_or_check(name, tree_spec, memo)
+        if failure is not None:
+          return failure
     return None
-
-  @staticmethod
-  def _collect_levels(obj: object, tree_ops: tp.Any) -> list[list[object]]:
-    """Collect one-level structure specs at each depth of the tree."""
-    levels: list[list[object]] = []
-    current_nodes = [obj]
-    while current_nodes:
-      level_specs: list[object] = []
-      next_nodes: list[object] = []
-      for node in current_nodes:
-        children, top_spec = tree_ops.tree_flatten(
-          node, is_leaf=lambda x, n=node: x is not n
-        )
-        if len(children) == 1 and children[0] is node:
-          continue  # leaf
-        level_specs.append(top_spec)
-        next_nodes.extend(children)
-      if not level_specs:
-        break
-      levels.append(level_specs)
-      current_nodes = next_nodes
-    return levels
 
   def __repr__(self) -> str:
     return self._repr
@@ -427,6 +473,11 @@ class _TreeFactory:
 
     if has_leading and has_trailing and len(args) > 1:
       msg = "Cannot have ... at both start and end of structure spec"
+      raise TypeError(msg)
+
+    ellipses = [position for position, arg in enumerate(args) if arg is Ellipsis]
+    if len(ellipses) > 1 or (ellipses and not (has_leading or has_trailing)):
+      msg = "A structure spec permits one ellipsis (...) at the start or end only"
       raise TypeError(msg)
 
     names = [

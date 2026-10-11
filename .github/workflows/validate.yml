@@ -22,10 +22,10 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
       - name: Verify installed hook stages
@@ -46,17 +46,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
         include:
-          - { os: macos-latest, python: "3.10" }
+          - { os: macos-latest, python: "3.11" }
           - { os: macos-latest, python: "3.14" }
-          - { os: windows-latest, python: "3.10" }
+          - { os: windows-latest, python: "3.11" }
           - { os: windows-latest, python: "3.14" }
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
           python-version: ${{ matrix.python }}
@@ -74,12 +74,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
           python-version: ${{ matrix.python }}
@@ -95,23 +95,23 @@ jobs:
       fail-fast: false
       matrix:
         environment:
-          - py310-bt023rc0-numpy22
-          - py310-bt023rc0-jax05
-          - py310-bt023rc0-torch26
-          - py310-bt023rc0-optree014
-          - py313-bt023rc0-numpy24
-          - py313-bt023rc0-jax09
-          - py313-bt023rc0-torch210
-          - py313-bt023rc0-optree019
-          - py313-bt023rc0-type-pyright1408
-          - py313-bt023rc0-type-mypy119
-          - py313-bt023rc0-type-ty
-          - py313-bt023rc0-type-pyrefly
+          - py311-bt0231-numpy22
+          - py311-bt0231-jax05
+          - py311-bt0231-torch26
+          - py311-bt0231-optree014
+          - py313-bt0231-numpy24
+          - py313-bt0231-jax09
+          - py313-bt0231-torch210
+          - py313-bt0231-optree019
+          - py313-bt0231-type-pyright1408
+          - py313-bt0231-type-mypy119
+          - py313-bt0231-type-ty
+          - py313-bt0231-type-pyrefly
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
           enable-cache: true
@@ -120,10 +120,10 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
       - run: uv run --locked --only-group docs zensical build --clean
@@ -140,12 +140,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
           python-version: ${{ matrix.python }}
@@ -157,10 +157,10 @@ jobs:
   distributions:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
       - run: uv build --sdist
@@ -179,12 +179,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -192,7 +192,7 @@ jobs:
           name: candidate-distributions
           path: dist/
       - run: uv venv --python "${{ matrix.python }}" .minimal
-      - run: uv pip install --python .minimal/bin/python dist/*.whl "beartype==0.23.0rc0"
+      - run: uv pip install --python .minimal/bin/python dist/*.whl "beartype==0.23.1"
       - run: .minimal/bin/python -I tools/smoke_minimal.py
 
   installed:
@@ -202,12 +202,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.14"]
+        python: ["3.11", "3.14"]
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
-      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.11.17"
           enable-cache: true

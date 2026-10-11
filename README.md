@@ -1,6 +1,6 @@
 # bearshape
 
-[![Python 3.10-3.14](docs/assets/images/python_versions_badge.svg)](https://www.python.org/)
+[![Python 3.11-3.14](docs/assets/images/python_versions_badge.svg)](https://www.python.org/)
 [![Docs](https://img.shields.io/badge/docs-live-526CFE?style=flat-square&logo=readthedocs&logoColor=white&labelColor=1F2937)](https://beartype.github.io/bearshape/)
 
 Runtime shape and dtype checking for NumPy, JAX, PyTorch, CuPy, and

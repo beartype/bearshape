@@ -73,3 +73,19 @@ bearshape_this_package(conf=BeartypeConf(
 | `beartype.claw` / `bearshape_this_package` | Entire packages, library-wide checking   |
 
 <!-- markdownlint-enable MD013 -->
+
+## Diagnosing competing import hooks
+
+Another import hook can take precedence and prevent package instrumentation.
+After installing your application's hooks, call beartype's public diagnostic
+during single-threaded startup:
+
+```python
+from beartype.claw import warn_if_beartype_claw_inactive
+
+warn_if_beartype_claw_inactive()
+```
+
+It warns when beartype's hook is inactive; it does not repair the competing hook
+or retroactively check imported functions. Keep `bearshape_this_package()` in
+your package initializer: it is a caller-sensitive direct alias.

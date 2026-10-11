@@ -10,6 +10,10 @@ checkout after the ownership transfer:
 git remote set-url origin https://github.com/beartype/bearshape.git
 ```
 
+Use **uv 0.11.17** (the project accepts uv 0.11.x). To bootstrap it alongside a
+different global uv version, run `uv tool install uv==0.11.17` from outside this
+checkout, then ensure its executable is first on PATH.
+
 ```bash
 uv sync --locked
 uv run --locked prek install
@@ -49,20 +53,20 @@ Runtime factors use `{python}-{beartype}-{backend}`; checker factors use
 
 ```bash
 uv run --locked tox list
-uv run --locked tox run -e py310-bt023rc0-cpu
-uv run --locked tox run -e py314-bt023rc0-cpu
-uv run --locked tox run -e py310-bt023rc0-numpy22
-uv run --locked tox run -e py313-bt023rc0-type-pyright1408
-uv run --locked tox run -e py313-bt023rc0-type-mypy119
-uv run --locked tox run -e py313-bt023rc0-type-ty
-uv run --locked tox run -e py313-bt023rc0-type-pyrefly
+uv run --locked tox run -e py311-bt0231-cpu
+uv run --locked tox run -e py314-bt0231-cpu
+uv run --locked tox run -e py311-bt0231-numpy22
+uv run --locked tox run -e py313-bt0231-type-pyright1408
+uv run --locked tox run -e py313-bt0231-type-mypy119
+uv run --locked tox run -e py313-bt0231-type-ty
+uv run --locked tox run -e py313-bt0231-type-pyrefly
 ```
 
 Type environments install all CPU backends. CuPy is not part of those lanes.
 `dev` uses the current lock; explicit backend/checker factors exercise the
-configured compatibility ranges. Every candidate lane requires exact beartype
-0.23.0rc0 today. The owner permits a later candidate for supported native-union
-integration; the current rc0 defect remains a release blocker.
+configured compatibility ranges. Every baseline lane requires exact beartype
+0.23.1. Native composite-union rollback remains a release blocker and requires a
+supported upstream integration; passing these lanes alone does not close it.
 
 Pull requests, main pushes, nightly and candidate validation use the same
 required matrix in `.github/workflows/validate.yml`. When adding a version,
@@ -90,9 +94,9 @@ and `uv run --locked pytest`. CuPy still requires a separate CUDA environment.
 ## Candidate validation
 
 CI and nightly use `.github/workflows/validate.yml`. Current locked CPU backends
-run on Python 3.10–3.14 on Linux, with endpoint jobs on macOS and Windows.
+run on Python 3.11–3.14 on Linux, with endpoint jobs on macOS and Windows.
 Four-checker consumer tests run on every supported Python on Linux. Separate tox
-jobs exercise backend and checker floors with exact beartype 0.23.0rc0.
+jobs exercise backend and checker floors with exact beartype 0.23.1.
 `tools/validate_runtime.py` fails if an expected backend is absent or Torch is a
 CUDA/ROCm build in a CPU lane. Optional local skips do not establish support.
 
@@ -106,7 +110,7 @@ To validate the installed artifact after building the sdist and its wheel, run:
 
 ```bash
 uv run --locked python tools/check_installed.py \
-  dist/*.whl dist/*.tar.gz --python 3.10
+  dist/*.whl dist/*.tar.gz --python 3.11
 ```
 
 Repeat with `--python 3.14`. The command installs locked dependencies and the
@@ -116,6 +120,11 @@ installed module origins. `--installed-package` is an explicit pytest mode for
 this consumer check; ordinary source validation continues to include `src`.
 
 ## Validate and publish a release
+
+The [maintainer release runbook](docs/maintainers/releasing.md) describes
+preparation, exact-artifact review, external prerequisites, future publication
+and failure recovery. Full native-union composition is an additional required
+release gate; published beartype 0.23.1 currently fails it.
 
 Run a validation-only workflow before making a release decision:
 
@@ -187,3 +196,17 @@ old repository links, but
 [does not redirect transferred Pages sites](https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository).
 Use the new website address for saved links. Do not recreate the old repository
 to add a redirect, because that would replace GitHub's repository redirect.
+
+## Dependency canary and custom annotations
+
+Nightly keeps the locked validation matrix and adds a separate latest-compatible
+runtime/backend canary on Python 3.11 and 3.14. Its temporary lock and version
+artifacts explain failures before any dependency update is proposed. The
+canary's range-based preflight is not release acceptance; normal CI and releases
+keep exact beartype 0.23.1 until supported upstream integration is adopted.
+
+Dynamic custom/Structured factory examples must include real positive, negative
+and native inference consumers in the four-checker harness. Use the tested
+[complete native alias recipe](docs/features/static-typing.md#custom-factories-and-structured-arrays)
+and execute its runtime branch as well. Constructor/repr checks and inferred
+`Any` are not evidence of native consumer support.

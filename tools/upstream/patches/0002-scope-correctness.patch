@@ -1,0 +1,638 @@
+diff --git a/beartype/_check/forward/reference/_cls/fwdrefmeta.py b/beartype/_check/forward/reference/_cls/fwdrefmeta.py
+index 494827b1..160e6006 100644
+--- a/beartype/_check/forward/reference/_cls/fwdrefmeta.py
++++ b/beartype/_check/forward/reference/_cls/fwdrefmeta.py
+@@ -469,7 +469,7 @@ class BeartypeForwardRefMetaclass(type):
+         # is_bearable() and die_if_unbearable() functions.
+ 
+         # Avoid circular import dependencies.
+-        from beartype.door._func.doorfunc import is_bearable
++        from beartype.plug._plugstate import is_bearable_delegated as is_bearable
+ 
+         # Return true only if the passed object satisfies this hint.
+         return is_bearable(
+diff --git a/beartype/_check/make/checkmakecls.py b/beartype/_check/make/checkmakecls.py
+index 0070ae67..1bb8a9b7 100644
+--- a/beartype/_check/make/checkmakecls.py
++++ b/beartype/_check/make/checkmakecls.py
+@@ -406,6 +406,7 @@ class BeartypeFuncCheckerFactoryCache(CacheMegaStrongABC):
+         # single unified parameter (rather than individually as multiple
+         # distinct parameters).
+         func_scope[ARG_NAME_CALL_META] = call_curr
++        func_scope.setdefault('__beartype_scope_boundary__', True)
+ 
+         # Type-checking expression lexical scope to be returned.
+         func_scope_refrozen = func_scope_frozen.refreeze(func_scope)
+diff --git a/beartype/_decor/_nontype/_wrap/wrapmain.py b/beartype/_decor/_nontype/_wrap/wrapmain.py
+index 36b42fe5..5f47c122 100644
+--- a/beartype/_decor/_nontype/_wrap/wrapmain.py
++++ b/beartype/_decor/_nontype/_wrap/wrapmain.py
+@@ -165,6 +165,7 @@ def generate_code(decor_func: BeartypeCallDecorFuncData) -> str:
+     # optimization that could yield non-trivial benefits (e.g., if this wrapper
+     # function is frequently called).
+     func_scope[ARG_NAME_FUNC] = decor_func.func_wrappee
++    func_scope['__beartype_scope_boundary__'] = True
+ 
+     # ....................{ SIGNATURE                      }....................
+     # Python code snippet declaring the signature of this type-checking wrapper
+diff --git a/beartype/plug/__init__.py b/beartype/plug/__init__.py
+index e8cd0b5e..de479d35 100644
+--- a/beartype/plug/__init__.py
++++ b/beartype/plug/__init__.py
+@@ -20,3 +20,7 @@ This submodule publishes a medley of attributes enabling users to extend
+ from beartype.plug._plughintable import (
+     BeartypeHintable as BeartypeHintable,
+ )
++from beartype.plug._plugscope import (
++    HintCheckScope as HintCheckScope,
++    get_hint_check_scope as get_hint_check_scope,
++)
+diff --git a/beartype/plug/_plugscope.py b/beartype/plug/_plugscope.py
+new file mode 100644
+index 00000000..fb034019
+--- /dev/null
++++ b/beartype/plug/_plugscope.py
+@@ -0,0 +1,100 @@
++#!/usr/bin/env python3
++# --------------------( LICENSE                            )--------------------
++# Copyright (c) 2014-2026 Beartype authors.
++# See "LICENSE" for further details.
++
++"""Lazy invocation scopes for cooperating stateful hint plugins."""
++
++from collections.abc import Callable
++from inspect import signature
++from sys import _getframe
++from types import CodeType, FrameType
++from typing import Any
++
++
++class HintCheckScope:
++    """State and arguments owned by one checking invocation.
++
++    ``state`` is a mutable namespace for plugins; use a private object as a key.
++    ``owner_code`` identifies the generated entry point, not an invocation.
++    ``arguments`` lazily binds the original callable's named arguments, including
++    defaults. Standalone DOOR checks have no named function arguments.
++
++    Instances retain neither a frame nor a ContextVar token. Do not retain this
++    object beyond a check: its state and arguments may contain user objects.
++    """
++
++    __slots__ = ('state', 'owner_code', '_func', '_args', '_kwargs', '_arguments')
++
++    def __init__(
++        self, owner_code: CodeType, func: Callable[..., Any] | None,
++        args: tuple[Any, ...], kwargs: dict[str, Any],
++    ) -> None:
++        self.state: dict[object, object] = {}
++        self.owner_code = owner_code
++        self._func = func
++        self._args = args
++        self._kwargs = kwargs
++        self._arguments: dict[str, Any] | None = None
++
++    @property
++    def arguments(self) -> dict[str, Any]:
++        """Named arguments for this invocation, materialized on first access."""
++        if self._arguments is None:
++            if self._func is None:
++                self._arguments = {}
++            else:
++                bound = signature(self._func).bind_partial(*self._args, **self._kwargs)
++                bound.apply_defaults()
++                self._arguments = dict(bound.arguments)
++        return self._arguments
++
++
++def get_hint_check_scope() -> HintCheckScope | None:
++    """Return the nearest public check scope, or None outside a check.
++
++    Parameters and return checks share their decorated invocation. Public DOOR
++    calls and nested decorated calls start independent scopes. Internal alias
++    delegation shares the caller's scope. Scopes are allocated only on demand;
++    ordinary beartype checks never allocate a public scope.
++    """
++    frame = _get_hint_check_frame()
++    try:
++        if frame is None:
++            return None
++        values = frame.f_locals
++        scope = values.get('__beartype_scope_instance__')
++        if scope is None:
++            scope = HintCheckScope(
++                frame.f_code, values.get('__beartype_func'),
++                values.get('args', ()), values.get('kwargs', {}))
++            values['__beartype_scope_instance__'] = scope
++        return scope
++    finally:
++        del frame
++
++
++def _get_hint_check_owner_id() -> int | None:
++    """Identify a live invocation without retaining its frame or allocating state."""
++    frame = _get_hint_check_frame()
++    try:
++        return id(frame) if frame is not None else None
++    finally:
++        del frame
++
++
++def _get_hint_check_frame() -> FrameType | None:
++    """Find the public boundary; callers must release the returned frame."""
++    frame = _getframe(1)
++    try:
++        while frame is not None:
++            # The producer owns this marker. Plugins never inspect generated
++            # names, bytecode or undocumented locals to decide delegation.
++            if '__beartype_scope_boundary__' in frame.f_code.co_varnames:
++                values = frame.f_locals
++                if values.get('__beartype_scope_boundary__') is True:
++                    return frame
++            frame = frame.f_back
++        return None
++    finally:
++        del frame
+diff --git a/beartype/plug/_plugstate.py b/beartype/plug/_plugstate.py
+index 662f4e95..209d6bf4 100644
+--- a/beartype/plug/_plugstate.py
++++ b/beartype/plug/_plugstate.py
+@@ -6,10 +6,11 @@
+ """Invocation-owned transactions for opt-in stateful runtime hints."""
+ 
+ from beartype._data.typing.datatyping import Pep3119Checkable
++from beartype.plug._plugscope import _get_hint_check_owner_id
+ from collections.abc import Callable
+ from contextlib import ExitStack
+ from contextvars import ContextVar, Token
+-from typing import Any, Protocol
++from typing import Any, Protocol, cast
+ 
+ 
+ class HintState(Protocol):
+@@ -26,7 +27,7 @@ Rollback = tuple[Callable[[Any], None], Any]
+ class _HintCheckState:
+     """Nested checkpoints sharing state located once per checking expression."""
+ 
+-    __slots__ = ('getters', 'states', 'transactions', '_token')
++    __slots__ = ('getters', 'states', 'transactions', '_token', '_owner_id')
+ 
+     def __init__(self, getters: tuple[StateGetter, ...]) -> None:
+         self.getters = getters
+@@ -38,12 +39,17 @@ class _HintCheckState:
+         self.states = tuple(states)
+         self.transactions: list[list[Rollback]] = []
+         self._token: Token[tuple['_HintCheckState', ...]] | None = None
++        self._owner_id: int | None = None
+ 
+     def __enter__(self) -> '_HintCheckState':
++        self._owner_id = _get_hint_check_owner_id()
+         parents = _ACTIVE_CHECK_STATES.get()
+         if parents:
+-            parents = tuple(parent for parent in parents if parent._token is not None)
++            parents = tuple(parent for parent in parents
++                            if parent._token is not None
++                            and parent._owner_id == self._owner_id)
+         # Resolved aliases enrol their domains before mutating shared state.
++        # Independent public calls, including recursion, never join a parent.
+         for parent in parents:
+             parent.register(self.getters, self.states)
+         self._token = _ACTIVE_CHECK_STATES.set((*parents, self))
+@@ -57,6 +63,7 @@ class _HintCheckState:
+             assert self._token is not None
+             token = self._token
+             self._token = None
++            self._owner_id = None
+             # copy_context() can outlive this check. Do not let a copied
+             # context retain invocation state or enrol into a finished check.
+             self.getters = ()
+@@ -124,15 +131,32 @@ _ACTIVE_CHECK_STATES: ContextVar[tuple[_HintCheckState, ...]] = ContextVar(
+ 
+ def isinstance_stateful(obj: object, hint: Pep3119Checkable, getter: StateGetter) -> bool:
+     """Check a resolved root reference without another generated wrapper."""
+-    parents = _ACTIVE_CHECK_STATES.get()
+-    if parents:
+-        parents = tuple(parent for parent in parents if parent._token is not None)
+-    if parents:
+-        for parent in parents:
+-            parent.register((getter,))
+-        return isinstance(obj, hint)
+     with _HintCheckState((getter,)) as state:
+         state.begin()
+         if isinstance(obj, hint):
+             return state.commit()
+         return False
++
++
++def _make_code_delegated_check(*args, **kwargs):
++    """Generate an internal alias check sharing the caller's public scope."""
++    from beartype._check.make.checkmakefunc import make_code_tester_check
++    code, scope = make_code_tester_check(*args, **kwargs)
++    values = dict(scope)
++    values['__beartype_scope_boundary__'] = False
++    return code, scope.refreeze(values)
++
++
++_delegate_tester_factory = None
++
++
++def is_bearable_delegated(obj, hint, *, conf) -> bool:
++    """Check an internal subhint without creating a public checking scope."""
++    global _delegate_tester_factory
++    if _delegate_tester_factory is None:
++        from beartype._check.make.checkmakecls import BeartypeFuncCheckerFactoryCache
++        _delegate_tester_factory = BeartypeFuncCheckerFactoryCache()
++    checker = cast(Callable[[object], bool],
++        _delegate_tester_factory.cache_func_checker(
++            hint, conf, 'is_bearable() ', _make_code_delegated_check))
++    return checker(obj)
+diff --git a/beartype_test/a00_unit/a40_api/plug/test_plugscope.py b/beartype_test/a00_unit/a40_api/plug/test_plugscope.py
+new file mode 100644
+index 00000000..f74d9aee
+--- /dev/null
++++ b/beartype_test/a00_unit/a40_api/plug/test_plugscope.py
+@@ -0,0 +1,117 @@
++"""Public scope identity, named arguments and release of user values."""
++import gc
++import weakref
++from contextvars import copy_context
++from typing import Annotated
++
++import pytest
++from beartype import beartype, BeartypeConf
++from beartype.door import is_bearable, die_if_unbearable
++from beartype.plug import get_hint_check_scope
++from beartype.vale import Is
++
++
++def test_no_scope_outside_check():
++    assert get_hint_check_scope() is None
++
++
++def test_arguments_defaults_return_and_invocation_identity():
++    scopes = []
++
++    def capture(value):
++        scope = get_hint_check_scope()
++        assert scope is get_hint_check_scope()
++        scopes.append(scope)
++        return True
++
++    hint = Annotated[int, Is[capture]]
++
++    @beartype
++    def checked(x: hint, /, width=3, *, height=4) -> hint:
++        return x
++
++    assert checked(2, height=5) == 2
++    assert scopes[0] is scopes[1]
++    assert scopes[0].arguments == {'x': 2, 'width': 3, 'height': 5}
++    checked(7)
++    assert scopes[2] is not scopes[0]
++    assert scopes[2].owner_code is checked.__code__
++    assert scopes[2].state == {}
++    assert get_hint_check_scope() is None
++
++
++@pytest.mark.parametrize('public_first', [True, False])
++def test_delegation_and_public_checker_cache_are_distinct(public_first):
++    from beartype.plug._plugstate import is_bearable_delegated
++    captures = []
++
++    def capture(value):
++        captures.append(get_hint_check_scope())
++        return True
++
++    hint = Annotated[int, Is[capture]]
++    conf = BeartypeConf()
++
++    def parent(value):
++        scope = get_hint_check_scope()
++        operations = (
++            lambda: is_bearable(1, hint, conf=conf),
++            lambda: is_bearable_delegated(1, hint, conf=conf))
++        if not public_first:
++            operations = operations[::-1]
++        for operation in operations:
++            assert operation()
++        public_scope, delegated_scope = captures if public_first else captures[::-1]
++        assert delegated_scope is scope
++        assert public_scope is not scope
++        assert public_scope.arguments == {}
++        return True
++
++    assert is_bearable(1, Annotated[int, Is[parent]])
++
++
++def test_nested_decorated_and_door_raiser_scopes_are_independent():
++    captures = []
++
++    def capture(value):
++        captures.append(get_hint_check_scope())
++        return True
++
++    hint = Annotated[int, Is[capture]]
++
++    @beartype
++    def inner(x: hint):
++        pass
++
++    def parent(value):
++        outer = get_hint_check_scope()
++        inner(value)
++        die_if_unbearable(value, hint)
++        assert len(captures) == 2
++        assert all(scope is not outer for scope in captures)
++        assert captures[0] is not captures[1]
++        return True
++
++    assert is_bearable(1, Annotated[int, Is[parent]])
++
++
++@pytest.mark.parametrize('reject', [False, True])
++def test_completed_scope_does_not_retain_argument_or_leak_through_context(reject):
++    contexts = []
++
++    def capture(value):
++        scope = get_hint_check_scope()
++        scope.state[object()] = value
++        contexts.append(copy_context())
++        return not reject
++
++    class Value:
++        pass
++
++    value = Value()
++    ref = weakref.ref(value)
++    assert is_bearable(value, Annotated[Value, Is[capture]]) is not reject
++    del value
++    gc.collect()
++    assert ref() is None
++    assert contexts[0].run(get_hint_check_scope) is None
+diff --git a/beartype_test/a00_unit/a40_api/plug/test_plugstate_isolation.py b/beartype_test/a00_unit/a40_api/plug/test_plugstate_isolation.py
+new file mode 100644
+index 00000000..caf09c29
+--- /dev/null
++++ b/beartype_test/a00_unit/a40_api/plug/test_plugstate_isolation.py
+@@ -0,0 +1,228 @@
++"""Transaction domains belong to one live public checking invocation."""
++
++import gc
++import sys
++import weakref
++from contextvars import copy_context
++from typing import Annotated
++
++import pytest
++from beartype import beartype
++from beartype.door import die_if_unbearable, is_bearable
++from beartype.plug import get_hint_check_scope
++from beartype.roar import BeartypeCallHintParamViolation, BeartypeDoorHintViolation
++from beartype.vale import Is
++from beartype._check.forward.reference._cls.fwdrefcache import ref_proxy_cache
++
++
++@pytest.fixture
++def isolated_domains(monkeypatch, request):
++    ref_proxy_cache.clear_cache()
++    key = object()
++    states = []
++
++    class State:
++        def __init__(self):
++            self.bindings = {}
++
++        def snapshot(self):
++            return self.bindings.copy()
++
++        def restore(self, before):
++            self.bindings.clear()
++            self.bindings.update(before)
++
++    def get_state():
++        scope = get_hint_check_scope()
++        assert scope is not None
++        if key not in scope.state:
++            state = State()
++            states.append(state)
++            scope.state[key] = state
++        return scope.state[key]
++
++    class Meta(type):
++        __beartype_state__ = staticmethod(get_state)
++
++        def __instancecheck__(cls, value):
++            if not isinstance(value, list):
++                return False
++            state = get_state()
++            return state.bindings.setdefault(cls.__name__, len(value)) == len(value)
++
++    N, C = Meta('N', (), {}), Meta('C', (), {})
++    for hint in (N, C):
++        hint.__qualname__ = f'{request.node.name}.{hint.__name__}'
++
++    def resolve():
++        monkeypatch.setattr(sys.modules[__name__], 'IsolationLaterN', N, raising=False)
++        monkeypatch.setattr(sys.modules[__name__], 'IsolationLaterC', C, raising=False)
++
++    yield N, C, get_state, states, resolve
++    ref_proxy_cache.clear_cache()
++
++
++@pytest.mark.parametrize('kind', ['door', 'raiser', 'decorated'])
++@pytest.mark.parametrize('nested_first', [True, False])
++@pytest.mark.parametrize('nested_rejects', [True, False])
++def test_independent_nested_domain_never_enrolls_in_outer(
++    isolated_domains, kind, nested_first, nested_rejects):
++    N, _, _, states, resolve = isolated_domains
++    inner_states = []
++    inner_hint = tuple[N, str if nested_rejects else int]
++
++    @beartype
++    def inner(value: inner_hint):
++        pass
++
++    def independent(value):
++        start = len(states)
++        item = ([0] * 7, 1)
++        if kind == 'door':
++            assert is_bearable(item, inner_hint) is not nested_rejects
++        elif nested_rejects:
++            exception = (BeartypeDoorHintViolation if kind == 'raiser'
++                         else BeartypeCallHintParamViolation)
++            with pytest.raises(exception):
++                die_if_unbearable(item, inner_hint) if kind == 'raiser' else inner(item)
++        elif kind == 'raiser':
++            die_if_unbearable(item, inner_hint)
++        else:
++            inner(item)
++        inner_states.extend(states[start:])
++        return True
++
++    # Beartype caches composite hints by repr; give each closure its own name.
++    independent.__qualname__ += f'_{kind}_{nested_first}_{nested_rejects}'
++    probe = Annotated[int, Is[independent]]
++    hint = (
++        tuple[probe, 'IsolationLaterN', str] | tuple[int, 'IsolationLaterC', int]
++        if nested_first else
++        tuple['IsolationLaterN', probe, str] | tuple['IsolationLaterC', int, int])
++
++    @beartype
++    def outer(value: hint, last: N):
++        pass
++
++    resolve()
++    value = (1, [0, 0], 1) if nested_first else ([0, 0], 1, 1)
++    outer(value, [0, 0, 0])
++    assert inner_states
++    assert all(state.bindings == ({} if nested_rejects else {'N': 7})
++               for state in inner_states)
++    # A successful first alternative must still constrain later arguments.
++    first = (*value[:2], 'accepted')
++    with pytest.raises(BeartypeCallHintParamViolation):
++        outer(first, [0, 0, 0])
++    outer(first, [0, 0])
++
++
++def test_recursive_invocations_of_same_wrapper_have_different_owners(isolated_domains):
++    N, _, get_state, _, resolve = isolated_domains
++    depth = 0
++    completed = []
++
++    def recurse(value):
++        nonlocal depth
++        if not depth:
++            depth += 1
++            try:
++                outer((0, [0] * 7, 'accepted'), [0] * 7)
++            finally:
++                depth -= 1
++        return True
++
++    probe = Annotated[int, Is[recurse]]
++
++    @beartype
++    def outer(value: tuple[probe, 'IsolationLaterN', str]
++              | tuple[int, 'IsolationLaterC', int], last: N):
++        completed.append(get_state())
++
++    resolve()
++    outer((1, [0, 0], 1), [0, 0, 0])
++    assert completed[0].bindings == {'N': 7}
++    assert completed[1].bindings == {'C': 2, 'N': 3}
++
++
++def test_copied_active_context_does_not_join_another_thread(isolated_domains):
++    from concurrent.futures import ThreadPoolExecutor
++
++    N, _, _, states, resolve = isolated_domains
++    inner_states = []
++
++    def independent(value):
++        start = len(states)
++        with ThreadPoolExecutor(max_workers=1) as executor:
++            assert executor.submit(copy_context().run, is_bearable,
++                                   ([0] * 7, 1), tuple[N, int]).result()
++        inner_states.extend(states[start:])
++        return True
++
++    probe = Annotated[int, Is[independent]]
++
++    @beartype
++    def outer(value: tuple[probe, 'IsolationLaterN', str]
++              | tuple[int, 'IsolationLaterC', int], last: N):
++        pass
++
++    resolve()
++    outer((1, [0, 0], 1), [0, 0, 0])
++    assert all(state.bindings == {'N': 7} for state in inner_states)
++
++
++def test_transaction_ownership_does_not_allocate_public_scopes(monkeypatch):
++    from beartype.plug import _plugscope
++
++    ref_proxy_cache.clear_cache()
++
++    def unexpected(*args, **kwargs):
++        raise AssertionError('Ordinary checking allocated a public scope')
++
++    monkeypatch.setattr(_plugscope, 'HintCheckScope', unexpected)
++
++    @beartype
++    def checked(value: tuple['IsolationPlainClass', int]):
++        pass
++
++    class Plain:
++        pass
++
++    monkeypatch.setattr(sys.modules[__name__], 'IsolationPlainClass', Plain, raising=False)
++    checked((Plain(), 1))
++    checked((Plain(), 2))
++    ref_proxy_cache.clear_cache()
++
++
++@pytest.mark.parametrize('reject', [False, True])
++def test_finished_transaction_releases_owner_arguments(isolated_domains, reject):
++    _, _, _, states, resolve = isolated_domains
++    contexts = []
++
++    def capture(value):
++        contexts.append(copy_context())
++        return not reject
++
++    capture.__qualname__ += f'_{reject}'
++    probe = Annotated[object, Is[capture]]
++
++    @beartype
++    def checked(value: tuple[probe, 'IsolationLaterN', str]):
++        pass
++
++    class Value:
++        pass
++
++    resolve()
++    value = Value()
++    reference = weakref.ref(value)
++    if reject:
++        with pytest.raises(BeartypeCallHintParamViolation):
++            checked((value, [0], 'accepted'))
++    else:
++        checked((value, [0], 'accepted'))
++    del value
++    states.clear()
++    gc.collect()
++    assert reference() is None
++    assert contexts[0].run(get_hint_check_scope) is None
+diff --git a/doc/src/api_plug.rst b/doc/src/api_plug.rst
+index 7ca24330..c27343af 100644
+--- a/doc/src/api_plug.rst
++++ b/doc/src/api_plug.rst
+@@ -99,3 +99,28 @@ needed if a plugin's restore method itself raises.
+ 
+ Python's bare ``isinstance`` does not invoke this protocol. Libraries should
+ preserve any individual-check guarantees they need outside beartype.
++
++Invocation scopes
++-----------------
++
++``beartype.plug.get_hint_check_scope()`` returns a ``HintCheckScope`` for the
++nearest generated public check, or ``None`` outside checking. Scope creation
++is lazy: checks that never request state allocate no scope object. Parameters
++and returns share the decorated invocation. Nested decorated calls and public
++DOOR calls start separate scopes, while an internally delegated forward alias
++shares the enclosing scope. Checker caches preserve that distinction regardless
++of which path is used first.
++
++Use ``scope.state`` as a library namespace keyed by a private object, rather
++than a string another plugin might use. ``scope.arguments`` lazily provides
++bound function arguments, including defaults; standalone DOOR scopes provide
++an empty mapping. ``scope.owner_code`` identifies the generated entry point
++for explicit decorator integration; it is not an invocation identifier.
++Scope object identity distinguishes invocations. Scope lookup follows the
++live call stack, so copied execution contexts cannot resurrect completed scopes.
++
++Do not retain a scope past the check: its state and arguments may retain user
++objects. Scope objects themselves hold no frames or context tokens. Scope
++ownership does not replace state rollback: a rejected composite alternative
++must restore registered domains, and a rejected nested leaf must roll back even
++when a predicate catches the rejection and then succeeds.

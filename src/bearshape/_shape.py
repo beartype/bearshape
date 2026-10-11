@@ -34,6 +34,7 @@ import operator
 import typing as tp
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from itertools import zip_longest
 
 from ._memo import ShapeMemo
 
@@ -319,20 +320,34 @@ def _check_variadic(dim: VariadicDim, shape: tuple[int, ...], memo: ShapeMemo) -
 
   prev_broadcastable, prev_shape = prev
   if prev_shape == shape:
+    memo.variadic[dim.name] = (prev_broadcastable and dim.broadcastable, shape)
     return ""
 
   # Broadcasting logic
   if prev_broadcastable or dim.broadcastable:
-    try:
-      import numpy as np
-
-      broadcast = np.broadcast_shapes(shape, prev_shape)
-    except ValueError:
+    axes = []
+    for current, previous in zip_longest(
+      reversed(shape), reversed(prev_shape), fillvalue=1
+    ):
+      if current == 1:
+        axes.append(previous)
+      elif previous in {1, current}:
+        axes.append(current)
+      else:
+        return (
+          f"variadic '~{dim.name}' shape {shape} cannot broadcast "
+          f"with existing {prev_shape}"
+        )
+    broadcast = tuple(reversed(axes))
+    # Every strict occurrence must already have the resulting shape.
+    if (not prev_broadcastable and broadcast != prev_shape) or (
+      not dim.broadcastable and broadcast != shape
+    ):
       return (
-        f"variadic '~{dim.name}' shape {shape} cannot broadcast "
-        f"with existing {prev_shape}"
+        f"variadic '~{dim.name}' shape {shape} would expand a strict binding "
+        f"when broadcasting with existing {prev_shape}"
       )
-    # Update to the broadcast result
+    # Only broadcastable occurrences may expand to the common target.
     memo.variadic[dim.name] = (prev_broadcastable and dim.broadcastable, broadcast)
     return ""
 

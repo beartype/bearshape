@@ -8,142 +8,97 @@ and this project follows
 
 ## [Unreleased]
 
-- Require runtime and four-checker consumer tests from normally installed
-    sdist-derived wheels outside the checkout on Python 3.10 and 3.14.
-
-- Share candidate validation across PRs, pushes and nightly runs, with explicit
-    CPU backends, four checkers, complete hooks and a required final gate.
-
-- Preserve Markdown tables through the formatting hook and restore rendered
-    tables/admonitions. Align typing, memo and example guidance with the
-    candidate.
-
-- Accept ordinary convertible inputs in static Like annotations: NumPy numeric
-    casting families and JAX/Torch scalars, arrays and nested sequences.
-    Preserve native result types after explicit conversion.
-
-- Allow nonnumeric NumPy dtypes in static Shaped and ShapedLike annotations.
-
-- Replace nominal static Tree stubs with a shared model for ordinary typed
-    leaves, lists, tuples and dictionaries, preserving expected leaf errors.
-    Document the concrete-type alias pattern for custom JAX nodes.
-
-- Verify real consumer calls, inferred types, and expected errors with pyright,
-    mypy, ty, and pyrefly; require selected tools instead of silently skipping
-    them.
-
-- Update the locked checker versions and make `check(conf=None)` match its
-    public overloads.
-
-- Include LICENSE in wheel/source distributions and ship the regression suite
-    and its configuration in the source archive. Verify actual archive contents.
-
-- Maintain JAX jit/vmap/grad and Torch autograd/compiler-boundary tests, with
-    explicit tracing and compilation guidance.
-
-- Verify a normally installed wheel and custom array factory without optional
-    backend dependencies on Python 3.10 and 3.14.
-
-### Maintenance
-
-- Restore documentation under `beartype.github.io/bearshape` after the GitHub
-    ownership transfer. Update repository, guide, edit, notebook and package
-    metadata links to the beartype organization, and document publisher
-    migration.
-
-- Scope file hooks to pre-commit and remove the unused commit-message shim.
-    Isolate release tooling and disposable Git tests from inherited hook
-    repository variables; verify installed hook stages in CI.
-
-- Align shared Codex/Claude guidance, execution-plan policy, contributor
-    commands and tool documentation with the four-checker production validation
-    workflow.
-
-- Record the accepted full-union upstream integration path and limited native
-    CuPy static support; retain a runnable probe for the open union defect.
-
-- Build documentation on pushes while requiring explicit manual dispatch for
-    Pages deployment; scope Pages/OIDC write permissions to that job.
-
-### Added
-
-- Add the production contract/test map, reproducible runtime measurements and
-    ownership handoff evidence with unresolved release decisions stated
-    explicitly.
-
-- Add CUDA runtime evidence for CuPy conversion, native device/stream
-    preservation and optree containers on the corrected candidate.
-
-- A GitHub Actions workflow for trusted publishing to PyPI, with automatic
-    release-based publishing and manual `workflow_dispatch` support for a chosen
-    ref.
-
-- `typing_extensions>=4.6` as a runtime dependency, so the typing constructs
-    used by the backend aliases resolve on every supported Python version.
+The next candidate is **0.1.0rc1**, independently versioned from beartype and
+not yet published. Python **3.11+** is required; the validated matrix is
+**3.11–3.14**, with exact released beartype **0.23.1** as the current baseline
+and dependency range `>=0.23.1,<0.24`. Full native composite-union rollback
+still requires supported upstream integration before release. Local patches are
+proposal evidence only.
 
 ### Fixed
 
-- `bearshape_this_package()` now instruments the calling package correctly,
-    including annotated parameters and returns in subsequently imported modules.
+- Preserve grouping and runtime Value scope in nested arithmetic, reflected
+    operators, attributes and powers of negative dimensions.
+- Retain strict variadic targets when mixed with broadcastable occurrences,
+    including equal-shape transitions and returns. Custom variadic broadcasting
+    does not import NumPy.
+- Isolate independent public checks inside Tree predicates while preserving
+    cross-leaf dimensions, structures and enclosing Value arguments. Check
+    suffix constraints along every ragged path, including shallow leaves and
+    empty containers, and reject interior/repeated ellipses.
+- Validate custom array metadata with nonnegative integer-index axes. Turn
+    ordinary property/metadata failures into useful diagnostics while allowing
+    cancellation to propagate. Like converters own untrusted input inspection;
+    reject malformed results and preserve original arguments.
+- Honor each backend's selected Like converter for layouts, byte order, dtypes
+    and foreign protocols. Do not retry failures through another backend.
+- Release temporary classes from the default Like trust cache with weak keys.
+- Keep validation state owned by its active invocation, restore failed atomic
+    checks and diagnostic changes, and avoid retaining checked arrays. The
+    broader native composite-union boundary remains the upstream release gate.
+- Make `bearshape_this_package()` instrument the calling package's parameters
+    and returns. Keep `check(conf=None)` aligned with its public overloads.
+- Correct normal-install origin checks for symlinked virtual environments and
+    report readable array/tree failures with the owning backend's hint names.
 
-- Validation state now belongs to its active invocation. Failed boolean
-    composite checks no longer poison later checks of the same object or retain
-    failed arrays through cached annotation state. Diagnostic checks preserve
-    the current call's dimension bindings and restore temporary changes.
+### Performance
 
-- Backend `Like` checks now reject inputs that their selected converter cannot
-    handle, including unsupported NumPy layouts, byte order, dtypes, and foreign
-    protocols. Foreign arrays no longer bypass JAX/Torch/CuPy conversion, and a
-    failed backend converter is no longer masked by a NumPy fallback.
+- Bind runtime arguments only for array annotations containing Value dimensions.
+    Reuse owned Tree array validators while retaining all-leaf traversal,
+    per-leaf snapshots and independent-check isolation.
+- Filter unrelated frames before reading their locals. Preserve matched runtime
+    samples, construction costs and artifact identities; timings are not a CI
+    threshold. Dtype and checked-value metadata remain uncached.
 
-- Structured dtype normalization now exposes its NumPy input type to all
-    supported checkers while retaining NumPy's runtime validation.
+### Typing and compatibility
 
-- Backend array aliases (`Shaped`, `F32`, `IntLike`, …) no longer break type
-    checkers resolving Python 3.10 or 3.11. The aliases used
-    `typing.TypeAliasType` (3.12+) and `typing.TypeVarTuple` (3.11+); they now
-    use the `typing_extensions` backports, along with `typing_extensions.Self`
-    in `bearshape.cupy` and `typing_extensions.Never` in
-    `bearshape._dimensions`.
+- Check actual positive, negative and inference consumers with pyright, mypy, ty
+    and pyrefly across Python 3.11–3.14. Missing required engines fail.
+- Accept tested ordinary Like inputs for NumPy, JAX and Torch while retaining
+    native results after explicit conversion. Allow nonnumeric NumPy dtypes in
+    Shaped annotations.
+- Model ordinary typed Tree leaves, lists, tuples, dictionaries and None;
+    document runtime-only structure syntax and checker aliases for custom nodes.
+- Test native TYPE_CHECKING aliases for complete custom/Structured annotations.
+    Preserve NumPy result/dtype inference without claiming static shape or
+    structured-field proofs. Native CuPy static support remains explicitly
+    limited to the accepted protocol surface.
+- Keep JAX jit/vmap/grad, Torch autograd/eager compiler boundaries, scalar/Like
+    families, default optree registration and inherited check_context behavior
+    covered and documented.
 
-### Changed
+### CI and release tooling
 
-- Update artifact and Pages actions to reviewed Node 24 releases and exercise
-    Pages packaging in required documentation validation.
+- Share locked candidate validation across PRs, pushes, nightly and releases:
+    CPU backends, four checkers, compatibility floors, coverage, docs, notebook,
+    installed archives and minimal environments. Use the locked Ruff toolchain.
+- Require the entire native composition/scope suite against the actual installed
+    candidate and published dependency before releasing. The separate upstream
+    proposal workflow cannot authorize publication.
+- Add a separate latest-compatible runtime/backend canary with retained lock,
+    source, versions and test evidence, without changing locked acceptance.
+- Build wheels from source archives, verify licenses/typing markers/package
+    contents, and test normal consumers outside the checkout. Ship the
+    regression suite and its configuration in the source archive.
+- Require immutable tag/version/source identity and verified artifact hashes
+    before OIDC trusted publishing. Support validation-only runs and document
+    developer preparation, approval, upload and recovery. Final CUDA evidence
+    must match the exact final wheel.
+- Keep Pages deployment manually authorized while building/packaging docs in CI.
+    Use reviewed Node 24 actions and preserve rendered tables/admonitions.
+- Scope file hooks to pre-commit, remove the unused commit-message hook, clear
+    inherited Git repository variables in release tooling, and test hook stages.
 
-- Require immutable tag/version identity and full candidate validation before
-    publishing the tested artifacts; add a validation-only release path.
+### Maintenance
 
-- Prepare `0.1.0rc0` with beartype `>=0.23.0rc0,<0.24`; older beartype versions
-    are no longer supported. Compatibility jobs test the exact rc0 dependency,
-    including Python 3.10 and 3.14 CPU backend environments.
-
-- CI lint and formatting now use the Ruff version in `uv.lock`, avoiding
-    unreviewed tool upgrades that disagree with local checks.
-
-- Default type checks now target Python 3.10, with compatibility tests covering
-    every supported Python target from 3.10 through 3.14 for pyright, mypy, and
-    ty.
-
-- Renamed the distribution, import package, documentation, examples, tests, and
-    release metadata to bearshape.
-
-- Normalized product-facing branding to lowercase `bearshape`.
-
-- Switched the documentation build from direct MkDocs usage to Zensical while
-    preserving the existing Material-style site proportions and theme.
-
-- Hardened nearest-wrapper memo and scope resolution for plain `@beartype` usage
-    in decorated call stacks.
-
-- Hardened standalone `is_bearable()` memo identity against recycled checker
-    frame objects.
-
-- Array and tree runtime hints now report readable validation failures through
-    custom beartype diagnostics instead of boolean-only validator output.
-
-- Backend `Like[...]` diagnostics now identify JAX, PyTorch, and CuPy hints with
-    their owning `bearshape` backend module instead of `numpy`.
+- Complete the lowercase bearshape rename and transfer GitHub/documentation
+    identities to `beartype/bearshape` and `beartype.github.io/bearshape`.
+    Preserve original authorship and historical evidence; private PyPI trust
+    remains a separate verification.
+- Align shared agent guidance, execution plans, contributor commands and
+    maintainer handoff with current ownership and validation responsibilities.
+- Use the required typing backports on supported interpreters, and build the
+    documentation with Zensical while preserving the established site design.
 
 ## [0.0.1] - 2026-03-31
 

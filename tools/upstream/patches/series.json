@@ -1,0 +1,17 @@
+{
+  "base_commit": "f85b67d8b0b6bd9c910bd97f0d2d417c4550b038",
+  "patches": [
+    {
+      "file": "0001-state.patch",
+      "sha256": "01961e7d28519925e09dadbb10aebe81fd8f25f33f82db9dfff74a22bec7ff5b"
+    },
+    {
+      "file": "0002-scope-correctness.patch",
+      "sha256": "054a42e50353a8bf092fa283562f726b06b24669e38148247708009a55358bf0"
+    },
+    {
+      "file": "0003-ordinary-performance.patch",
+      "sha256": "6c7d531d57227a6b581af8327a3600ef130161372ecd53dead9c78d22ed07096"
+    }
+  ]
+}

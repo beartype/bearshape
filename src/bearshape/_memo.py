@@ -27,6 +27,8 @@ import types
 import typing as tp
 from dataclasses import dataclass, field
 
+import beartype.plug as _beartype_plug
+
 __all__ = [
   "ShapeMemo",
   "get_memo",
@@ -36,6 +38,23 @@ __all__ = [
 ]
 
 _FRAME_MEMO_NAME = "__bearshape_memo__"
+_SCOPE_MEMO_KEY = object()
+
+
+class _HintCheckScope(tp.Protocol):
+  state: dict[object, object]
+  owner_code: types.CodeType
+
+  @property
+  def arguments(self) -> dict[str, object]: ...
+
+
+# The supported API is optional until an upstream release includes it. Keep the
+# released baseline path intact; never patch or inspect upstream internals.
+_get_hint_check_scope = tp.cast(
+  "tp.Callable[[], _HintCheckScope | None] | None",
+  getattr(_beartype_plug, "get_hint_check_scope", None),
+)
 
 
 @dataclass
@@ -109,7 +128,8 @@ def push_memo(
   owner_code:
       When set, this entry is only visible to frames whose ``f_code``
       matches.  Untagged entries (``None``) are unconditional and used
-      by :class:`check_context` and :class:`_TreeChecker`.
+      by :class:`check_context`. Tree leaf entries are tagged with the
+      private leaf wrapper code.
 
   """
   if memo is None:
@@ -145,6 +165,10 @@ def _iter_frames(_depth: int) -> tp.Iterator[types.FrameType]:
 
 
 def _is_beartype_wrapper_frame(frame: types.FrameType) -> bool:
+  code = frame.f_code
+  is_door_checker = code.co_name.startswith("__beartype_checker_")
+  if "__beartype_func" not in code.co_varnames and not is_door_checker:
+    return False
   locals_map = frame.f_locals
   fn = locals_map.get("__beartype_func")
   args = locals_map.get("args")
@@ -157,7 +181,7 @@ def _is_beartype_wrapper_frame(frame: types.FrameType) -> bool:
   # ``__beartype_pith_*`` locals. These frames are the right memo boundary for
   # standalone bearability checks; falling back past them to shared internals
   # can leak stale bindings across unrelated checks.
-  return frame.f_code.co_name.startswith("__beartype_checker_") and any(
+  return is_door_checker and any(
     name.startswith("__beartype_pith_") for name in locals_map
   )
 
@@ -194,13 +218,31 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
       → beartype wrapper.
 
   """
+  if _get_hint_check_scope is not None:
+    scope = _get_hint_check_scope()
+    explicit = _explicit_stack.get()
+    owners = _explicit_owner_stack.get()
+    if explicit and (
+      not owners
+      or owners[-1] is None
+      or (scope is not None and scope.owner_code is owners[-1])
+    ):
+      return explicit[-1]
+    if scope is None:
+      return ShapeMemo()
+    memo = scope.state.get(_SCOPE_MEMO_KEY)
+    if memo is None:
+      memo = ShapeMemo()
+      scope.state[_SCOPE_MEMO_KEY] = memo
+    return tp.cast("ShapeMemo", memo)
+
   # 1. Explicit stack takes priority (if owner matches or untagged)
   explicit = _explicit_stack.get()
   if explicit:
     owners = _explicit_owner_stack.get()
     owner_code = owners[-1] if owners else None
     if owner_code is None:
-      # Untagged entry (check_context / TreeChecker) — always visible
+      # Untagged entry (check_context) — always visible
       return explicit[-1]
     # Tagged entry — only visible if the caller's frame matches
     frame = _nearest_runtime_frame(_depth)
@@ -222,6 +264,20 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
 
 def get_scope(_depth: int = 2) -> dict[str, object]:
   """Return the current runtime scope for ``Value(...)`` expressions."""
+  if _get_hint_check_scope is not None:
+    scope = _get_hint_check_scope()
+    explicit_scope = _explicit_scope_stack.get()
+    owners = _explicit_owner_stack.get()
+    owner_matches = (
+      not owners
+      or owners[-1] is None
+      or (scope is not None and scope.owner_code is owners[-1])
+    )
+    if explicit_scope and explicit_scope[-1] is not None and owner_matches:
+      return explicit_scope[-1]
+    if scope is not None:
+      return scope.arguments
+
   explicit = _explicit_scope_stack.get()
   if explicit and explicit[-1] is not None:
     owners = _explicit_owner_stack.get()

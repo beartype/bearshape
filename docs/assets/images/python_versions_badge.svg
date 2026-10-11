@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="149.65" height="20.5" viewBox="0 0 146 20" role="img" aria-labelledby="title desc">
-  <title id="title">Python 3.10-3.14</title>
-  <desc id="desc">Supported Python versions 3.10 through 3.14</desc>
+  <title id="title">Python 3.11-3.14</title>
+  <desc id="desc">Supported Python versions 3.11 through 3.14</desc>
   <rect width="146" height="20" rx="4" fill="#0f172a"/>
   <rect x="0.5" y="0.5" width="145" height="19" rx="3.5" fill="none" stroke="#334155"/>
   <g transform="translate(7 3.2) scale(0.104)">
@@ -35,6 +35,6 @@
     font-weight="600"
     letter-spacing="0.05"
   >
-    3.10-3.14
+    3.11-3.14
   </text>
 </svg>

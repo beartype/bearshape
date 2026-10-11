@@ -1,9 +1,37 @@
 # Production review and ownership handoff
 
+**Latest audit follow-up, 11 October 2026:** candidate **0.1.0rc1** targets
+Python **3.11–3.14** and exact released beartype **0.23.1**. PRs
+[#48–#55](https://github.com/beartype/bearshape/pull/55) add the six audit
+fixes, measured scope/Tree optimizations, complete release composition gates and
+tested native factory aliases. The current
+[execution plan](https://github.com/beartype/bearshape/blob/main/plans/2026-10-11-audit-followup.md)
+records validation and external prerequisites; the
+[performance evidence](https://github.com/beartype/bearshape/tree/a30c11b52b2ac53ebfc79f7ee00fb1f1fb0ecd18/tools/evidence/2026-10-11-audit-performance)
+contains matched installed measurements and artifact identities.
+
+The combined implementation passes **1,300 installed baseline tests** and
+**1,427 installed proposal tests** on each Python endpoint, including all four
+consumer checkers. All **23 original audit regressions** pass with both
+dependencies. Source coverage is **91.10%**; fresh minimal consumers, 95 docs
+snippets, 29 notebook cells on each endpoint and both dependency canaries pass.
+The plan records exact source/archive hashes and hosted runs. Five local skips
+cover unavailable CuPy and platform-specific extended precision, not union
+tests.
+
+**Release readiness remains withheld.** The published dependency still lacks
+full composite-union rollback. The local upstream proposal is separate evidence,
+not a released integration. Current runtime changes need fresh exact-wheel CUDA
+evidence; earlier GPU results below do not cover them. Repository/PyPI controls,
+and separately authorized publication remain outstanding. The owner approved
+merging the validated stack on 11 October 2026, preserving every reviewed
+commit, then verifying main before cleanup. The dated sections below retain
+their original evidence.
+
 This is the 8 September 2026 review record for **bearshape 0.1.0rc0**. The
 candidate is independently versioned from beartype and requires
-`beartype>=0.23.0rc0,<0.24`. Exact `0.23.0rc0` remains the current required test
-target until a supported replacement is implemented and validated.
+`beartype>=0.23.0rc0,<0.24`. Exact `0.23.0rc0` was the required test target for
+that historical review.
 
 **Release readiness is withheld.** Native composite-union rollback remains
 incorrect in one important composition case. The owner selected full composition
@@ -21,6 +49,35 @@ workflow was successfully redeployed after transfer. Repository links in this
 report now use the new owner; dated validation results and artifact identities
 remain unchanged. PyPI ownership and trusted-publisher configuration remain
 unverified.
+
+**Current program, 11 October 2026 (candidate 0.1.0rc1, unpublished):** the
+owner selected Python 3.11+ (supported matrix 3.11–3.14) and released beartype
+`>=0.23.1,<0.24`, with exact `0.23.1` in validation. The October execution plan
+records the coordinated migration. The historical results below retain their
+original versions; they do not validate the changed candidate. Full native-union
+rollback is still blocked in released 0.23.1. Publication remains explicitly
+unauthorized.
+
+**Earlier October integration through PR #45:** ordinary validation recorded
+1,142 installed consumer cases passed on each Python endpoint, source coverage
+was 92.05%, and
+[hosted CI](https://github.com/beartype/bearshape/actions/runs/38133983895)
+passed the Linux/macOS/Windows, four-checker, compatibility-floor, docs/notebook
+and archive matrix. Its exact wheel passed all 95 CuPy tests at both endpoints.
+
+The
+[validation-only release run](https://github.com/beartype/bearshape/actions/runs/38134009706)
+passed shared validation, then correctly failed both full-composition gates on
+released 0.23.1; upload was skipped. A normally installed local upstream
+proposal passed 1,164 cases per endpoint, including all 22 union regressions.
+That proposal has not been submitted, accepted or released. The detailed
+source/hashes, performance costs and PR dispositions are recorded in integration
+PR [#45](https://github.com/beartype/bearshape/pull/45) and its execution plan.
+
+The owner reports the PyPI project in their personal account; no organization
+transfer is required. Private publisher verification and GitHub release controls
+remain pending. Follow the [release runbook](releasing.md) for future authorized
+publishing. The dated September tables below remain historical evidence.
 
 ## Purpose and intended users
 
@@ -54,7 +111,7 @@ positive, negative and inference fixtures.
 | JAX             | Locked current and 0.5 floor; jit/vmap/grad numerical and violation cases                                   | Checks inside JIT run while tracing; see [frameworks](../features/frameworks.md)                               |
 | Torch           | Locked current and 2.6 floor; autograd and compile cases                                                    | Compile evidence uses `backend="eager"` with outer Python validation                                           |
 | optree          | Locked current and 0.14 floor; containers and structure binding                                             | Default registry only; no custom namespace API                                                                 |
-| CuPy            | 95 tests on H200, CUDA 12.9, CuPy 14.2.0, Python 3.10.20/3.14.3                                             | Other GPU/driver combinations and multiple-device behavior are unverified; native static typing is limited     |
+| CuPy            | 95 tests with CUDA 12.9, CuPy 14.2.0, Python 3.10.20/3.14.3                                                 | Other GPU/driver combinations and multiple-device behavior are unverified; native static typing is limited     |
 | Static checkers | pyright, mypy, ty and pyrefly positive/negative/inference batches on Python 3.10–3.14 and configured floors | Dimensions are runtime constraints; advanced syntax and native CuPy limitations are explicit                   |
 | Minimal install | Normally installed wheel with only declared dependencies at Python endpoints                                | Root import loads none of NumPy/JAX/Torch/CuPy/optree; custom strict arrays work without NumPy                 |
 
@@ -228,6 +285,52 @@ exceptions. Cover nested unions, return checks, explicit/automatic scopes, async
 paths and object lifetime before changing the compatibility floor and rerunning
 the complete normal-install matrix. No upstream message or patch has been
 submitted on the owner's behalf.
+
+### Tested local union fix, pending upstream review
+
+PR #34 exposes the active `ShapeMemo` through the proposed `__beartype_state__`
+hook. The optimized local upstream extension locates each state domain once,
+compiles the checking function at decoration, uses compact rollback records and
+avoids duplicate root snapshots and stateless-path setup. It preserves
+complete-alternative rollback, exception cleanup, diagnostic replay, lazy
+references, ordering and sampling. PR #35 independently reduces frame-discovery
+work; combined timings must identify both changes.
+
+The original callback proposal at upstream commit
+`4aef992d1cd0a6d09fe5c3784523c44e0874b178`, based on
+`a2729e0e358bf963ee6f177e300ae08a622d05d6`, passed 22 integration cases and
+1,124 combined tests per Python endpoint. Its strict small-array benchmark
+measured about 19 microseconds with rc0 and 31 with that initial patch. Those
+results are historical comparison evidence. The owner requested further
+optimization before contacting the maintainer through Zulip. The focused plan
+records optimized source identities, validation and matched timing evidence;
+these must be read separately from the original artifacts.
+
+The optimized upstream head is `76e27706fb137c6a676ee7b79a66d8b3092b52ad`. The
+combined normally installed artifacts passed 1,125 tests per endpoint, including
+all four checkers and 22 union cases, with five existing CPU skip records.
+Upstream passed 434/447 unit tests and pyright on Python 3.10/3.14. Its 22
+protocol tests include 600 deterministic independent-reference cases and two
+copied-context regressions. Completed transactions release their state
+references and are ignored by later checks using a copied context. The protocol
+tests also passed against normally installed wheels outside the upstream
+checkout. Added strict-check overhead fell by 57%/74%, after separating PR #35's
+frame filter improvement. Correct fallback-union calls fell from about 51/53 to
+33/25 microseconds. Nested ordinary references still add about 0.74/0.42
+microseconds over rc0; this remaining cost is explicit. All measurements include
+the final lifetime correction. See the focused plan for matched baselines,
+artifact hashes and the complete timing methodology.
+
+This demonstrates a working local fix, not compatibility provided by published
+rc0. The dependency metadata and lock are unchanged, and the new integration
+suite under `tools/upstream/` is explicitly invoked rather than silently skipped
+or marked xfail. Normal rc0 CI can remain green while that separate suite fails
+on rc0. After upstream acceptance and release, adopt the concrete dependency
+across metadata, lock, preflight and CI, move the cases into the required suite,
+and rerun candidate validation including CUDA. The patch has not been submitted
+upstream, and no package has been published or ownership transferred.
+
+See `tools/upstream/README.md` in the repository for commands.
 
 ### CuPy static boundary
 

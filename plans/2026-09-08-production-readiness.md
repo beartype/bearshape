@@ -361,7 +361,7 @@ Revision note — 2026-09-08 implementation start: User selected `0.1.0rc0`, ind
 
 Revision note — 2026-09-08: Recorded implemented PRs and validation evidence, with the unresolved native-union design decision and remaining typing/artifact/docs work stated explicitly.
 
-Revision note — 2026-09-08: Recorded PRs #19–#22, combined runtime/checker validation, minimal installation and actual H200 baseline evidence. CuPy native creation/reshape returns Any or Unknown under all four installed checkers because the backend lacks ndarray stubs; no full static-support claim was added. GPU transfer was initially blocked, then approved after proving the payload matched the public repository commit.
+Revision note — 2026-09-08: Recorded PRs #19–#22, combined runtime/checker validation, minimal installation and CUDA baseline evidence. CuPy native creation/reshape returns Any or Unknown under all four installed checkers because the backend lacks ndarray stubs; no full static-support claim was added. GPU transfer was initially blocked, then approved after proving the payload matched the public repository commit.
 
 
 ## Implemented review map and current release boundary
@@ -369,7 +369,7 @@ Revision note — 2026-09-08: Recorded PRs #19–#22, combined runtime/checker v
 
 PR #12 owns this roadmap. Focused PRs #13–#21 cover rc0 compatibility, caller import hooks, validation lifetime, conversion, checker conformance, archive contents, Like inputs, Tree consumers and framework/minimal validation. #22 is their validation aggregate. Focused #23–#26 add CI, docs, installed consumers and CUDA proofs; #27 aggregates them without modifying their actual PR bases. #28 adds the publication gate, #29 the feature/performance/handoff evidence, and #30 the observed Node runtime maintenance. Preserve the prerequisite relationships in each PR before requesting merge approval.
 
-The validated release run https://github.com/acecchini/bearshape/actions/runs/34221337124 used source 3ee4c1d8a0c3d22f537a24b447a9d75e025a5b2d. Wheel SHA256 c1806203da013c9eaf2482a309c686a984c0a7031a495efbd100a824536b57d2; sdist SHA256 e2454095144fb4bb5a08d3bd998d0f6a8bee4bc5ad81dfab763c339ca91666df. Both Python endpoints passed 1,097 installed consumer tests with one absent-CuPy skip, and the exact same wheel passed 95 GPU tests per endpoint on H200/CUDA 12.9/CuPy 14.2.0. Later source changes require their own archive identity and applicable validation.
+The validated release run https://github.com/acecchini/bearshape/actions/runs/34221337124 used source 3ee4c1d8a0c3d22f537a24b447a9d75e025a5b2d. Wheel SHA256 c1806203da013c9eaf2482a309c686a984c0a7031a495efbd100a824536b57d2; sdist SHA256 e2454095144fb4bb5a08d3bd998d0f6a8bee4bc5ad81dfab763c339ca91666df. Both Python endpoints passed 1,097 installed consumer tests with one absent-CuPy skip, and the exact same wheel passed 95 GPU tests per endpoint with CUDA 12.9/CuPy 14.2.0. Later source changes require their own archive identity and applicable validation.
 
 Matched normally installed baseline/candidate measurements on CPython 3.10.20 with NumPy 2.2.6 and optree 0.19.1 show strict checks around 19.8 microseconds versus 21.8 in the baseline, explicit checks around 14 microseconds, and expected conversion/tree scaling. Scope/signature discovery remains costly; no speculative cache was added while the composition boundary is unresolved. Evidence files performance-matched-*.json and performance-profile.log record versions, origins, medians and spread.
 

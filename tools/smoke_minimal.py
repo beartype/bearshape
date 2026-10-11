@@ -46,6 +46,23 @@ def wrong_return(x: FloatArray[N]) -> FloatArray[N]:
   return CustomArray((x.shape[0] + 1,))
 
 
+@beartype
+def broadcast_pair(x: FloatArray[~+N], _y: FloatArray[~+N]) -> FloatArray[~+N]:
+  return x
+
+
+@beartype
+def strict_broadcast_pair(x: FloatArray[~N], _y: FloatArray[~+N]) -> FloatArray[~N]:
+  return x
+
+
+@beartype
+def strict_transition(
+  x: FloatArray[~+N], _y: FloatArray[~N], _z: FloatArray[~N]
+) -> None:
+  pass
+
+
 def _expect_param_failure(x: CustomArray, bad: CustomArray) -> None:
   try:
     pair(x, bad)
@@ -57,13 +74,15 @@ def _expect_param_failure(x: CustomArray, bad: CustomArray) -> None:
 
 def main() -> None:
   location = Path(bearshape.__file__).resolve()
-  if not location.is_relative_to(Path(sys.prefix)):
+  if not location.is_relative_to(Path(sys.prefix).resolve()):
     sys.exit(f"Imported bearshape outside the consumer environment: {location}")
   if present := [backend for backend in BACKENDS if find_spec(backend) is not None]:
     sys.exit(f"Minimal consumer unexpectedly has optional backends: {present}")
   x = CustomArray((3,))
   if pair(x, CustomArray((3,))) is not x:
     sys.exit("Validation replaced the custom array argument")
+  if isinstance(CustomArray((-1,)), FloatArray[N]):
+    sys.exit("Negative custom array metadata was accepted")
   _expect_param_failure(x, CustomArray((4,)))
   _expect_param_failure(x, CustomArray((3,), "int32"))
   try:
@@ -72,6 +91,27 @@ def main() -> None:
     pass
   else:
     sys.exit("Custom array return mismatch was accepted")
+  for left, right in [((2, 1), (1, 3)), ((0, 1), (1, 3)), ((), (2, 3))]:
+    first = CustomArray(left)
+    if broadcast_pair(first, CustomArray(right)) is not first:
+      sys.exit("Broadcast validation replaced the custom array argument")
+  try:
+    broadcast_pair(CustomArray((2, 3)), CustomArray((4, 3)))
+  except BeartypeCallHintParamViolation:
+    pass
+  else:
+    sys.exit("Incompatible custom variadic shapes were accepted")
+  strict_broadcast_pair(CustomArray((2, 3)), CustomArray((1, 3)))
+  for function, arguments in [
+    (strict_broadcast_pair, (CustomArray((1,)), CustomArray((2,)))),
+    (strict_transition, (CustomArray((2,)), CustomArray((2,)), CustomArray((1,)))),
+  ]:
+    try:
+      function(*arguments)
+    except BeartypeCallHintParamViolation:
+      pass
+    else:
+      sys.exit("A strict custom variadic binding was weakened")
   if imported := sorted(set(BACKENDS).intersection(sys.modules)):
     sys.exit(f"Root/custom-array validation imported optional backends: {imported}")
   json.dump(

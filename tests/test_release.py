@@ -254,3 +254,84 @@ def test_synthetic_repositories_do_not_mutate_hook_owner(
   assert Path(child_git("rev-parse", "--show-toplevel")) == child.resolve()
   assert config.read_bytes() == original_config
   assert git("rev-parse", "HEAD") == original_head
+
+
+_EVIDENCE = runpy.run_path(str(_SCRIPT.with_name("check_release_evidence.py")))
+verify_evidence = _EVIDENCE["verify_evidence"]
+
+
+@pytest.fixture
+def candidate_evidence(tmp_path: Path) -> tuple[dict[str, str], Path]:
+  import hashlib
+
+  directory = tmp_path / "dist"
+  directory.mkdir()
+  evidence = {
+    "version": "0.1.0rc1",
+    "source_sha": "a" * 40,
+    "run_url": "https://github.com/beartype/bearshape/actions/runs/123",
+    "wheel": "bearshape-0.1.0rc1-py3-none-any.whl",
+    "sdist": "bearshape-0.1.0rc1.tar.gz",
+  }
+  for kind in ("wheel", "sdist"):
+    content = f"validated {kind}".encode()
+    (directory / evidence[kind]).write_bytes(content)
+    evidence[f"{kind}_sha256"] = hashlib.sha256(content).hexdigest()
+  return evidence, directory
+
+
+def verify_candidate(evidence: dict[str, str], directory: Path) -> None:
+  verify_evidence(
+    evidence,
+    directory,
+    source_sha="a" * 40,
+    version="0.1.0rc1",
+    run_url="https://github.com/beartype/bearshape/actions/runs/123",
+  )
+
+
+def test_exact_validated_candidate_is_accepted(candidate_evidence: tuple) -> None:
+  verify_candidate(*candidate_evidence)
+
+
+@pytest.mark.parametrize("key", ["source_sha", "version", "run_url"])
+def test_candidate_identity_cannot_be_substituted(
+  candidate_evidence: tuple, key: str
+) -> None:
+  evidence, directory = candidate_evidence
+  evidence[key] = "different"
+  with pytest.raises(ValueError, match=key):
+    verify_candidate(evidence, directory)
+
+
+@pytest.mark.parametrize("kind", ["wheel", "sdist"])
+def test_changed_archive_is_rejected(candidate_evidence: tuple, kind: str) -> None:
+  evidence, directory = candidate_evidence
+  (directory / evidence[kind]).write_bytes(b"different bytes")
+  with pytest.raises(ValueError, match="hash differs"):
+    verify_candidate(evidence, directory)
+
+
+@pytest.mark.parametrize("change", ["missing", "extra", "unsafe", "swapped", "symlink"])
+def test_only_expected_regular_archives_can_publish(
+  candidate_evidence: tuple, change: str
+) -> None:
+  evidence, directory = candidate_evidence
+  if change == "missing":
+    (directory / evidence["sdist"]).unlink()
+  elif change == "extra":
+    (directory / "unreviewed.whl").write_bytes(b"extra")
+  elif change == "unsafe":
+    evidence["wheel"] = "../" + evidence["wheel"]
+  elif change == "swapped":
+    evidence["wheel"], evidence["sdist"] = evidence["sdist"], evidence["wheel"]
+  else:
+    wheel = directory / evidence["wheel"]
+    target = directory.parent / "outside.whl"
+    wheel.rename(target)
+    try:
+      wheel.symlink_to(target)
+    except OSError:
+      pytest.skip("Creating symlinks requires privileges on this platform")
+  with pytest.raises(ValueError, match="canonical|exactly|regular|hash"):
+    verify_candidate(evidence, directory)

@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import typing as tp
 from collections.abc import Callable
+from operator import index
+from weakref import WeakKeyDictionary
 
 from ._dimensions import Dimension, _ValueExpr
 from ._dtypes import DtypeSpec
@@ -57,10 +59,6 @@ _VALID_CASTINGS: frozenset[CastingMode] = frozenset({
   "same_kind",
   "unsafe",
 })
-
-
-class _HasShape(tp.Protocol):
-  shape: tp.Any
 
 
 def _is_valid_casting(casting: str) -> tp.TypeGuard[CastingMode]:
@@ -107,7 +105,7 @@ def _is_trusted_array_type(cls: type[object]) -> bool:
   return result
 
 
-_TRUSTED_ARRAY_TYPE_CACHE: dict[type[object], bool] = {}
+_TRUSTED_ARRAY_TYPE_CACHE: WeakKeyDictionary[type[object], bool] = WeakKeyDictionary()
 
 
 def _is_trusted_array(obj: object) -> bool:
@@ -131,6 +129,15 @@ def _infer_arraylike_hint_module(
   if trusted_types:
     return getattr(trusted_types[0], "__module__", __name__)
   return __name__
+
+
+def _normalize_shape(raw_shape: tp.Any) -> tuple[int, ...]:
+  """Accept integer-index axes and reject malformed or negative dimensions."""
+  shape = tuple(index(size) for size in raw_shape)
+  if any(size < 0 for size in shape):
+    message = "shape contains negative dimensions"
+    raise ValueError(message)
+  return shape
 
 
 def _describe_actual_dtype(obj: object) -> str:
@@ -180,7 +187,7 @@ class _ArrayChecker:
   ``Float32Array[N, C]``) and reused across all functions that share it.
   """
 
-  __slots__ = ("_array_type", "_dtype_spec", "_repr", "_shape_spec")
+  __slots__ = ("_array_type", "_dtype_spec", "_needs_scope", "_repr", "_shape_spec")
 
   def __init__(
     self,
@@ -197,6 +204,8 @@ class _ArrayChecker:
       self._dtype_spec = tp.cast("DtypeSpec", dtype_spec)
       self._shape_spec = shape_spec
 
+    self._needs_scope = any(isinstance(dim, ValueDim) for dim in self._shape_spec)
+
     # Pre-compute repr for beartype error messages
     dims = ", ".join(repr(d) for d in self._shape_spec)
     self._repr = f"{self._dtype_spec.name}[{dims}]"
@@ -206,7 +215,7 @@ class _ArrayChecker:
 
   def instancecheck(self, obj: object) -> bool:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     valid = False
     try:
@@ -218,7 +227,7 @@ class _ArrayChecker:
 
   def instancecheck_str(self, obj: object) -> str:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     try:
       failure = self._validate(obj, memo, scope)
@@ -229,7 +238,7 @@ class _ArrayChecker:
     return failure.message
 
   def _validate(
-    self, obj: object, memo: ShapeMemo, scope: dict[str, object]
+    self, obj: object, memo: ShapeMemo, scope: dict[str, object] | None
   ) -> ValidationFailure | None:
     array_type = self._array_type
     if array_type is not None and not isinstance(obj, array_type):
@@ -237,16 +246,20 @@ class _ArrayChecker:
       actual = f"{type(obj).__module__}.{type(obj).__name__}"
       return ValidationFailure(f"expected {expected} but got {actual}")
 
-    if not self._dtype_spec.matches(obj):
-      return _dtype_mismatch(self._dtype_spec, obj)
+    try:
+      if not self._dtype_spec.matches(obj):
+        return _dtype_mismatch(self._dtype_spec, obj)
 
-    shape = getattr(obj, "shape", None)
-    if shape is None:
-      return ValidationFailure(
-        f"expected object with shape for {self._repr} but got {type(obj).__name__}"
-      )
+      raw_shape = getattr(obj, "shape", None)
+      if raw_shape is None:
+        return ValidationFailure(
+          f"expected object with shape for {self._repr} but got {type(obj).__name__}"
+        )
+      shape = _normalize_shape(raw_shape)
+    except Exception as exc:  # noqa: BLE001
+      return ValidationFailure(f"invalid array metadata: {exc}")
 
-    err = check_shape(tuple(shape), self._shape_spec, memo, scope)
+    err = check_shape(shape, self._shape_spec, memo, scope)
     if err:
       return ValidationFailure(err)
     return None
@@ -352,6 +365,7 @@ class _ArrayLikeChecker:
     "_casting",
     "_dtype_spec",
     "_is_structured",
+    "_needs_scope",
     "_repr",
     "_shape_spec",
     "_trusted_types",
@@ -369,6 +383,7 @@ class _ArrayLikeChecker:
   ) -> None:
     self._dtype_spec = dtype_spec
     self._shape_spec = shape_spec
+    self._needs_scope = any(isinstance(dim, ValueDim) for dim in shape_spec)
     self._casting = casting
     self._is_structured: bool = dtype_spec._structured is not None
     self._asarray = asarray
@@ -382,7 +397,7 @@ class _ArrayLikeChecker:
 
   def instancecheck(self, obj: object) -> bool:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     valid = False
     try:
@@ -394,7 +409,7 @@ class _ArrayLikeChecker:
 
   def instancecheck_str(self, obj: object) -> str:
     memo = get_memo()
-    scope = get_scope()
+    scope = get_scope() if self._needs_scope else None
     snap = memo.snapshot()
     try:
       failure = self._validate(obj, memo, scope)
@@ -405,7 +420,7 @@ class _ArrayLikeChecker:
     return failure.message
 
   def _validate(
-    self, obj: object, memo: ShapeMemo, scope: dict[str, object]
+    self, obj: object, memo: ShapeMemo, scope: dict[str, object] | None
   ) -> ValidationFailure | None:
     # Fast path: known array types with shape + dtype skip conversion.
     # Spoofed objects with .shape/.dtype fall through to the slow path
@@ -413,23 +428,36 @@ class _ArrayLikeChecker:
     # When trusted_types is set, only those types get the fast path;
     # foreign-backend arrays fall through to the slow path where
     # _convert() verifies actual convertibility.
-    shape = getattr(obj, "shape", None)
-    if shape is not None and getattr(obj, "dtype", None) is not None:
-      trusted = self._trusted_types
-      if (trusted is not None and isinstance(obj, trusted)) or (
-        trusted is None and self._asarray is None and _is_trusted_array(obj)
-      ):
-        return self._check(obj, tuple(shape), memo, scope)
+    trusted = self._trusted_types
+    if (trusted is not None and isinstance(obj, trusted)) or (
+      trusted is None and self._asarray is None and _is_trusted_array(obj)
+    ):
+      return self._check_array(obj, memo, scope, source="array has")
 
-    # Slow path: convert scalar / sequence / protocol object to array.
-    # Use the selected backend converter; a different backend cannot establish
-    # that this input satisfies the selected conversion contract.
+    # Untrusted input properties belong to the selected converter. Reading
+    # them here could reject an input that the converter knows how to handle.
     arr, failure = self._convert(obj)
-    if arr is None:
+    if failure is not None:
       return failure
+    return self._check_array(arr, memo, scope, source="converter returned")
 
-    converted = tp.cast("_HasShape", arr)
-    return self._check(arr, tuple(converted.shape), memo, scope)
+  def _check_array(
+    self,
+    obj: object,
+    memo: ShapeMemo,
+    scope: dict[str, object] | None,
+    *,
+    source: str,
+  ) -> ValidationFailure | None:
+    try:
+      raw_shape = getattr(obj, "shape", None)
+      if raw_shape is None or getattr(obj, "dtype", None) is None:
+        return ValidationFailure(f"{source} no usable shape and dtype")
+      shape = _normalize_shape(raw_shape)
+      return self._check(obj, shape, memo, scope)
+    except Exception as exc:  # noqa: BLE001
+      # Ordinary metadata errors are mismatches; cancellation still propagates.
+      return ValidationFailure(f"{source} invalid array metadata: {exc}")
 
   def _convert(self, obj: object) -> tuple[object | None, ValidationFailure | None]:
     """Convert *obj* to an array with ``.shape`` and ``.dtype``."""
@@ -448,7 +476,11 @@ class _ArrayLikeChecker:
       return None, ValidationFailure("could not convert value to array")
 
   def _check(
-    self, obj: object, shape: tuple[int, ...], memo: ShapeMemo, scope: dict[str, object]
+    self,
+    obj: object,
+    shape: tuple[int, ...],
+    memo: ShapeMemo,
+    scope: dict[str, object] | None,
   ) -> ValidationFailure | None:
     """Validate dtype (with casting rules) then shape (with memo)."""
     failure = self._check_dtype(obj)
@@ -601,12 +633,15 @@ def make_array_like_type(
       Human-readable name for error messages.
   asarray:
       Optional callable ``(obj) -> array`` for backend-specific conversion.
-      When provided, it is tried before ``np.asarray`` on the slow path
-      (objects without ``.shape`` / ``.dtype``).  Use this to support
-      backend-specific protocols like ``__jax_array__``.
+      When provided, it is the only converter used on the slow path;
+      failures never fall back to NumPy. The result must expose an iterable
+      integer ``shape`` and a non-None ``dtype``. Without this callable,
+      conversion uses ``np.asarray``. Validation preserves the original argument.
   trusted_types:
       Optional tuple of types that get the fast path (skip conversion).
-      When ``None`` (default), all known array backends are trusted.
+      When ``None`` (default), known array backends are trusted only when
+      no custom ``asarray`` callable is supplied. With a custom converter,
+      inputs are converted unless explicitly included in ``trusted_types``.
       Set this to scope the fast path to a specific backend so that
       foreign-backend arrays fall through to the slow path where
       actual convertibility is verified.

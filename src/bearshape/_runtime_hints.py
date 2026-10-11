@@ -5,6 +5,8 @@ from __future__ import annotations
 import typing as tp
 from dataclasses import dataclass
 
+from ._memo import get_memo
+
 __all__ = [
   "ValidationFailure",
   "get_runtime_validator",
@@ -56,6 +58,11 @@ def hint_label(hint: object) -> str:
 
 
 class _RuntimeHintMeta(type):
+  __beartype_state__ = staticmethod(get_memo)
+  # Each leaf restores its memo on False and BaseException. Composite parents
+  # still own rollback when a later child rejects the whole alternative.
+  __beartype_state_atomic__ = True
+
   def __instancecheck__(cls, obj: object) -> bool:
     validator = _require_runtime_validator(cls)
     return validator.instancecheck(obj)

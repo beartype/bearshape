@@ -4,7 +4,7 @@ exclude = [
 ]
 line-length = 88
 indent-width = 2
-target-version = "py310"
+target-version = "py311"
 preview = true
 
 [lint]
@@ -171,6 +171,16 @@ parametrize-names-type = "csv"
 "src/bearshape/_decorator.py" = [
   # Public API intentionally exposes snake_case context manager name
   "N801",
+]
+
+"tools/upstream/test_*.py" = [
+  # Explicit upstream integration regressions follow the same test conventions.
+  "ARG001", "INP001", "RUF029", "S101",
+]
+
+"tools/upstream/benchmark_transactions.py" = [
+  # Standalone benchmark script, not an importable package.
+  "INP001",
 ]
 
 [format]

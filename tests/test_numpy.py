@@ -2292,3 +2292,300 @@ class TestCustomConversionContract:
 
     hint = make_array_like_type(FLOAT32, asarray=reject)[N]
     assert not is_bearable(value, hint)
+
+
+class TestNestedValueScope:
+  def test_nested_value_parameters_and_returns(self) -> None:
+    @beartype
+    def pad(
+      x: F32[N], size: int, y: F32[N + (Value("size") + 1)]
+    ) -> F32[(Value("size") + 1) + N]:
+      return y
+
+    x = np.ones(3, dtype=np.float32)
+    y = np.ones(6, dtype=np.float32)
+    assert pad(x, 2, y) is y
+    with pytest.raises(BeartypeCallHintParamViolation):
+      pad(x, 3, y)
+
+    @beartype
+    def wrong_return(x: F32[N], size: int) -> F32[N + (Value("size") + 1)]:
+      return x
+
+    with pytest.raises(BeartypeCallHintReturnViolation):
+      wrong_return(x, 2)
+
+  def test_nested_unary_attribute_expression(self) -> None:
+    class Model:
+      size = 2
+
+      @beartype
+      def shrink(self, x: F32[N]) -> F32[N + (-Value("self.size"))]:
+        return x[: -self.size]
+
+    x = np.ones(5, dtype=np.float32)
+    assert Model().shrink(x).shape == (3,)
+
+
+@pytest.mark.parametrize(
+  "shape,dtype",
+  [
+    (None, "float32"),
+    (3, "float32"),
+    (("3",), "float32"),
+    ((-1,), "float32"),
+    ((3,), None),
+  ],
+)
+def test_malformed_converter_metadata_is_rejected(shape: object, dtype: object) -> None:
+  from types import SimpleNamespace
+
+  result = SimpleNamespace(shape=shape, dtype=dtype)
+  hint = make_array_like_type(FLOAT32, asarray=lambda _obj: result)[N]
+  with bearshape.check_context():
+    assert not is_bearable("input", hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+  assert "converter returned" in type(hint).__instancecheck_str__(hint, "input")
+
+
+@pytest.mark.parametrize("result", [None, object()])
+def test_empty_converter_result_never_accepts_input(result: object) -> None:
+  hint = make_array_like_type(FLOAT32, asarray=lambda _obj: result)[5]
+  assert not is_bearable("input", hint)
+  called = False
+
+  @beartype
+  def consume(value: hint) -> None:
+    nonlocal called
+    called = True
+
+  with pytest.raises(BeartypeCallHintParamViolation, match="converter returned"):
+    consume("input")
+  assert not called
+
+
+def test_valid_custom_conversion_preserves_original_argument() -> None:
+  hint = make_array_like_type(
+    FLOAT32, asarray=lambda obj: np.asarray(obj, dtype=np.float32)
+  )[N]
+
+  @beartype
+  def consume(value: hint) -> object:
+    return value
+
+  value = [1.0, 2.0]
+  assert consume(value) is value
+
+
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+def test_grouped_arithmetic_parameters_and_returns(mode: str) -> None:
+  from beartype import BeartypeConf
+
+  def consume(size: int, x: F32[N], y: F32[Value("size + 1") * 2]) -> F32[(-N) ** 2]:
+    return y
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  valid = np.ones(4, dtype=np.float32)
+  assert checked(1, np.ones(2, dtype=np.float32), valid) is valid
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(2, np.ones(2, dtype=np.float32), valid)
+  with pytest.raises(BeartypeCallHintReturnViolation):
+    checked(2, np.ones(2, dtype=np.float32), np.ones(6, dtype=np.float32))
+
+
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+def test_strict_variadic_transition_and_return(mode: str) -> None:
+  from beartype import BeartypeConf
+
+  def consume(a: F32[~+N], b: F32[~N], c: F32[~N]) -> F32[~N]:
+    return a
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  two = np.ones(2, dtype=np.float32)
+  one = np.ones(1, dtype=np.float32)
+  assert checked(two, two, two) is two
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(two, two, one)
+  with pytest.raises(BeartypeCallHintReturnViolation):
+    checked(one, two, two)
+  assert checked(one, one, one) is one
+
+
+@pytest.mark.parametrize("shape", [(-1,), (2.5,), ("bad",), 1])
+def test_strict_custom_shape_metadata_is_rejected(shape: object) -> None:
+  from dataclasses import dataclass
+
+  @dataclass
+  class Custom:
+    shape: object
+    dtype: str = "float32"
+
+  hint = make_array_type(Custom, FLOAT32)[N]
+  with bearshape.check_context():
+    assert not is_bearable(Custom(shape), hint)
+    assert is_bearable(Custom((7,)), hint)
+
+  @beartype
+  def consume(value: hint) -> None:
+    pass
+
+  with pytest.raises(BeartypeCallHintParamViolation, match="metadata"):
+    consume(Custom(shape))
+
+
+@pytest.mark.parametrize("mode", ["strict", "converted", "trusted"])
+@pytest.mark.parametrize("field", ["shape", "dtype", "dtype.name"])
+def test_custom_metadata_property_failures(mode: str, field: str) -> None:
+  class BrokenDtype:
+    @property
+    def name(self) -> str:
+      message = "unreadable dtype name"
+      raise ValueError(message)
+
+  class Custom:
+    @property
+    def shape(self) -> tuple[int, ...]:
+      if field == "shape":
+        message = "unreadable shape"
+        raise ValueError(message)
+      return (2,)
+
+    @property
+    def dtype(self) -> object:
+      if field == "dtype":
+        message = "unreadable dtype"
+        raise ValueError(message)
+      return BrokenDtype() if field == "dtype.name" else "float32"
+
+  if mode == "strict":
+    hint = make_array_type(Custom, FLOAT32)[N]
+  elif mode == "converted":
+    hint = make_array_like_type(FLOAT32, asarray=lambda _obj: Custom())[N]
+  else:
+    hint = make_array_like_type(FLOAT32, trusted_types=(Custom,))[N]
+  with bearshape.check_context():
+    assert not is_bearable(Custom(), hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+  assert "metadata" in type(hint).__instancecheck_str__(hint, Custom())
+
+  @beartype
+  def consume(value: hint) -> None:
+    pass
+
+  with pytest.raises(BeartypeCallHintParamViolation, match="metadata"):
+    consume(Custom())
+
+
+def test_selected_converter_owns_untrusted_metadata() -> None:
+  class Input:
+    @property
+    def shape(self) -> object:
+      message = "input metadata should not be inspected"
+      raise AssertionError(message)
+
+    dtype = shape
+
+  value = Input()
+  seen = []
+
+  def convert(obj: object) -> np.ndarray:
+    seen.append(obj)
+    return np.ones(2, dtype=np.float32)
+
+  hint = make_array_like_type(FLOAT32, asarray=convert)[N]
+  assert isinstance(value, hint)
+  assert seen == [value]
+
+
+@pytest.mark.parametrize("mode", ["strict", "converted", "trusted"])
+def test_custom_metadata_accepts_index_dimensions(mode: str) -> None:
+  class Axis:
+    def __index__(self) -> int:
+      return 2
+
+  class Custom:
+    shape = (Axis(), np.int64(3))
+    dtype = "float32"
+
+  if mode == "strict":
+    hint = make_array_type(Custom, FLOAT32)[2, 3]
+  elif mode == "converted":
+    hint = make_array_like_type(FLOAT32, asarray=lambda _obj: Custom())[2, 3]
+  else:
+    hint = make_array_like_type(FLOAT32, trusted_types=(Custom,))[2, 3]
+  assert is_bearable(Custom(), hint)
+
+
+@pytest.mark.parametrize("mode", ["strict", "converted", "trusted"])
+def test_custom_metadata_cancellation_propagates(mode: str) -> None:
+  class Custom:
+    dtype = "float32"
+
+    @property
+    def shape(self) -> object:
+      raise KeyboardInterrupt
+
+  if mode == "strict":
+    hint = make_array_type(Custom, FLOAT32)[N]
+  elif mode == "converted":
+    hint = make_array_like_type(FLOAT32, asarray=lambda _obj: Custom())[N]
+  else:
+    hint = make_array_like_type(FLOAT32, trusted_types=(Custom,))[N]
+  with bearshape.check_context():
+    with pytest.raises(KeyboardInterrupt):
+      isinstance(Custom(), hint)
+    assert is_bearable(np.ones(7, dtype=np.float32), F32[N])
+
+
+@pytest.mark.parametrize("native", [False, True])
+def test_root_like_releases_temporary_classes(*, native: bool) -> None:
+  import gc
+  import weakref
+
+  hint = make_array_like_type(FLOAT32)[N]
+
+  def validate_temporary() -> weakref.ReferenceType[type]:
+    if native:
+
+      class TemporaryArray(np.ndarray):
+        pass
+
+      value = np.ones(2, dtype=np.float32).view(TemporaryArray)
+      reference = weakref.ref(TemporaryArray)
+    else:
+
+      class TemporaryProtocol:
+        def __array__(self, dtype: object = None, copy: object = None) -> np.ndarray:  # noqa: PLW3201
+          return np.ones(2, dtype=np.float32)
+
+      value = TemporaryProtocol()
+      reference = weakref.ref(TemporaryProtocol)
+    assert is_bearable(value, hint)
+    return reference
+
+  references = [validate_temporary() for _ in range(32)]
+  gc.collect()
+  assert all(reference() is None for reference in references)
+  assert is_bearable(np.ones(3, dtype=np.float32), hint)
+  assert not is_bearable(np.ones(3, dtype=np.complex64), hint)
+
+
+def test_custom_boolean_axes_follow_integer_index_semantics() -> None:
+  class Custom:
+    shape = (False, True)
+    dtype = "float32"
+
+  strict = make_array_type(Custom, FLOAT32)[0, 1]
+  converted = make_array_like_type(FLOAT32, asarray=lambda _obj: Custom())[0, 1]
+  trusted = make_array_like_type(FLOAT32, trusted_types=(Custom,))[0, 1]
+  assert all(is_bearable(Custom(), hint) for hint in (strict, converted, trusted))

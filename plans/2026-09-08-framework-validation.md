@@ -30,7 +30,7 @@ ML users need to know when validation occurs around JAX transformations and Torc
 ## Surprises & Discoveries
 
 
-The existing runtime suite validates metadata but does not establish JAX jit/vmap/grad or Torch compile behavior. Transform placement changes whether Python validation runs at an outer call or while tracing the function. The configured h200 host is available; separate preliminary GPU validation has now passed 83 existing CuPy tests with the normally installed candidate wheel and exact beartype rc0. Comprehensive CuPy/static validation remains separate from this CPU transform PR.
+The existing runtime suite validates metadata but does not establish JAX jit/vmap/grad or Torch compile behavior. Transform placement changes whether Python validation runs at an outer call or while tracing the function. Separate preliminary GPU validation passed 83 existing CuPy tests with the normally installed candidate wheel and exact beartype rc0. Comprehensive CuPy/static validation remains separate from this CPU transform PR.
 
 ## Decision Log
 
