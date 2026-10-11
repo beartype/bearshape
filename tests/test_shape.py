@@ -421,3 +421,45 @@ def test_variadic_broadcast_matches_numpy_metadata() -> None:
     else:
       assert check_shape(right, spec, memo) == ""
       assert memo.variadic["B"] == (True, expected)
+
+
+def test_strict_and_broadcast_variadic_pairs() -> None:
+  import itertools
+
+  import numpy as np
+
+  shapes = (
+    [()]
+    + [(axis,) for axis in (0, 1, 2)]
+    + list(itertools.product((0, 1, 2), repeat=2))
+  )
+  for flags in itertools.product((False, True), repeat=2):
+    for left, right in itertools.product(shapes, repeat=2):
+      memo = ShapeMemo()
+      assert check_shape(left, (VariadicDim("B", flags[0]),), memo) == ""
+      before = memo.snapshot()
+      try:
+        target = np.broadcast_shapes(left, right)
+        expected = all(
+          flag or shape == target for flag, shape in zip(flags, (left, right))
+        )
+      except ValueError:
+        expected = False
+      error = check_shape(right, (VariadicDim("B", flags[1]),), memo)
+      assert (not error) == expected, (flags, left, right, error)
+      if expected:
+        assert memo.variadic["B"] == (all(flags), target)
+      else:
+        assert memo.snapshot() == before
+
+
+def test_equal_strict_variadic_occurrence_pins_target() -> None:
+  memo = ShapeMemo()
+  broadcast = (VariadicDim("B", broadcastable=True),)
+  strict = (VariadicDim("B"),)
+  assert check_shape((2,), broadcast, memo) == ""
+  assert check_shape((2,), strict, memo) == ""
+  assert memo.variadic["B"] == (False, (2,))
+  assert check_shape((1,), broadcast, memo) == ""
+  assert check_shape((1,), strict, memo)
+  assert memo.variadic["B"] == (False, (2,))

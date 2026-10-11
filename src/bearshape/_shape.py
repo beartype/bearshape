@@ -320,6 +320,7 @@ def _check_variadic(dim: VariadicDim, shape: tuple[int, ...], memo: ShapeMemo) -
 
   prev_broadcastable, prev_shape = prev
   if prev_shape == shape:
+    memo.variadic[dim.name] = (prev_broadcastable and dim.broadcastable, shape)
     return ""
 
   # Broadcasting logic
@@ -338,7 +339,15 @@ def _check_variadic(dim: VariadicDim, shape: tuple[int, ...], memo: ShapeMemo) -
           f"with existing {prev_shape}"
         )
     broadcast = tuple(reversed(axes))
-    # Update to the broadcast result
+    # Every strict occurrence must already have the resulting shape.
+    if (not prev_broadcastable and broadcast != prev_shape) or (
+      not dim.broadcastable and broadcast != shape
+    ):
+      return (
+        f"variadic '~{dim.name}' shape {shape} would expand a strict binding "
+        f"when broadcasting with existing {prev_shape}"
+      )
+    # Only broadcastable occurrences may expand to the common target.
     memo.variadic[dim.name] = (prev_broadcastable and dim.broadcastable, broadcast)
     return ""
 

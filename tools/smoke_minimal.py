@@ -51,6 +51,18 @@ def broadcast_pair(x: FloatArray[~+N], _y: FloatArray[~+N]) -> FloatArray[~+N]:
   return x
 
 
+@beartype
+def strict_broadcast_pair(x: FloatArray[~N], _y: FloatArray[~+N]) -> FloatArray[~N]:
+  return x
+
+
+@beartype
+def strict_transition(
+  x: FloatArray[~+N], _y: FloatArray[~N], _z: FloatArray[~N]
+) -> None:
+  pass
+
+
 def _expect_param_failure(x: CustomArray, bad: CustomArray) -> None:
   try:
     pair(x, bad)
@@ -87,6 +99,17 @@ def main() -> None:
     pass
   else:
     sys.exit("Incompatible custom variadic shapes were accepted")
+  strict_broadcast_pair(CustomArray((2, 3)), CustomArray((1, 3)))
+  for function, arguments in [
+    (strict_broadcast_pair, (CustomArray((1,)), CustomArray((2,)))),
+    (strict_transition, (CustomArray((2,)), CustomArray((2,)), CustomArray((1,)))),
+  ]:
+    try:
+      function(*arguments)
+    except BeartypeCallHintParamViolation:
+      pass
+    else:
+      sys.exit("A strict custom variadic binding was weakened")
   if imported := sorted(set(BACKENDS).intersection(sys.modules)):
     sys.exit(f"Root/custom-array validation imported optional backends: {imported}")
   json.dump(

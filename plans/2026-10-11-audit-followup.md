@@ -28,9 +28,9 @@ is authorized by this implementation request.
 - [x] (2026-10-11) M1: PR #48 preserves grouping with 64 arithmetic table cases
   and three public decorator-mode regressions; failing-first evidence retained.
   Dimension/NumPy suites pass with only platform precision skips.
-- [ ] M2 in progress: focused variadic branch starts from arithmetic PR #48.
-  Add the complete 676-pair strict/broadcast matrix and three-occurrence/return
-  regressions before changing the variadic matcher.
+- [x] (2026-10-11) M2: PR #49 retains strict variadic targets. Five new tests
+  failed first; the 676-pair matrix, equal-shape transition and public decorator/
+  return checks now pass. The minimal consumer also checks strict transitions.
 - [ ] M3: Open Tree ownership PR, isolate independent checks without losing leaf sharing.
 - [ ] M4: Open Tree suffix PR, implement documented leaf-adjacent ragged semantics.
 - [ ] M5: Open metadata PR, validate custom shapes and malformed properties consistently.

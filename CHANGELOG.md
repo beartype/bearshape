@@ -8,6 +8,9 @@ and this project follows
 
 ## [Unreleased]
 
+- Keep strict variadic targets fixed when mixed with broadcastable occurrences,
+    including equal-shape transitions and return checks.
+
 - Preserve operand grouping in symbolic and Value arithmetic, including
     reflected operators and powers of negative dimensions.
 

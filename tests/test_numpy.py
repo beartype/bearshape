@@ -2396,3 +2396,26 @@ def test_grouped_arithmetic_parameters_and_returns(mode: str) -> None:
     checked(2, np.ones(2, dtype=np.float32), valid)
   with pytest.raises(BeartypeCallHintReturnViolation):
     checked(2, np.ones(2, dtype=np.float32), np.ones(6, dtype=np.float32))
+
+
+@pytest.mark.parametrize("mode", ["automatic", "explicit", "combined"])
+def test_strict_variadic_transition_and_return(mode: str) -> None:
+  from beartype import BeartypeConf
+
+  def consume(a: F32[~+N], b: F32[~N], c: F32[~N]) -> F32[~N]:
+    return a
+
+  if mode == "automatic":
+    checked = beartype(consume)
+  elif mode == "explicit":
+    checked = bearshape.check(beartype(consume))
+  else:
+    checked = bearshape.check(conf=BeartypeConf())(consume)
+  two = np.ones(2, dtype=np.float32)
+  one = np.ones(1, dtype=np.float32)
+  assert checked(two, two, two) is two
+  with pytest.raises(BeartypeCallHintParamViolation):
+    checked(two, two, one)
+  with pytest.raises(BeartypeCallHintReturnViolation):
+    checked(one, two, two)
+  assert checked(one, one, one) is one
