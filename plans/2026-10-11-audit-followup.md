@@ -41,7 +41,9 @@ is authorized by this implementation request.
   multi-name suffixes, empty containers, shared bindings and rollback. Tree/JAX
   suites pass. Rendered docs and all 94 Python snippets validate; changed
   paragraphs were inspected in the generated HTML.
-- [ ] M5: Open metadata PR, validate custom shapes and malformed properties consistently.
+- [ ] M5 in progress: focused metadata PR follows #51. Normalize dimensions
+  through the integer-index protocol, reject negative sizes, preserve readable
+  failures and cancellation, and let selected converters inspect untrusted inputs.
 - [ ] M6: Open lifetime PR, stop default Like trust caching from retaining transient classes.
 - [ ] M7: Open performance PR after correctness; keep Value arguments lazy and measure.
 - [ ] M8: Open CI/docs PR; complete composition gates, consumer typing recipes and handoff.
