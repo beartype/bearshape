@@ -7,7 +7,7 @@ description: Dtype-checked array aliases for NumPy, JAX, PyTorch, CuPy, and cust
 # Array Types
 
 Array aliases such as `F32[N, C]` or `DT64[...]` are the core "strict array"
-side of bearshape. They enforce both:
+side of bearshape. They enforce:
 
 - the concrete backend array class
 - the allowed dtype family
@@ -59,8 +59,9 @@ At runtime these aliases become bearshape runtime hint classes rather than
 
     - `DT64` and `TD64` accept unit-qualified NumPy dtypes such as `datetime64[ns]`,
         `datetime64[D]`, `timedelta64[ms]`, and `timedelta64[s]`.
-    - `Shaped` checks shape only at runtime. Its static alias is necessarily an
-        approximation, not a true "any dtype ndarray" model.
+    - `Shaped` checks shape only at runtime. Its static alias preserves NumPy
+        ndarray methods and accepts NumPy generic dtypes, including nonnumeric ones.
+        Shapes remain runtime constraints.
 
 === "JAX"
 
@@ -146,10 +147,11 @@ using `make_array_type` with endianness `DtypeSpec` constants:
 ```python
 import numpy as np
 from beartype import beartype
-from bearshape import N, C, make_array_type
-from bearshape._dtypes import FLOAT32_LE
+from bearshape import DtypeSpec, N, C, make_array_type
 
-F32LE = make_array_type(np.ndarray, FLOAT32_LE)
+F32LE = make_array_type(
+  np.ndarray, DtypeSpec("Float32LE", frozenset({"float32"}), byteorder="little")
+)
 
 @beartype
 def process_le(x: F32LE[N, C]) -> F32LE[N, C]:
@@ -159,7 +161,10 @@ process_le(np.ones((4, 3), dtype="<f4"))  # OK
 process_le(np.ones((4, 3), dtype=">f4"))  # Raises
 ```
 
-Available suffixes: `_LE` (little-endian), `_BE` (big-endian), `_N` (native).
+Use the public `DtypeSpec` byteorder values `"little"`, `"big"`, or `"native"`.
+Private `_dtypes` constants are implementation details, not the public factory
+recipe. These dynamic factories need a complete checker-only alias in static
+code, as shown below.
 
 ## Custom array types
 

@@ -8,8 +8,8 @@ lowercase `bearshape`.
 This is the shared Codex/Claude instruction file. `CLAUDE.md` points here.
 Human setup and commands live in `CONTRIBUTING.md`; tool usage lives in
 `tools/README.md`. Read `docs/maintainers/production-readiness.md` and the
-current plan before changing a contract. Historical plans record their original
-evidence; current owner decisions take precedence.
+task's plan before changing a contract. `plans/README.md` identifies current
+guidance and dated evidence; current owner decisions take precedence.
 
 ## Working rules
 
@@ -40,8 +40,9 @@ evidence; current owner decisions take precedence.
   The tested local `__beartype_state__` proposal and integration suite are
   described in `tools/upstream/README.md`; the hook has not shipped upstream.
   The owner chose full composition through supported upstream integration and
-  permits a later candidate. Keep exact 0.23.1 validation until a supported transaction integration is
-  implemented and tested; update metadata, lock, preflight and CI together.
+  permits a later candidate. Keep exact 0.23.1 validation until supported
+  transaction integration is implemented and tested; update metadata, lock,
+  preflight and CI together.
 - Do not replace beartype, monkeypatch upstream internals, infer union boundaries
   from bytecode, hide the defect with an xfail, or restrict composition to make
   CI pass. `tools/probe_union.py` reproduces the open release blocker.
@@ -77,8 +78,8 @@ state ownership. Read the feature-to-test map in the handoff report.
 
 ## Major-work workflow
 
-For features, contract changes, packaging, CI, release work and substantial
-refactors: create a feature branch and matching worktree, commit an ExecPlan
+For features, contract changes, packaging, CI, release work, substantial docs
+and refactors: create a feature branch and matching worktree, commit an ExecPlan
 following `PLANS.md`, and open a PR before implementation. Keep independent
 changes in focused PRs and document any dependency on another PR. Use the
 existing task goal when one exists; do not start duplicate goals.
@@ -98,8 +99,8 @@ may skip the major-work workflow.
 
 ## Validation
 
-Use the locked uv toolchain. Start with `uv sync --locked`; install hooks with
-`uv run --locked prek install`. Use these routes from the repository root:
+Use uv 0.11.17 and the committed lock. Start with `uv sync --locked`; install
+hooks with `uv run --locked prek install`. Use these routes from the repository root:
 
 - Runtime changes: `uv run --locked pytest tests/ --ignore=tests/test_typecheck.py -n auto`.
 - Typing changes: `uv run --locked pytest tests/test_typecheck.py -q`; this runs
@@ -128,8 +129,9 @@ GPU results do not validate a changed package automatically.
 
 ## Docs and handoff
 
-Keep README concise and examples test-backed. Build and inspect changed rendered
-structures; execute changed runnable examples and notebook cells. Document
+Keep README concise and examples test-backed. Distinguish the unpublished
+checkout candidate from the PyPI release before presenting install commands.
+Build and inspect changed rendered structures; execute changed runnable examples and notebook cells. Document
 runtime-only syntax and backend/checker limits explicitly. Update CHANGELOG for
 features and major user-visible changes.
 

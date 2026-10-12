@@ -121,6 +121,7 @@ import typing as tp
 from beartype import beartype
 from bearshape import B, C, N
 from bearshape.numpy import F32
+import numpy as np
 
 if tp.TYPE_CHECKING:
   VariadicBatch = tp.Literal["VariadicBatch"]
@@ -141,7 +142,7 @@ def broadcast_add(x: F32[N, C], y: F32[BroadcastN, C]) -> F32[N, C]:
 
 @beartype
 def pad(x: F32[N]) -> F32[PaddedN]:
-  return x
+  return np.pad(x, (1, 1))
 ```
 
 Notes:

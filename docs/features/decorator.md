@@ -24,7 +24,8 @@ def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]:
 ```
 
 Plain `@beartype` is the normal entry point. Most users never need more than
-that.
+that. Neither explicit memo helper repairs the current
+[native-union rollback limitation](composition.md).
 
 ## Which decorator should you choose?
 
@@ -140,7 +141,10 @@ from beartype.door import is_bearable
 import bearshape
 from bearshape import N, C
 from bearshape.numpy import F32
+import numpy as np
 
+x = np.ones((2, 3), dtype=np.float32)
+y = np.ones((2, 3), dtype=np.float32)
 is_bearable(x, F32[N, C])  # independent temporary memo
 is_bearable(y, F32[N, C])  # independent temporary memo
 

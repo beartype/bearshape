@@ -39,7 +39,7 @@ from bearshape.optree import Tree
 
 @beartype
 def process(data: Tree[F32[N, C]]) -> Tree[F32[N, C]]:
-  ...
+  return data
 
 process({
   "params": np.ones((3, 4), dtype=np.float32),
@@ -120,6 +120,8 @@ def f(x: Tree[F32[N], ..., T], y: Tree[F32[N], ..., T]):  # type: ignore[valid-t
 ### Two-level matching
 
 ```python
+from bearshape import S
+
 @beartype
 def f(x: Tree[int, T, S], y: Tree[int, T, S]):  # type: ignore[valid-type]
   ...

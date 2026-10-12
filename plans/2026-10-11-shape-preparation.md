@@ -1,5 +1,11 @@
 # Prepare invariant shape traversal once per annotation
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 ## Purpose / Big Picture
 
 Complete the remaining invariant preparation suggested by the audit, following
@@ -152,3 +158,18 @@ remain external release prerequisites.
 Revision note — 2026-10-11: Record the finished implementation, protocol guards,
 matched performance tradeoffs and final installed validation; keep merge state
 and release readiness distinct.
+
+
+## Merge closeout — 12 October 2026
+
+PR #57 is merged at main a475c9b5376601eb39c9e0641f16f62d56fed979.
+The combined history preserves all 14 reviewed commits, including conflict
+resolutions. Main passed 1,315 runtime tests, eight checker tests, 34 hosted CI
+jobs and both proposal jobs; documentation built with deployment skipped.
+The source/wheel matched the reviewed artifacts exactly. All three clean
+optimization worktrees were archived and their local/remote branches removed
+after preserving evidence. The earlier open-review statements above are dated
+history. Release prerequisites remain outstanding; nothing was published.
+
+Revision note — 2026-10-12: Append verified merge and cleanup status without
+rewriting the original implementation evidence.

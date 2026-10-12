@@ -44,7 +44,12 @@ uv run --locked python tools/check_notebook.py
 `check_docs.py` needs the freshly built `site/`. It verifies table rows,
 admonitions, the favicon and Python 3.11 snippet syntax. It does not execute
 those snippets; `tests/test_examples.py` exercises selected real consumers.
-Update expected rendered counts deliberately when changing page structure.
+Update expected rendered counts deliberately when changing page structure. Also
+execute changed runnable snippets (including intended rejections) and inspect
+affected pages. Examples requiring a real package or user-defined class need
+their consumer fixtures; CUDA-only examples require separate hardware. Review
+local links, source-versus-published version notices and API signatures when
+changing guides; syntax checks cannot establish those facts.
 
 `check_notebook.py` executes `examples/bearshape_tour.ipynb` in a fresh kernel
 using the invoking interpreter, installed bearshape, NumPy and the notebook

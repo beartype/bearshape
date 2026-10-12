@@ -118,6 +118,11 @@ Common interpretations:
 - `"same_kind"`: same numeric family, and the default
 - `"unsafe"`: most permissive
 
+The custom factory checks the dtype obtained by `np.asarray(value)` with
+`np.can_cast`; it does not perform the per-value integer bounds check of
+built-in `U8ScalarLike` and similar aliases. For example, a Python integer is
+normally inferred as a wider integer dtype even when its value fits in `uint8`.
+
 Numeric factories still reject booleans. For example,
 `make_scalar_like_type(np.float32)` rejects `True`, while
 `make_scalar_like_type(np.bool_)` accepts it.

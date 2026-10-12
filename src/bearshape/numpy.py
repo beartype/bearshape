@@ -2,6 +2,8 @@
 
 Array types (e.g. ``F32``, ``Int``) are subscriptable with dimension symbols::
 
+    import numpy as np
+    from beartype import beartype
     from bearshape import N, C, H, W
     from bearshape.numpy import F32
 
@@ -9,9 +11,9 @@ Array types (e.g. ``F32``, ``Int``) are subscriptable with dimension symbols::
     @beartype
     def conv(x: F32[N, C, H, W]) -> F32[N, C, H, W]: ...
 
-Endianness variants are available programmatically via
-``make_array_type(np.ndarray, FLOAT32_LE)`` using DtypeSpec constants from
-``bearshape._dtypes``.
+Endianness variants use the public ``make_array_type`` factory with
+``DtypeSpec("Float32LE", frozenset({"float32"}), byteorder="little")``.
+Use ``"big"`` or ``"native"`` for the other byte-order constraints.
 
 Additional dtypes: ``V`` (void), ``Str`` (string), ``Bytes``, ``Obj`` (object),
 ``DT64`` (datetime64), ``TD64`` (timedelta64).
@@ -353,6 +355,11 @@ def Structured(  # noqa: N802
 
   Example::
 
+      import numpy as np
+      from beartype import beartype
+      from bearshape import N
+      from bearshape.numpy import Structured
+
       Point = Structured([("x", np.float32), ("y", np.float32)])
 
 
@@ -576,7 +583,9 @@ def make_scalar_like_type(
 ) -> type:
   """Create a scalar-like type with casting validation.
 
-  Uses ``np.can_cast(value, target_dtype, casting=casting)`` at runtime.
+  Checks ``np.can_cast(np.asarray(value).dtype, target_dtype, casting=casting)``.
+  This custom factory checks source dtype compatibility, not the per-value
+  integer bounds used by the built-in fixed-width integer ScalarLike aliases.
 
   Parameters
   ----------

@@ -8,11 +8,6 @@ and this project follows
 
 ## [Unreleased]
 
-- Normalize known builtin NumPy dtype classes without repeatedly calculating
-    their names; preserve fresh metadata and custom dtype protocols.
-- Prepare immutable shape traversal once per array annotation, preserving live
-    Value arguments, memo bindings, complete Tree traversal and diagnostics.
-
 The next candidate is **0.1.0rc1**, independently versioned from beartype and
 not yet published. Python **3.11+** is required; the validated matrix is
 **3.11–3.14**, with exact released beartype **0.23.1** as the current baseline
@@ -48,12 +43,15 @@ proposal evidence only.
 
 ### Performance
 
+- Prepare builtin dtype names and invariant shape traversal once per annotation
+    while preserving custom metadata, live scopes and every Tree leaf check.
 - Bind runtime arguments only for array annotations containing Value dimensions.
     Reuse owned Tree array validators while retaining all-leaf traversal,
     per-leaf snapshots and independent-check isolation.
 - Filter unrelated frames before reading their locals. Preserve matched runtime
     samples, construction costs and artifact identities; timings are not a CI
-    threshold. Dtype and checked-value metadata remain uncached.
+    threshold. Checked-value and custom dtype metadata remain live; builtin
+    dtype class names are prepared once by the later optimization.
 
 ### Typing and compatibility
 
@@ -104,6 +102,13 @@ proposal evidence only.
     maintainer handoff with current ownership and validation responsibilities.
 - Use the required typing backports on supported interpreters, and build the
     documentation with Zensical while preserving the established site design.
+
+### Documentation
+
+- Distinguish the unpublished candidate from the PyPI release, document the
+    union limitation and correct public factory, Like and decorator examples.
+- Complete the contributor review workflow, validation recipes and current
+    handoff while retaining clearly marked historical evidence.
 
 ## [0.0.1] - 2026-03-31
 

@@ -1,5 +1,11 @@
 # Integrate and verify the next bearshape candidate
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 
 This living ExecPlan follows `PLANS.md` and M4/M6/M7 of `plans/2026-10-11-release-readiness.md`. Preserve the Progress, Surprises & Discoveries, Decision Log and Outcomes & Retrospective sections as execution proceeds.
 

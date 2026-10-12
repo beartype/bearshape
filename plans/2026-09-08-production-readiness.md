@@ -1,5 +1,11 @@
 # Make bearshape ready for a verified beartype 0.23.0rc0 release
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 
 This ExecPlan was accepted for implementation on 8 September 2026. The target release is bearshape `0.1.0rc0`, independently versioned from beartype. It follows the repository's `PLANS.md`. Keep `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` current during execution. The user authorized implementation, isolated worktrees, and separate focused PRs for independent changes. Merge still requires user validation; publication and administrative transfer require separate authorization.
 

@@ -151,11 +151,14 @@ passes 1,323 normally installed baseline tests and 1,450 proposal tests on both
 Python 3.11.15 and 3.14.5. The proposal total includes all 69 bearshape
 composition cases and 58 upstream protocol/scope/mixin cases. It also passes the
 unchanged union probe. Source coverage is 91.23%; fresh minimal wheel consumers
-and all 95 documentation snippets pass. Five local skips cover missing CuPy and
-four platform-specific extended-precision cases, not union semantics. Hosted PR
-checks add platform/interpreter, compatibility-floor, docs/notebook and archive
-lanes. See each PR for the final check status.
+and all 95 documentation snippets pass syntax validation (not execution). Five
+local skips cover missing CuPy and four platform-specific extended-precision
+cases, not union semantics. Hosted PR checks add platform/interpreter,
+compatibility-floor, docs/notebook and archive lanes. See each PR for the final
+check status.
 
 The published dependency still lacks full union rollback. This work does not
 replace that release prerequisite or supply fresh CUDA evidence. Nothing has
-been published or sent upstream. Both PRs remain subject to merge review.
+been published or sent upstream. Both PRs were merged on 12 October 2026 at main
+`a475c9b`, preserving the reviewed histories. Post-merge validation is recorded
+in the [handoff](../../../docs/maintainers/production-readiness.md).

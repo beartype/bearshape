@@ -166,6 +166,11 @@ Useful interpretations:
 `target_dtype` may be passed as a NumPy scalar type, a dtype object, or a
 canonical dtype string such as `"float32"`.
 
+The custom factory checks the dtype obtained by `np.asarray(value)` with
+`np.can_cast`; it does not perform the per-value integer bounds check of
+built-in `U8ScalarLike` and similar aliases. For example, a Python integer is
+normally inferred as a wider integer dtype even when its value fits in `uint8`.
+
 Numeric `ScalarLike` factories still reject booleans by design:
 
 ```python
@@ -209,8 +214,9 @@ If you need stricter or looser input acceptance, make a custom alias instead of
 relying on the built-ins:
 
 ```python
-from bearshape import make_array_like_type
-from bearshape._dtypes import FLOAT32
+from bearshape import DtypeSpec, make_array_like_type
+
+FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 
 F32Exact = make_array_like_type(FLOAT32, casting="no", name="F32Exact")
 F32Unsafe = make_array_like_type(FLOAT32, casting="unsafe", name="F32Unsafe")

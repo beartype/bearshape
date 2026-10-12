@@ -4,6 +4,7 @@
 
 Usage::
 
+    from beartype import beartype
     from bearshape import N, C, H, W
     from bearshape.jax import F32, BF16
 

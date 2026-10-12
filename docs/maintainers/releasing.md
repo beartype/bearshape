@@ -14,7 +14,7 @@ engineering evidence, but cannot substitute for an available supported release.
 Do not skip, mark xfail, or remove these gates to publish.
 
 Ordinary CI and nightly validate the selected Python/dependency baseline and all
-existing functionality. Release validation additionally requires the complete
+ordinary regression cases. Release validation additionally requires the complete
 composition contract from the normally installed candidate wheel. The gate
 collects `tools/upstream/` as a directory so union, scope, isolation and audit
 composition modules all run. Tests from the optional patched upstream source are
@@ -62,9 +62,9 @@ endpoints. It upgrades beartype, NumPy, JAX/jaxlib, Torch, optree and
 `typing-extensions` within the declared constraints in a disposable lock, keeps
 the maintained checker toolchain and records the resolved inputs. Failures are
 visible and must be investigated before proposing a lock update. The canary uses
-`validate_runtime.py --latest-compatible`; normal/release acceptance keeps the
-exact preflight. A passing canary neither repairs the known union blocker nor
-authorizes publishing.
+`validate_runtime.py cpu --latest-compatible`; normal/release acceptance keeps
+the exact preflight. A passing canary neither repairs the known union blocker
+nor authorizes publishing.
 
 ## Prepare a candidate
 
@@ -83,9 +83,12 @@ uv run --locked prek run actionlint -a --stage manual
 
 Update the independently versioned bearshape version in `pyproject.toml`,
 refresh `uv.lock`, and write the changelog and migration notes in a reviewed PR.
-Versions must be canonical `X.Y.Z`, optionally followed by `aN`, `bN` or `rcN`.
-Do not change the version just to match beartype. Keep exact dependency
-preflights, tox, CI and the lock synchronized when adopting an upstream release.
+Refresh candidate/release notices in README, installation, the tour and the
+current handoff at the same time; existing PyPI metadata and the deployed site
+do not change when source docs are merged. Versions must be canonical `X.Y.Z`,
+optionally followed by `aN`, `bN` or `rcN`. Do not change the version just to
+match beartype. Keep exact dependency preflights, tox, CI and the lock
+synchronized when adopting an upstream release.
 
 Build into an empty output directory: a candidate consists of exactly one source
 archive and one pure-Python wheel. Build the wheel from the source archive, then
@@ -120,7 +123,8 @@ source SHA and the wheel's SHA256, then run the environment's interpreter:
 ```bash
 python -I -c "import cupy; assert cupy.cuda.runtime.getDeviceCount() > 0; cupy.show_config()"
 python -I -c "import bearshape, pathlib, sys; assert pathlib.Path(bearshape.__file__).resolve().is_relative_to(pathlib.Path(sys.prefix).resolve())"
-python -I -m pytest <copied-consumer>/tests/test_cupy.py -n 0
+python -I -m pytest <copied-consumer>/tests/test_cupy.py \
+  --installed-package -n 0
 ```
 
 Repeat at both supported endpoint interpreters, retain device/driver details and

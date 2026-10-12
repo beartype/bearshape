@@ -8,7 +8,8 @@ Two modes of operation:
 
 2. **Explicit (push/pop)**: When used with ``@bearshape.check``, the memo is managed
    via an explicit stack stored in a :class:`contextvars.ContextVar`.  This is
-   guaranteed correct regardless of call-stack depth.  The stack structure is
+   independent of call-stack depth; it does not fix native-union rollback.
+   The stack structure is
    async-task-safe (push/pop in one task cannot mutate another's stack), but
    ``ShapeMemo`` objects are shared by reference — child tasks that inherit an
    active parent context see the same live memo.  For full isolation, each task
@@ -205,10 +206,14 @@ def get_memo(_depth: int = 2) -> ShapeMemo:
 
   Resolution order:
 
-  1. If an explicit memo was pushed (via ``@bearshape.check``), use it.
-  2. Otherwise, identify the call context from the beartype wrapper frame
-     and reuse or create the memo held in that live frame.
-  3. If all else fails, return a fresh temporary memo (no cross-arg checking).
+  1. Use an explicit memo only when its owner matches this invocation, or
+     when it is untagged (``check_context``).
+  2. With the separately tested upstream scope proposal, reuse or create
+     state in the current invocation scope. Published beartype 0.23.1 has no
+     such accessor, so reuse or create state in the live wrapper frame instead.
+  3. Outside a checking scope/frame, return a fresh temporary memo.
+
+  Nested independent invocations do not share a tagged owner's memo.
 
   Parameters
   ----------

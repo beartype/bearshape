@@ -3,7 +3,7 @@
 Most users will not need these — the frame-based memo in :mod:`._memo` works
 automatically with ``@beartype``.  These are provided for:
 
-- Guaranteed correctness in exotic call-stack scenarios
+- Explicit memo lifetime across wrapper layers (not native-union rollback)
 - Combining memo management with ``BeartypeConf`` in a single decorator
 - Manual ``is_bearable()`` checks at module scope
 """
@@ -42,15 +42,21 @@ def check(
 
   Usage::
 
+      import bearshape
+      from beartype import BeartypeConf, beartype
+      from bearshape import N, C
+      from bearshape.numpy import F32
+
+
       # Memo only — pair with @beartype
       @bearshape.check
       @beartype
-      def f(x: Float32Array[N, C]) -> Float32Array[N, C]: ...
+      def f(x: F32[N, C]) -> F32[N, C]: ...
 
 
       # Memo + beartype combined
-      @bearshape.check(conf=BeartypeConf(strategy=BeartypeStrategy.On))
-      def f(x: Float32Array[N, C]) -> Float32Array[N, C]: ...
+      @bearshape.check(conf=BeartypeConf(is_random=False))
+      def f(x: F32[N, C]) -> F32[N, C]: ...
 
   .. note::
      Generator functions (sync and async) are not supported.

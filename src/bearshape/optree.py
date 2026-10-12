@@ -3,6 +3,7 @@
 
 Usage::
 
+    from beartype import beartype
     from bearshape import N, C, T, S, Structure
     from bearshape.optree import Tree
     from bearshape.numpy import F32

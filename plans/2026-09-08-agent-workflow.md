@@ -1,5 +1,11 @@
 # Align agent guidance and merge the approved production work
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 
 This living ExecPlan follows `PLANS.md`. Keep Progress, Surprises & Discoveries,
 Decision Log, and Outcomes & Retrospective current.

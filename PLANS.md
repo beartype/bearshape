@@ -6,8 +6,8 @@ This document describes the requirements for an execution plan ("ExecPlan"), a d
 
 The rename is complete; use focused maintenance plans. `AGENTS.md` owns the
 current product boundaries, `CONTRIBUTING.md` the command reference, and
-`tools/README.md` the existing validators. Read the current production roadmap
-and handoff report before changing release acceptance. Historical plans retain
+`tools/README.md` the existing validators. Read the current handoff report and the task's plan before changing release
+acceptance. `plans/README.md` identifies current guidance and dated records. Historical plans retain
 dated evidence; record later owner decisions explicitly rather than applying
 an old pending-approval statement over current authorization.
 
