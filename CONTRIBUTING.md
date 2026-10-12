@@ -72,8 +72,8 @@ update that URL:
 git remote set-url origin https://github.com/beartype/bearshape.git
 ```
 
-Use **uv 0.11.17** (the project accepts uv 0.11.x). To bootstrap it alongside a
-different global uv version, run `uv tool install uv==0.11.17` from outside this
+Use **uv 0.13.0** (the project accepts uv 0.13.x). To bootstrap it alongside a
+different global uv version, run `uv tool install uv==0.13.0` from outside this
 checkout, then ensure its executable is first on PATH.
 
 ```bash

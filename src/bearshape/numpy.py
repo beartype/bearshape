@@ -348,7 +348,7 @@ ArrayLike: tp.TypeAlias = (
 # ---------------------------------------------------------------------------
 
 
-def Structured(  # noqa: N802
+def Structured(  # ruff: ignore[invalid-function-name]
   fields: object,
 ) -> object:
   """Create a subscriptable array type for a structured numpy dtype.

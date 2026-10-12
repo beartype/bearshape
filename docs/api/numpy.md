@@ -15,9 +15,17 @@ description: NumPy array aliases, Like aliases, ScalarLike aliases, and NumPy-sp
 
 ```python
 from bearshape.numpy import (
-  F32, I64, DT64, TD64, Shaped, Structured,
-  F32Like, IntLike,
-  U8ScalarLike, ArrayLike, make_scalar_like_type,
+  F32,
+  I64,
+  DT64,
+  TD64,
+  Shaped,
+  Structured,
+  F32Like,
+  IntLike,
+  U8ScalarLike,
+  ArrayLike,
+  make_scalar_like_type,
 )
 ```
 

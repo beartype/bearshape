@@ -8,9 +8,14 @@ description: CuPy array aliases, Like aliases, and ScalarLike re-exports.
 
 ```python
 from bearshape.cupy import (
-  F32, I64, Int, Shaped,
-  F32Like, I64Like,
-  U8ScalarLike, make_scalar_like_type,
+  F32,
+  I64,
+  Int,
+  Shaped,
+  F32Like,
+  I64Like,
+  U8ScalarLike,
+  make_scalar_like_type,
 )
 ```
 

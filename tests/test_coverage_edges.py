@@ -236,7 +236,7 @@ class TestArrayLikeCheckerEdges:
     # but a custom __array__ that raises should trigger the except branch
 
     class Unconvertible:
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "nope"
         raise TypeError(msg)
 
@@ -388,7 +388,7 @@ class TestScalarLikeFactory:
     T = make_scalar_like_type(np.float32, casting="same_kind")
 
     class Unconvertible:
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "nope"
         raise TypeError(msg)
 
@@ -536,7 +536,7 @@ class TestNewDimensionSymbols:
     from beartype import beartype
 
     from bearshape import D, K
-    from bearshape.numpy import F32  # noqa: F401
+    from bearshape.numpy import F32  # ruff: ignore[unused-import]
 
     @beartype
     def f(x: F32[D, K]) -> F32[D, K]:  # type: ignore[valid-type]

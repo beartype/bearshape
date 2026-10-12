@@ -291,7 +291,7 @@ def _check_one(
       return ""
     try:
       expected = _evaluate_dim_expr(dim.expr, memo.single, allow_attr=False)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # ruff: ignore[blind-except]
       return f"cannot evaluate '{dim.expr}': {e}"
     err = _check_expected_value(dim.expr, expected, size)
     if err:
@@ -306,7 +306,7 @@ def _check_one(
       if scope is not None:
         names.update(scope)
       expected = _evaluate_dim_expr(dim.expr, names, allow_attr=True)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # ruff: ignore[blind-except]
       return f"cannot evaluate {dim!r}: {e}"
     err = _check_expected_value(repr(dim), expected, size)
     if err:

@@ -23,15 +23,18 @@ from beartype import beartype
 from bearshape import N, C
 from bearshape.numpy import F32, F32Like
 
+
 @beartype
 def to_array(x: F32Like[...]) -> np.ndarray:
   return np.asarray(x, dtype=np.float32)
+
 
 to_array(3.14)  # scalar
 to_array([1.0, 2.0, 3.0])  # 1D list
 to_array([[1.0, 2.0], [3.0, 4.0]])  # 2D nested list
 to_array(np.ones((3, 4)))  # ndarray
 to_array([[[[[[1.0]]]]]])  # arbitrarily deep nesting
+
 
 @beartype
 def process(x: F32Like[N, C]) -> F32[N, C]:
@@ -74,9 +77,11 @@ component, only value- and dtype-family constraints.
 from beartype import beartype
 from bearshape.numpy import U8ScalarLike
 
+
 @beartype
 def clamp_pixel(value: U8ScalarLike) -> int:
   return int(value)
+
 
 clamp_pixel(128)  # OK
 clamp_pixel(256)  # Raises
@@ -204,7 +209,7 @@ The built-in aliases such as `F32Like`, `I64Like`, `IntLike`, `FloatLike`, and
 `NumLike` all use:
 
 ```python
-casting="same_kind"
+casting = "same_kind"
 ```
 
 That is the library default for `make_array_like_type(...)`, and it is the

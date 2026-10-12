@@ -22,9 +22,12 @@ from bearshape import N, T
 from bearshape.numpy import F32
 from bearshape.optree import Tree
 
+
 @beartype
-def update(params: Tree[F32[N], T],
-           grads: Tree[F32[N], T]) -> Tree[F32[N]]:  # type: ignore[valid-type]
+def update(
+  params: Tree[F32[N], T],
+  grads: Tree[F32[N], T],
+) -> Tree[F32[N]]:  # type: ignore[valid-type]
   ...
 ```
 

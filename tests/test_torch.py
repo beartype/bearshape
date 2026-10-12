@@ -349,7 +349,7 @@ class TestTorchLikeTypes:
         self.shape = (3,)
         self.dtype = np.dtype(np.float32)
 
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "not convertible"
         raise TypeError(msg)
 
@@ -384,7 +384,7 @@ class TestTorchAsarrayFallback:
     """Object that neither torch nor numpy can convert should be rejected."""
 
     class Unconvertible:
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "nope"
         raise TypeError(msg)
 
@@ -395,7 +395,7 @@ class TestTorchAsarrayFallback:
 
     class TorchFuncObj:
       @classmethod
-      def __torch_function__(  # noqa: PLW3201
+      def __torch_function__(  # ruff: ignore[bad-dunder-method-name]
         cls, func: object, types: object, args: object = (), kwargs: object = None
       ) -> object:
         return NotImplemented
@@ -691,7 +691,7 @@ class TestTorchConversionContract:
 
   def test_numpy_protocol_does_not_hide_torch_failure(self) -> None:
     class NumpyOnly:
-      def __array__(self, *_args: object, **_kwargs: object) -> np.ndarray:  # noqa: PLW3201
+      def __array__(self, *_args: object, **_kwargs: object) -> np.ndarray:  # ruff: ignore[bad-dunder-method-name]
         return np.ones(3, dtype=np.float32)
 
     value = NumpyOnly()

@@ -128,9 +128,11 @@ from bearshape.numpy import Structured
 
 Point = Structured([("x", np.float32), ("y", np.float32)])
 
+
 @beartype
 def process_points(pts: Point[N]) -> Point[N]:
   return pts
+
 
 pts = np.zeros(10, dtype=[("x", np.float32), ("y", np.float32)])
 process_points(pts)  # OK
@@ -153,9 +155,11 @@ F32LE = make_array_type(
   np.ndarray, DtypeSpec("Float32LE", frozenset({"float32"}), byteorder="little")
 )
 
+
 @beartype
 def process_le(x: F32LE[N, C]) -> F32LE[N, C]:
   return x
+
 
 process_le(np.ones((4, 3), dtype="<f4"))  # OK
 process_le(np.ones((4, 3), dtype=">f4"))  # Raises

@@ -161,7 +161,7 @@ class TestThreadSafety:
       try:
         f(np.ones((size,), dtype=np.float32))
         results.append(True)
-      except Exception as e:  # noqa: BLE001
+      except Exception as e:  # ruff: ignore[blind-except]
         errors.append(str(e))
 
     threads = [threading.Thread(target=worker, args=(i,)) for i in range(1, 6)]

@@ -19,9 +19,11 @@ from beartype import beartype
 from bearshape import C, N
 from bearshape.numpy import F32
 
+
 @beartype
 def choose(pair: tuple[F32[N], str] | tuple[F32[C], int], y: F32[N]) -> None:
   pass
+
 
 choose((np.ones(2, dtype=np.float32), 1), np.ones(3, dtype=np.float32))
 ```

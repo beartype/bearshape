@@ -37,9 +37,11 @@ from bearshape import N, C
 from bearshape.numpy import F32
 from bearshape.optree import Tree
 
+
 @beartype
 def process(data: Tree[F32[N, C]]) -> Tree[F32[N, C]]:
   return data
+
 
 process({
   "params": np.ones((3, 4), dtype=np.float32),
@@ -61,6 +63,7 @@ from beartype import beartype
 from bearshape import N, T
 from bearshape.numpy import F32
 from bearshape.optree import Tree
+
 
 @beartype
 def add_trees(
@@ -122,13 +125,16 @@ def f(x: Tree[F32[N], ..., T], y: Tree[F32[N], ..., T]):  # type: ignore[valid-t
 ```python
 from bearshape import S
 
+
 @beartype
 def f(x: Tree[int, T, S], y: Tree[int, T, S]):  # type: ignore[valid-type]
   ...
 
+
 @beartype
 def g(x: Tree[F32[N], T, S, ...]):  # type: ignore[valid-type]
   ...
+
 
 @beartype
 def h(x: Tree[F32[N], ..., T, S]):  # type: ignore[valid-type]
@@ -148,9 +154,9 @@ from bearshape.optree import Tree
 Params = Structure("Params")
 State = Structure("State")
 
+
 @beartype
-def train(params: Tree[F32[N], Params],
-          state: Tree[I64[N], State]):  # type: ignore[valid-type]
+def train(params: Tree[F32[N], Params], state: Tree[I64[N], State]):  # type: ignore[valid-type]
   ...
 ```
 

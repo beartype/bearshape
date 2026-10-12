@@ -68,8 +68,8 @@ nor authorizes publishing.
 
 ## Prepare a candidate
 
-Use uv 0.11.17 and Python 3.11–3.14. If a global uv version is outside the
-project's 0.11 range, bootstrap `uv tool install uv==0.11.17` outside the
+Use uv 0.13.0 and Python 3.11–3.14. If a global uv version is outside the
+project's 0.13 range, bootstrap `uv tool install uv==0.13.0` outside the
 checkout and put that executable first on PATH. From the repository root:
 
 ```bash

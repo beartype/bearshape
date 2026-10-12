@@ -25,9 +25,11 @@ from beartype import beartype
 from bearshape import N, C
 from bearshape.numpy import F32
 
+
 @beartype
 def normalize(x: F32[N, C]) -> F32[N, C]:
   return x / x.sum(axis=1, keepdims=True)
+
 
 normalize(np.ones((4, 3), dtype=np.float32))  # OK
 normalize(np.ones((4, 3), dtype=np.float64))  # Raises: wrong dtype
@@ -54,11 +56,12 @@ parameters:
 def add(x: F32[N, C], y: F32[N, C]) -> F32[N, C]:
   return x + y
 
-add(np.ones((4, 3), dtype=np.float32),
-    np.ones((4, 3), dtype=np.float32))  # OK
 
-add(np.ones((4, 3), dtype=np.float32),
-    np.ones((5, 3), dtype=np.float32))  # Raises: N mismatch
+add(np.ones((4, 3), dtype=np.float32), np.ones((4, 3), dtype=np.float32))  # OK
+
+add(
+  np.ones((4, 3), dtype=np.float32), np.ones((5, 3), dtype=np.float32)
+)  # Raises: N mismatch
 ```
 
 ## 3. Return values are checked too
@@ -83,6 +86,7 @@ Each function invocation gets a fresh set of dimension bindings:
 def f(x: F32[N]) -> F32[N]:
   return x
 
+
 f(np.ones((3,), dtype=np.float32))  # N = 3
 f(np.ones((100,), dtype=np.float32))  # N = 100, no conflict with the prior call
 ```
@@ -99,6 +103,7 @@ import numpy as np
 from beartype import beartype
 from bearshape import Value
 from bearshape.numpy import F32
+
 
 @bearshape.check
 @beartype

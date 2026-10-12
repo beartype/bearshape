@@ -1,7 +1,7 @@
 """Build and validate reviewed upstream patches without changing the lock."""
 
 # All subprocesses use argument lists, never a shell.
-# ruff: noqa: S404, S603
+# ruff: file-ignore[suspicious-subprocess-import, subprocess-without-shell-equals-true]
 
 from __future__ import annotations
 

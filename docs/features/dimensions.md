@@ -23,9 +23,9 @@ from beartype import beartype
 from bearshape import N, C, H, W
 from bearshape.numpy import F32
 
+
 @beartype
-def forward(x: F32[N, C, H, W]) -> F32[N, C, H, W]:
-  ...
+def forward(x: F32[N, C, H, W]) -> F32[N, C, H, W]: ...
 ```
 
 Pre-defined symbols:
@@ -48,8 +48,7 @@ Use plain integers when an axis must have an exact size:
 
 ```python
 @beartype
-def rgb_to_gray(x: F32[N, 3, H, W]) -> F32[N, 1, H, W]:
-  ...
+def rgb_to_gray(x: F32[N, 3, H, W]) -> F32[N, 1, H, W]: ...
 ```
 
 Static type checkers generally do **not** understand integer literals in these
@@ -70,9 +69,10 @@ already-bound shape names:
 ```python
 from bearshape import N, C
 
+
 @beartype
-def pad(x: F32[N]) -> F32[N + 2]:
-  ...
+def pad(x: F32[N]) -> F32[N + 2]: ...
+
 
 @beartype
 def flatten(x: F32[N, C]) -> F32[N * C]:
@@ -105,9 +105,11 @@ from bearshape.numpy import F32
 Size = Value("size")
 WidthPlus3 = Value("self.width + 3")
 
+
 @beartype
 def full(size: int) -> F32[Size]:  # type: ignore[valid-type]
   return np.full((size,), 1.0, dtype=np.float32)
+
 
 class SomeClass:
   width = 5
@@ -143,6 +145,7 @@ from beartype import beartype
 from bearshape import N, Scalar
 from bearshape.numpy import F32
 
+
 @beartype
 def dot(x: F32[N], y: F32[N]) -> F32[Scalar]:
   return np.asarray(np.dot(x, y), dtype=np.float32)
@@ -163,9 +166,11 @@ from beartype import beartype
 from bearshape import B, C
 from bearshape.numpy import F32
 
+
 @beartype
 def normalize(x: F32[~B, C]) -> F32[~B, C]:
   return x / x.sum(axis=-1, keepdims=True)
+
 
 normalize(np.ones((3,), dtype=np.float32))  # B = (), C = 3
 normalize(np.ones((4, 3), dtype=np.float32))  # B = (4,), C = 3
@@ -193,6 +198,7 @@ Use `~__` when you do not need cross-argument binding:
 ```python
 from beartype import beartype
 from bearshape import __, C
+
 
 @beartype
 def last_dim(x: F32[~__, C]) -> F32[~__, C]:
@@ -222,12 +228,15 @@ from beartype import beartype
 from bearshape import N, C
 from bearshape.numpy import F32
 
+
 @beartype
 def broadcast_add(x: F32[N, C], y: F32[+N, C]) -> F32[N, C]:
   return x + y
 
-broadcast_add(np.ones((4, 3), dtype=np.float32),
-              np.ones((1, 3), dtype=np.float32))  # OK
+
+broadcast_add(
+  np.ones((4, 3), dtype=np.float32), np.ones((1, 3), dtype=np.float32)
+)  # OK
 ```
 
 Broadcastable also works with variadic dimensions: `~+B` matches zero or more
@@ -248,6 +257,7 @@ also pins the target. This rule applies to parameters and returns.
 from beartype import beartype
 from bearshape import __, C
 from bearshape.numpy import F32
+
 
 @beartype
 def f(x: F32[__, C]) -> F32[__, C]:
@@ -270,9 +280,12 @@ Vocab = Dimension("Vocab")
 Embed = Dimension("Embed")
 Seq = Dimension("Seq")
 
+
 @beartype
-def embed(tokens: I64[N, Seq], table: F32[Vocab, Embed]) -> F32[N, Seq, Embed]:
-  ...
+def embed(
+  tokens: I64[N, Seq],
+  table: F32[Vocab, Embed],
+) -> F32[N, Seq, Embed]: ...
 ```
 
 Custom dimensions work at runtime immediately. For static typing, use the

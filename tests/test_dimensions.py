@@ -249,11 +249,11 @@ class TestDimSpecEdgeCases:
 
   def test_dim_spec_variadic_rejects_numeric(self) -> None:
     with pytest.raises(TypeError, match="Cannot use variadic"):
-      Dimension("~3")._dim_spec  # noqa: B018
+      Dimension("~3")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dim_spec_variadic_broadcastable_rejects_numeric(self) -> None:
     with pytest.raises(TypeError, match="Cannot use variadic"):
-      Dimension("~+3")._dim_spec  # noqa: B018
+      Dimension("~+3")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dim_spec_broadcastable_fixed(self) -> None:
     spec = Dimension("+3")._dim_spec
@@ -263,7 +263,7 @@ class TestDimSpecEdgeCases:
 
   def test_dim_spec_broadcastable_negative_rejected(self) -> None:
     with pytest.raises(TypeError, match="Negative dimension"):
-      Dimension("+-3")._dim_spec  # noqa: B018
+      Dimension("+-3")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dimension_accepts_int(self) -> None:
     d = Dimension(3)
@@ -290,11 +290,11 @@ class TestUnaryOnSymbolicExpressions:
 
   def test_dim_spec_variadic_symbolic_raises(self) -> None:
     with pytest.raises(TypeError, match="variadic requires a named dimension"):
-      Dimension("~(N+1)")._dim_spec  # noqa: B018
+      Dimension("~(N+1)")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dim_spec_variadic_broadcastable_symbolic_raises(self) -> None:
     with pytest.raises(TypeError, match="variadic requires a named dimension"):
-      Dimension("~+(N+1)")._dim_spec  # noqa: B018
+      Dimension("~+(N+1)")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dim_spec_broadcastable_symbolic(self) -> None:
     spec = Dimension("+(N+1)")._dim_spec
@@ -326,7 +326,7 @@ class TestUnaryPosRejection:
     from bearshape import Scalar
 
     with pytest.raises(TypeError, match="Cannot apply .* to Scalar"):
-      +Scalar  # noqa: B018
+      +Scalar  # ruff: ignore[useless-expression]
 
   def test_pos_anonymous_raises(self) -> None:
     with pytest.raises(TypeError, match="Cannot apply .* to anonymous dimension"):
@@ -338,11 +338,11 @@ class TestUnaryPosRejection:
 
   def test_dim_spec_bare_plus_raises(self) -> None:
     with pytest.raises(TypeError, match="broadcastable requires a base dimension"):
-      Dimension("+")._dim_spec  # noqa: B018
+      Dimension("+")._dim_spec  # ruff: ignore[useless-expression]
 
   def test_dim_spec_plus_anonymous_raises(self) -> None:
     with pytest.raises(TypeError, match="Cannot use broadcastable .* with anonymous"):
-      Dimension("+__")._dim_spec  # noqa: B018
+      Dimension("+__")._dim_spec  # ruff: ignore[useless-expression]
 
 
 class TestBooleanDimRejection:
@@ -643,7 +643,7 @@ class TestScalarArithmeticRejection:
     from bearshape import Scalar
 
     with pytest.raises(TypeError, match="Cannot use Scalar"):
-      -Scalar  # noqa: B018
+      -Scalar  # ruff: ignore[useless-expression]
 
   def test_int_add_scalar_raises(self) -> None:
     from bearshape import Scalar

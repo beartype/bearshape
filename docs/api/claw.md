@@ -35,7 +35,9 @@ beartype, so bearshape array annotations start working there automatically.
 from beartype import BeartypeConf
 from bearshape.claw import bearshape_this_package
 
-bearshape_this_package(conf=BeartypeConf(
-  is_color=False,
-))
+bearshape_this_package(
+  conf=BeartypeConf(
+    is_color=False,
+  )
+)
 ```

@@ -8,10 +8,16 @@ description: JAX array aliases, Like aliases, ScalarLike re-exports, and JAX Tre
 
 ```python
 from bearshape.jax import (
-  F32, BF16, Int, Shaped,
-  F32Like, BF16Like,
-  U8ScalarLike, make_scalar_like_type,
-  Tree, Structure,
+  F32,
+  BF16,
+  Int,
+  Shaped,
+  F32Like,
+  BF16Like,
+  U8ScalarLike,
+  make_scalar_like_type,
+  Tree,
+  Structure,
 )
 ```
 
@@ -86,9 +92,12 @@ from beartype import beartype
 from bearshape import N, T
 from bearshape.jax import F32, Tree
 
+
 @beartype
-def process(params: Tree[F32[N], T],
-            grads: Tree[F32[N], T]) -> Tree[F32[N]]:  # type: ignore[valid-type]
+def process(
+  params: Tree[F32[N], T],
+  grads: Tree[F32[N], T],
+) -> Tree[F32[N]]:  # type: ignore[valid-type]
   ...
 ```
 

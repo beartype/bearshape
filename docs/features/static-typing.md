@@ -26,17 +26,21 @@ from beartype import beartype
 from bearshape import C, N, Scalar, __, check
 from bearshape.numpy import F32
 
+
 @beartype
 def f(x: F32[N, C]) -> F32[N, C]:
   return x
+
 
 @beartype
 def scalar(x: F32[Scalar]) -> F32[Scalar]:
   return x
 
+
 @beartype
 def keep_last(x: F32[__, C]) -> F32[__, C]:
   return x
+
 
 @check
 @beartype
@@ -76,9 +80,11 @@ from beartype import beartype
 from bearshape import N, Value
 from bearshape.numpy import F32
 
+
 @beartype
 def pad(x: F32[N]) -> F32[N + 2]:  # type: ignore[valid-type]
   ...
+
 
 @beartype
 def sized(size: int) -> F32[Value("size")]:  # type: ignore[valid-type]
@@ -109,6 +115,7 @@ if tp.TYPE_CHECKING:
 else:
   Three = Dimension(3)
 
+
 @beartype
 def process_rgb(x: F32[N, Three, H, W]) -> F32[N, Three, H, W]:
   return x
@@ -132,13 +139,16 @@ else:
   BroadcastN = +N
   PaddedN = N + 2
 
+
 @beartype
 def softmax(x: F32[VariadicBatch, C]) -> F32[VariadicBatch, C]:
   return x
 
+
 @beartype
 def broadcast_add(x: F32[N, C], y: F32[BroadcastN, C]) -> F32[N, C]:
   return x
+
 
 @beartype
 def pad(x: F32[N]) -> F32[PaddedN]:
@@ -171,6 +181,7 @@ else:
   Vocab = Dimension("Vocab")
   Embed = Dimension("Embed")
 
+
 @beartype
 def embed(tokens: I64[N], table: F32[Vocab, Embed]) -> F32[N, Embed]:
   return table[tokens]
@@ -202,9 +213,11 @@ else:
   )[N]
   PointVector = Structured([("x", np.float32), ("y", np.float32)])[N]
 
+
 @beartype
 def custom_identity(value: CustomVector) -> CustomVector:
   return value
+
 
 @beartype
 def point_identity(value: PointVector) -> PointVector:
