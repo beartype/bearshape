@@ -12,6 +12,7 @@ numpy, JAX, PyTorch, and TensorFlow arrays into a canonical string like
 
 from __future__ import annotations
 
+import sys
 import typing as tp
 from dataclasses import dataclass, field
 
@@ -249,6 +250,51 @@ class DtypeSpec:
     )
 
 
+# Only builtin dtype classes are retained, never dtype instances or checked
+# values. NumPy is discovered lazily so root imports stay backend-independent.
+_NUMPY_DTYPE_NAMES: dict[int, tuple[type, str]] = {}
+
+
+def _prepare_numpy_dtype_names() -> None:
+  numpy = sys.modules.get("numpy")
+  dtype_factory = getattr(numpy, "dtype", None)
+  if dtype_factory is None:
+    return  # Retry after a later NumPy import.
+
+  names = {}
+  for name in (
+    "bool",
+    "int8",
+    "int16",
+    "int32",
+    "int64",
+    "uint8",
+    "uint16",
+    "uint32",
+    "uint64",
+    "float16",
+    "float32",
+    "float64",
+    "longdouble",
+    "complex64",
+    "complex128",
+    "clongdouble",
+    "object",
+    "void",
+    "bytes",
+    "str",
+    "datetime64",
+    "timedelta64",
+  ):
+    dtype = dtype_factory(name)
+    # Extended precision names depend on the platform. Flexible and temporal
+    # names here have no size/unit suffix because the dtype is unparameterized.
+    dtype_type = type(dtype)
+    canonical = dtype.name if name in {"longdouble", "clongdouble"} else name
+    names[id(dtype_type)] = (dtype_type, canonical)
+  _NUMPY_DTYPE_NAMES.update(names)
+
+
 def extract_dtype_str(obj: object) -> str:
   """Extract a canonical dtype string from a numpy / JAX / PyTorch array.
 
@@ -258,6 +304,20 @@ def extract_dtype_str(obj: object) -> str:
   dtype = getattr(obj, "dtype", None)
   if dtype is None:
     return ""
+
+  names = _NUMPY_DTYPE_NAMES
+  if not names:
+    # Plain dtype strings need no backend discovery. Keep root-only custom
+    # arrays cheap even when NumPy is absent; subclasses retain their protocol.
+    if type(dtype) is str:
+      _, _, tail = dtype.rpartition(".")
+      return tail or dtype
+    _prepare_numpy_dtype_names()
+  # Identity keys avoid invoking arbitrary metaclass hashing/equality. Keeping
+  # the builtin class beside its name prevents reuse of its identity.
+  builtin = names.get(id(type(dtype)))
+  if builtin is not None:
+    return builtin[1]
 
   # NumPy / JAX: dtype.name gives canonical names like "float32", "float128",
   # "complex256", "datetime64", "str", ...

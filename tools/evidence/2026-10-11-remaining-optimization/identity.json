@@ -1,0 +1,154 @@
+{
+  "wheels": {
+    "dtype": {
+      "path": "/Users/ale/Code/bearshape/build/remaining-optimization/review-dtype-dist/bearshape-0.1.0rc1-py3-none-any.whl",
+      "sha256": "daa22b1c7efc52239fcff3c81829852c806a1debf2ec66fb977d592b82eec480"
+    },
+    "shape": {
+      "path": "/Users/ale/Code/bearshape/build/remaining-optimization/shape-dist/bearshape-0.1.0rc1-py3-none-any.whl",
+      "sha256": "42a22f86d358c344ea52a50e3e59d3f17cf08775068923b11606e348f2d2b4cc"
+    },
+    "combined": {
+      "path": "/Users/ale/Code/bearshape/build/remaining-optimization/review-dist/bearshape-0.1.0rc1-py3-none-any.whl",
+      "sha256": "313642ed018e897e5f5ea8123c5571da2deae6ff67a1422448bbf28075529db6"
+    },
+    "main": {
+      "path": "/Users/ale/Code/bearshape/build/merge-closeout/main-dist/bearshape-0.1.0rc1-py3-none-any.whl",
+      "sha256": "1e0bf25f4ad018d661d28b84a9136ade8f4f809a5c54c745a213c22d52284897"
+    },
+    "released": {
+      "path": "/Users/ale/Code/bearshape/build/union-isolation-revision/released/beartype-0.23.1-py3-none-any.whl",
+      "sha256": "4461b4dc57e3fdd6c8a8464b22cf118002eea107c33e9fef651c69068ab3cce3"
+    },
+    "proposal": {
+      "path": "/Users/ale/Code/bearshape/build/union-isolation-revision/optimized311/dist/beartype-0.23.1-py3-none-any.whl",
+      "sha256": "0580ede1fe87229728b42674d45fb8c32ce09a7e348f962cc2741304ef2f10d8"
+    }
+  },
+  "environments": [
+    {
+      "variant": "dtype",
+      "dependency": "released",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-dtype-released-3.11/bin/python"
+    },
+    {
+      "variant": "shape",
+      "dependency": "released",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-shape-released-3.11/bin/python"
+    },
+    {
+      "variant": "combined",
+      "dependency": "released",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-combined-released-3.11/bin/python"
+    },
+    {
+      "variant": "main",
+      "dependency": "released",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-main-released-3.11/bin/python"
+    },
+    {
+      "variant": "dtype",
+      "dependency": "proposal",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-dtype-proposal-3.11/bin/python"
+    },
+    {
+      "variant": "shape",
+      "dependency": "proposal",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-shape-proposal-3.11/bin/python"
+    },
+    {
+      "variant": "combined",
+      "dependency": "proposal",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-combined-proposal-3.11/bin/python"
+    },
+    {
+      "variant": "main",
+      "dependency": "proposal",
+      "python": "3.11",
+      "interpreter": "/private/tmp/remaining-bench-main-proposal-3.11/bin/python"
+    },
+    {
+      "variant": "dtype",
+      "dependency": "released",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-dtype-released-3.14/bin/python"
+    },
+    {
+      "variant": "shape",
+      "dependency": "released",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-shape-released-3.14/bin/python"
+    },
+    {
+      "variant": "combined",
+      "dependency": "released",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-combined-released-3.14/bin/python"
+    },
+    {
+      "variant": "main",
+      "dependency": "released",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-main-released-3.14/bin/python"
+    },
+    {
+      "variant": "dtype",
+      "dependency": "proposal",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-dtype-proposal-3.14/bin/python"
+    },
+    {
+      "variant": "shape",
+      "dependency": "proposal",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-shape-proposal-3.14/bin/python"
+    },
+    {
+      "variant": "combined",
+      "dependency": "proposal",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-combined-proposal-3.14/bin/python"
+    },
+    {
+      "variant": "main",
+      "dependency": "proposal",
+      "python": "3.14",
+      "interpreter": "/private/tmp/remaining-bench-main-proposal-3.14/bin/python"
+    }
+  ],
+  "scripts": {
+    "benchmark_runtime.py": "d2e02d848cc633d1781fd1607604f274e8f5f352b4e5a166f1b738db2609d98f",
+    "benchmark_transactions.py": "52363525b7b8785830527b467c79ae492b0f2a5ab2dd3dec133a75a86a8de969"
+  },
+  "calls": 5000,
+  "repeats": 9,
+  "order": "3.11 main/dtype/shape/combined; 3.14 combined/shape/dtype/main; sequential local runs",
+  "source_commits": {
+    "main": "28e885837e61705d3d3295463874c3e0acf35ca8",
+    "dtype": "6ae31a27fd5a2a95991c29433585cd342f47a1a0",
+    "shape": "4c0a65be3ae737c13d82944b1c0592cd343cbe10",
+    "combined": "e5eddd6aa0cab07a35e1ed4b25c00b2f6dade5cf"
+  },
+  "tested_archives": {
+    "dtype": {
+      "bearshape-0.1.0rc1.tar.gz": "06b859b7f2b97f019cf23bb12a34557034c52946cc7d461535736c9d7a3a7212",
+      "bearshape-0.1.0rc1-py3-none-any.whl": "daa22b1c7efc52239fcff3c81829852c806a1debf2ec66fb977d592b82eec480"
+    },
+    "shape": {
+      "bearshape-0.1.0rc1.tar.gz": "f6eeaa435b7c8a5ec425dfcfeeaeb8499d00ec4bce64cc67eb474dfb150a3ce4",
+      "bearshape-0.1.0rc1-py3-none-any.whl": "42a22f86d358c344ea52a50e3e59d3f17cf08775068923b11606e348f2d2b4cc"
+    },
+    "combined": {
+      "bearshape-0.1.0rc1.tar.gz": "3160a505a6bc01e55c8c3c2f1a4868473ecaaac94376afd7751b408ca2e001cc",
+      "bearshape-0.1.0rc1-py3-none-any.whl": "313642ed018e897e5f5ea8123c5571da2deae6ff67a1422448bbf28075529db6"
+    }
+  },
+  "scope": "Local macOS arm64, CPython 3.11.15/3.14.5, normally installed wheels, sequential measurements, no timing gate."
+}

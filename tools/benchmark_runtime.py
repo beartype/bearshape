@@ -19,7 +19,10 @@ from beartype.roar import BeartypeCallHintParamViolation
 from beartype.vale import Is
 
 import bearshape
-from bearshape import N, Value, check
+from bearshape import C, N, Value, check
+from bearshape._array_types import _ArrayChecker
+from bearshape._dtypes import FLOAT32, extract_dtype_str
+from bearshape._shape import NamedDim
 from bearshape._tree import _TreeChecker
 from bearshape.numpy import F32, F32Like
 from bearshape.optree import Tree, _get_optree
@@ -73,6 +76,20 @@ def tree_value(size: int, value: Tree[F32[Value("size")]]) -> Tree[F32[Value("si
 @beartype
 def tree_composite(value: Tree[Annotated[F32[N], Is[lambda _value: True]]]) -> object:
   return value
+
+
+@beartype
+def multiaxis(value: F32[N, 3, C, N + 1]) -> F32[N, 3, C, N + 1]:
+  return value
+
+
+@beartype
+def variadic(value: F32[N, ~C, N + 1]) -> F32[N, ~C, N + 1]:
+  return value
+
+
+def construct_array_validator() -> object:
+  return _ArrayChecker(np.ndarray, FLOAT32, (NamedDim("N"),))
 
 
 def decorate_array() -> object:
@@ -181,11 +198,23 @@ def main() -> None:
           repeats=args.repeats,
         )
       )
+  for label, call in (
+    ("multiaxis", partial(multiaxis, np.ones((2, 3, 4, 3), dtype=np.float32))),
+    ("variadic", partial(variadic, np.ones((2, 3, 4, 3), dtype=np.float32))),
+    ("like-cast", partial(like, np.ones(3, dtype=np.int32))),
+    ("extract-dtype", partial(extract_dtype_str, np.ones(3, dtype=np.float32))),
+    ("match-dtype", partial(FLOAT32.matches, np.ones(3, dtype=np.float32))),
+  ):
+    results.append(measure(label, call, calls=args.calls, repeats=args.repeats))
   results.extend(
     measure(
       function.__name__, function, calls=min(args.calls, 1_000), repeats=args.repeats
     )
-    for function in (decorate_array, construct_tree_validator)
+    for function in (
+      decorate_array,
+      construct_tree_validator,
+      construct_array_validator,
+    )
   )
   evidence = {
     "python": sys.version,

@@ -1,5 +1,18 @@
 # Production review and ownership handoff
 
+**Remaining optimizations, 11 October 2026 (PRs in review):**
+[#56](https://github.com/beartype/bearshape/pull/56) prepares builtin dtype
+names and keeps custom dtype protocols live;
+[#57](https://github.com/beartype/bearshape/pull/57) prepares shape traversal
+once per annotation. Their combined wheel passes **1,323 installed baseline
+tests** and **1,450 installed proposal tests** on Python 3.11 and 3.14, with
+**91.23%** source coverage. The
+[comparison report](https://github.com/beartype/bearshape/pull/56) contains
+source/artifact identities, raw samples, individual and combined results,
+startup tradeoffs and the remaining ordinary beartype cost. Main and release
+readiness are unchanged until these PRs are reviewed and merged and the existing
+external prerequisites are satisfied.
+
 **Latest audit follow-up, 11 October 2026:** candidate **0.1.0rc1** targets
 Python **3.11–3.14** and exact released beartype **0.23.1**. PRs
 [#48–#55](https://github.com/beartype/bearshape/pull/55) add the six audit
