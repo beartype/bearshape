@@ -15,6 +15,7 @@ functions, use `beartype.claw` or bearshape's alias for its package hook.
 
     ```python
     from bearshape.claw import bearshape_this_package
+
     bearshape_this_package()
     ```
 
@@ -22,6 +23,7 @@ functions, use `beartype.claw` or bearshape's alias for its package hook.
 
     ```python
     from beartype.claw import beartype_this_package
+
     beartype_this_package()
     ```
 
@@ -37,14 +39,15 @@ with `@beartype`.
 ```python
 # your_package/__init__.py
 from bearshape.claw import bearshape_this_package
+
 bearshape_this_package()
 
 # your_package/model.py
 from bearshape import N, C
 from bearshape.numpy import F32
 
-def forward(x: F32[N, C]) -> F32[N, C]:
-  ...
+
+def forward(x: F32[N, C]) -> F32[N, C]: ...
 ```
 
 Because bearshape integrates through standard beartype validators, the usual
@@ -58,9 +61,11 @@ Pass a `BeartypeConf` to customize the checking behavior:
 from beartype import BeartypeConf
 from bearshape.claw import bearshape_this_package
 
-bearshape_this_package(conf=BeartypeConf(
-  is_color=False,
-))
+bearshape_this_package(
+  conf=BeartypeConf(
+    is_color=False,
+  )
+)
 ```
 
 ## When to use

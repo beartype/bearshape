@@ -50,7 +50,7 @@ repos:
     #  args: [--pytest-test-first]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.3
+    rev: 0.13.0
     hooks:
       - id: uv-lock
         priority: 25
@@ -59,13 +59,13 @@ repos:
         priority: 0
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.25
+    rev: 0.26
     hooks:
       - id: validate-pyproject
         priority: 50
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.9
+    rev: v0.17.0
     hooks:
       - id: ruff-format
         args: [--output-format=concise]
@@ -77,7 +77,7 @@ repos:
         priority: 40
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.45.0
+    rev: v1.51.1
     hooks:
       - id: typos
         # Preserve exact upstream identifiers and the reviewed patch digests.
@@ -100,20 +100,20 @@ repos:
           - --extensions
           - gfm
         additional_dependencies:
-          - mdformat-frontmatter==2.0.10
+          - mdformat-frontmatter==2.1.2
           - mdformat-gfm==1.0.0
-          - mdformat-mkdocs==v5.2.0b2
+          - mdformat-mkdocs==5.3.0
         priority: 30
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
+    rev: v0.49.1
     hooks:
       - id: markdownlint-fix
         exclude: ^(AGENTS\.md|PLANS\.md|plans/.*\.md)$
         priority: 40
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.1
+    rev: v3.9.10
     hooks:
       - id: prettier
         exclude: ^docs/assets/js/tesseract\.js$

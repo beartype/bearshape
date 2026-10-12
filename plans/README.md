@@ -6,6 +6,13 @@ new plan. The [handoff](../docs/maintainers/production-readiness.md) owns curren
 release status; [releasing.md](../docs/maintainers/releasing.md) owns publishing
 prerequisites. A historical plan is not a current installation recipe.
 
+## Current development-toolchain work
+
+[Development-toolchain upgrade](2026-10-12-dev-toolchain.md) coordinates current
+tools, the universal lock, uv/build/hook/workflow pins and developer setup in
+[PR #60](https://github.com/beartype/bearshape/pull/60). Python support, exact
+beartype acceptance and release prerequisites remain unchanged.
+
 ## Latest documentation audit
 
 [Documentation alignment](2026-10-12-docs-alignment.md) covers user, contributor,

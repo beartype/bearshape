@@ -18,6 +18,7 @@ from beartype import beartype
 from bearshape import N
 from bearshape.jax import F32
 
+
 @beartype
 @jax.jit
 def add(x: F32[N], y: F32[N]) -> F32[N]:
@@ -45,6 +46,7 @@ import torch
 from beartype import beartype
 from bearshape import N
 from bearshape.torch import F32
+
 
 @beartype
 @torch.compile(backend="eager")

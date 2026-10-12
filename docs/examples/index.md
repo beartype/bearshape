@@ -36,9 +36,11 @@ from beartype import beartype
 from bearshape import C, N
 from bearshape.numpy import F32
 
+
 @beartype
 def normalize(x: F32[N, C]) -> F32[N, C]:
   return x / x.sum(axis=1, keepdims=True)
+
 
 normalize(np.ones((4, 3), dtype=np.float32))  # OK
 normalize(np.ones((4,), dtype=np.float32))  # Raises
@@ -52,6 +54,7 @@ import numpy as np
 from beartype import beartype
 from bearshape import Value
 from bearshape.numpy import F32
+
 
 @bearshape.check
 @beartype
@@ -80,6 +83,7 @@ else:
   Vocab = Dimension("Vocab")
   Embed = Dimension("Embed")
 
+
 @beartype
 def embed_lookup(tokens: I64[N], table: F32[Vocab, Embed]) -> F32[N, Embed]:
   return table[tokens]
@@ -94,9 +98,12 @@ from bearshape.numpy import F32
 from bearshape.optree import Tree
 import optree
 
+
 @beartype
-def accumulate(params: Tree[F32[N], T],
-               grads: Tree[F32[N], T]) -> Tree[F32[N]]:  # type: ignore[valid-type]
+def accumulate(
+  params: Tree[F32[N], T],
+  grads: Tree[F32[N], T],
+) -> Tree[F32[N]]:  # type: ignore[valid-type]
   return optree.tree_map(lambda p, g: p + g, params, grads)
 ```
 
@@ -111,9 +118,11 @@ from bearshape import Scalar
 from bearshape.numpy import F32Like, U8ScalarLike
 import numpy as np
 
+
 @beartype
 def to_scalar_array(x: F32Like[Scalar]) -> float:
   return float(np.asarray(x, dtype=np.float32))
+
 
 @beartype
 def clamp_pixel(value: U8ScalarLike) -> int:

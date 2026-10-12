@@ -1,7 +1,7 @@
 """Resolve release identity before allowing artifact validation or publication."""
 
 # Git commands use argument lists and never a shell.
-# ruff: noqa: S404, S603
+# ruff: file-ignore[suspicious-subprocess-import, subprocess-without-shell-equals-true]
 
 from __future__ import annotations
 

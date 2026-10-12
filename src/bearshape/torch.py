@@ -1,5 +1,5 @@
 # pyright: reportMissingImports=false
-# ruff: noqa: E402
+# ruff: file-ignore[module-import-not-at-top-of-file]
 """PyTorch tensor type annotations with runtime shape and dtype checking.
 
 Usage::

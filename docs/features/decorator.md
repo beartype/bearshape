@@ -18,9 +18,9 @@ from beartype import beartype
 from bearshape import N, C
 from bearshape.numpy import F32
 
+
 @beartype
-def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]:
-  ...
+def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]: ...
 ```
 
 Plain `@beartype` is the normal entry point. Most users never need more than
@@ -73,10 +73,10 @@ from beartype import beartype
 from bearshape import N, C
 from bearshape.numpy import F32
 
+
 @bearshape.check
 @beartype
-def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]:
-  ...
+def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]: ...
 ```
 
 ### Usage mode 2: memo + beartype combined
@@ -87,9 +87,9 @@ from beartype import BeartypeConf, BeartypeStrategy
 from bearshape import N, C
 from bearshape.numpy import F32
 
+
 @bearshape.check(conf=BeartypeConf(strategy=BeartypeStrategy.On))
-def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]:
-  ...
+def f(x: F32[N, C], y: F32[N, C]) -> F32[N, C]: ...
 ```
 
 ### When do you need it?
@@ -180,6 +180,7 @@ from __future__ import annotations
 from beartype import beartype
 from bearshape import B, C
 from bearshape.numpy import F32
+
 
 @beartype
 def f(x: F32[~B, C]):  # type: ignore[valid-type]

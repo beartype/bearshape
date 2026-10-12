@@ -650,7 +650,7 @@ class TestDiagnosticMessages:
 
   def test_arraylike_runtimeerror_reports_conversion_detail(self) -> None:
     class Boom:
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "boom"
         raise RuntimeError(msg)
 
@@ -1260,7 +1260,7 @@ class TestArrayLikeRejection:
         self.shape = (3,)
         self.dtype = np.dtype(np.float32)
 
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "not convertible"
         raise TypeError(msg)
 
@@ -1268,7 +1268,7 @@ class TestArrayLikeRejection:
 
   def test_runtimeerror_from_array_protocol_is_rejected(self) -> None:
     class Boom:
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "boom"
         raise RuntimeError(msg)
 
@@ -2565,7 +2565,7 @@ def test_root_like_releases_temporary_classes(*, native: bool) -> None:
     else:
 
       class TemporaryProtocol:
-        def __array__(self, dtype: object = None, copy: object = None) -> np.ndarray:  # noqa: PLW3201
+        def __array__(self, dtype: object = None, copy: object = None) -> np.ndarray:  # ruff: ignore[bad-dunder-method-name]
           return np.ones(2, dtype=np.float32)
 
       value = TemporaryProtocol()

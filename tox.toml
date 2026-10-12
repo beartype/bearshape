@@ -1,4 +1,4 @@
-requires = ["tox>=4.40", "tox-uv>=1.33"]
+requires = ["tox>=4.65.4", "tox-uv>=1.37.0"]
 env_list = [
   "dev",
   "py311-bt0231-cpu",
@@ -32,8 +32,8 @@ runner = "uv-venv-runner"
 description = "{env_name}"
 set_env = { UV_TORCH_BACKEND = "cpu" }
 deps = [
-  "pytest>=9.0.2",
-  "pytest-xdist>=3.5.0",
+  "pytest>=9.1.1",
+  "pytest-xdist>=3.8.0",
 
   # --- beartype ---
   { replace = "if", condition = "factor.bt0231", then = "beartype==0.23.1" },

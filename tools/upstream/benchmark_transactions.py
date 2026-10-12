@@ -55,7 +55,7 @@ def forward(value: LaterNative) -> object:
 
 
 @beartype
-def unselected(value: int | NeverResolved) -> object:  # noqa: F821
+def unselected(value: int | NeverResolved) -> object:  # ruff: ignore[undefined-name]
   return value
 
 

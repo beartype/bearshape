@@ -53,7 +53,7 @@ def like(value: F32Like[N]) -> object:
 
 
 @check(conf=BeartypeConf())
-def value_dimension(size: int, value: F32[Value("size")]) -> F32[Value("size")]:  # noqa: ARG001
+def value_dimension(size: int, value: F32[Value("size")]) -> F32[Value("size")]:  # ruff: ignore[unused-function-argument]
   """The size argument is consumed by the Value annotations."""
   return value
 
@@ -69,7 +69,7 @@ def tree(value: Tree[F32[N]]) -> Tree[F32[N]]:
 
 
 @beartype
-def tree_value(size: int, value: Tree[F32[Value("size")]]) -> Tree[F32[Value("size")]]:  # noqa: ARG001
+def tree_value(size: int, value: Tree[F32[Value("size")]]) -> Tree[F32[Value("size")]]:  # ruff: ignore[unused-function-argument]
   return value
 
 

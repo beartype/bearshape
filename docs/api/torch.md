@@ -8,9 +8,14 @@ description: PyTorch tensor aliases, Like aliases, and ScalarLike re-exports.
 
 ```python
 from bearshape.torch import (
-  F32, BF16, Int, Shaped,
-  F32Like, BF16Like,
-  U8ScalarLike, make_scalar_like_type,
+  F32,
+  BF16,
+  Int,
+  Shaped,
+  F32Like,
+  BF16Like,
+  U8ScalarLike,
+  make_scalar_like_type,
 )
 ```
 

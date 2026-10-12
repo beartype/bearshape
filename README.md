@@ -81,7 +81,7 @@ uv run --locked pytest tests/ --ignore=tests/test_typecheck.py -n auto
 uv run --locked pytest tests/test_typecheck.py -q
 ```
 
-Use uv 0.11.17. See
+Use uv 0.13.0. See
 [CONTRIBUTING.md](https://github.com/beartype/bearshape/blob/main/CONTRIBUTING.md)
 for setup, focused PRs, regression expectations, review and artifact validation.
 CuPy runtime tests require CUDA hardware. The

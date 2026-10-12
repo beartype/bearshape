@@ -367,7 +367,7 @@ class TestJaxLikeTypes:
         self.shape = (3,)
         self.dtype = np.dtype(np.float32)
 
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "not convertible"
         raise TypeError(msg)
 
@@ -401,7 +401,7 @@ class TestJaxArrayProtocol:
       def __init__(self, data: object) -> None:
         self._data = data
 
-      def __jax_array__(self) -> jax.Array:  # noqa: PLW3201
+      def __jax_array__(self) -> jax.Array:  # ruff: ignore[bad-dunder-method-name]
         return jnp.asarray(self._data, dtype=jnp.float32)
 
     wrapper = MyArray([1.0, 2.0, 3.0])
@@ -417,7 +417,7 @@ class TestJaxArrayProtocol:
       def __init__(self, data: object) -> None:
         self._data = data
 
-      def __jax_array__(self) -> jax.Array:  # noqa: PLW3201
+      def __jax_array__(self) -> jax.Array:  # ruff: ignore[bad-dunder-method-name]
         return jnp.asarray(self._data, dtype=jnp.float32)
 
     wrapper = MyArray([1.0, 2.0])

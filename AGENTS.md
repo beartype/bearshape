@@ -99,7 +99,7 @@ may skip the major-work workflow.
 
 ## Validation
 
-Use uv 0.11.17 and the committed lock. Start with `uv sync --locked`; install
+Use uv 0.13.0 and the committed lock. Start with `uv sync --locked`; install
 hooks with `uv run --locked prek install`. Use these routes from the repository root:
 
 - Runtime changes: `uv run --locked pytest tests/ --ignore=tests/test_typecheck.py -n auto`.

@@ -126,6 +126,7 @@ Backend modules are stricter:
 
 ```python
 import bearshape
+
 print(bearshape.__version__)
 ```
 

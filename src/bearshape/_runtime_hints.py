@@ -67,7 +67,7 @@ class _RuntimeHintMeta(type):
     validator = _require_runtime_validator(cls)
     return validator.instancecheck(obj)
 
-  def __instancecheck_str__(cls, obj: object) -> str:  # noqa: PLW3201
+  def __instancecheck_str__(cls, obj: object) -> str:  # ruff: ignore[bad-dunder-method-name]
     validator = _require_runtime_validator(cls)
     return validator.instancecheck_str(obj)
 

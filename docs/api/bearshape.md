@@ -21,10 +21,27 @@ It does **not** export `Tree` or `make_scalar_like_type`.
 ```python
 import bearshape
 from bearshape import (
-  B, C, D, H, K, L, N, P, S, T, W, __,
-  Scalar, Dimension, Value, Structure,
-  DtypeSpec, make_array_type, make_array_like_type,
-  check, check_context,
+  B,
+  C,
+  D,
+  H,
+  K,
+  L,
+  N,
+  P,
+  S,
+  T,
+  W,
+  __,
+  Scalar,
+  Dimension,
+  Value,
+  Structure,
+  DtypeSpec,
+  make_array_type,
+  make_array_like_type,
+  check,
+  check_context,
 )
 ```
 
@@ -136,6 +153,7 @@ FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 
 MyF32 = make_array_type(np.ndarray, FLOAT32)
 
+
 @beartype
 def f(x: MyF32[N, C]) -> MyF32[N, C]:
   return x
@@ -188,10 +206,10 @@ from beartype import beartype
 from bearshape import N
 from bearshape.numpy import F32
 
+
 @bearshape.check
 @beartype
-def f(x: F32[N], y: F32[N]) -> F32[N]:
-  ...
+def f(x: F32[N], y: F32[N]) -> F32[N]: ...
 ```
 
 Or combine memo management with `BeartypeConf`:
@@ -199,9 +217,9 @@ Or combine memo management with `BeartypeConf`:
 ```python
 from beartype import BeartypeConf
 
+
 @bearshape.check(conf=BeartypeConf())
-def f(x: F32[N]) -> F32[N]:
-  ...
+def f(x: F32[N]) -> F32[N]: ...
 ```
 
 Bare `@check`, `@check()` and `@check(conf=None)` only manage the memo. They

@@ -286,7 +286,7 @@ class TestCuPyLikeTypes:
         self.shape = (3,)
         self.dtype = np.dtype(np.float32)
 
-      def __array__(self, *_a: object, **_kw: object) -> None:  # noqa: PLW3201
+      def __array__(self, *_a: object, **_kw: object) -> None:  # ruff: ignore[bad-dunder-method-name]
         msg = "not convertible"
         raise TypeError(msg)
 

@@ -14,9 +14,9 @@ notebook and documentation tools. The candidate must retain the supported Python
 - [x] (2026-10-12) Verify clean main 8af59e0 and current owner instructions.
 - [x] (2026-10-12) Inventory declared/locked tools and query official registries.
 - [x] (2026-10-12) Create the dedicated dev-toolchain worktree and feature branch.
-- [ ] Commit this plan and open a draft PR before implementation.
-- [ ] Update development declarations, lock, uv/build/workflow and hook pins.
-- [ ] Update current developer instructions while retaining dated evidence.
+- [x] (2026-10-12) Commit the plan and open draft PR #60 before implementation.
+- [x] (2026-10-12) Update declarations, universal lock, uv/build/workflow and hook pins.
+- [x] (2026-10-12) Update current developer instructions, retaining dated evidence.
 - [ ] Validate runtime, checkers, floors, hooks, docs/notebook and archives.
 - [ ] Validate the combination with the independent README/coverage PR.
 - [ ] Record exact results and present the PR for review; merge is separate.
@@ -30,6 +30,18 @@ Ruff 0.17.0, prek 0.5.5, mypy 2.4.0, ty 0.0.86, pyrefly 1.3.2, pyright 1.1.414,
 Zensical 0.0.69 and ipykernel 7.4.0. pytest-cov, pytest-xdist and nbclient are
 already at their latest stable releases. Backend versions can have newer Python
 floors; the universal lock must retain compatible packages for Python 3.11.
+
+The refreshed lock preserves NumPy 2.4.6 and JAX 0.10.2 for Python 3.11 while
+selecting NumPy 2.5.4 and JAX 0.11.2 on newer supported interpreters. Ruff 0.17
+mechanically migrates the existing lint-ignore syntax; no extra diagnostics were
+suppressed. All 19 changed Python source/test/tool files have identical ASTs.
+The updated Markdown formatter reformats 95 documentation snippets without
+changing their ASTs; four long signatures needed trailing commas to keep the
+existing Markdown line-length rule. Rendering and example tests pass.
+
+GitHub action releases are verified against official tags: setup-uv v10.3.0,
+upload-artifact v7.0.2 and download-artifact v8.0.2 are now pinned by exact SHA.
+Checkout, Pages actions and PyPI publish were already current and retain pins.
 
 ## Decision Log
 
@@ -123,3 +135,20 @@ release blocker regardless of tooling/CI success.
 
 No new checker engines or public annotation API. Use the existing validators,
 locked uv toolchain, CPU backend index, hook framework and shared CI routes.
+
+Revision, 12 October 2026: update tool declarations and coordinated uv pins;
+lock resolution and behavioral validation are next.
+
+Revision, 12 October 2026: locked runtime/checker/docs/notebook checks pass;
+record necessary formatter migrations and current action pin upgrades.
+
+Initial validation, 12 October 2026: uv sync --locked and real hook installation
+pass. Commit-message stage has no file checks; normal hooks and actionlint pass.
+The upgraded environment passes 1,315 runtime tests (five expected skips),
+91.23% line/branch coverage and all eight four-checker suite tests. Zensical
+build and rendered-structure checks pass with 95 snippets; 29 notebook cells
+execute. Tox passes py311-bt0231-numpy22 and all four py313 checker floor factors,
+with no floor changes. The sdist-derived wheel passes archive checks: SHA256
+b41d831ecc41881e2078c28486688ceec9ef9cb9ce77087e3503617ae3fd8101;
+sdist e27acf7597edfb7f4b13aed7c00883707877a2efd6f2751f7c32f7627f7e6cdd.
+Fresh installed/minimal Python endpoints and combined validation follow.

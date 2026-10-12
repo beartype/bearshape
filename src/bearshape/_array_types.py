@@ -264,7 +264,7 @@ class _ArrayChecker:
           f"expected object with shape for {self._repr} but got {type(obj).__name__}"
         )
       shape = _normalize_shape(raw_shape)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # ruff: ignore[blind-except]
       return ValidationFailure(f"invalid array metadata: {exc}")
 
     err = self._check_shape(shape, memo, scope)
@@ -467,7 +467,7 @@ class _ArrayLikeChecker:
         return ValidationFailure(f"{source} no usable shape and dtype")
       shape = _normalize_shape(raw_shape)
       return self._check(obj, shape, memo, scope)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # ruff: ignore[blind-except]
       # Ordinary metadata errors are mismatches; cancellation still propagates.
       return ValidationFailure(f"{source} invalid array metadata: {exc}")
 
@@ -480,7 +480,7 @@ class _ArrayLikeChecker:
 
         converter = np.asarray
       return converter(obj), None
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # ruff: ignore[blind-except]
       # User-defined conversion protocols can raise arbitrary exceptions.
       detail = str(exc)
       if detail:
