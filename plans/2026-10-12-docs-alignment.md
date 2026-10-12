@@ -58,8 +58,9 @@ checker, notebook, rendered-site, link and minimal-consumer validation passes.
 The source changes affect docstrings only; runtime behavior, dependency metadata
 and the unresolved union release blocker are unchanged. Normal/pre-push hooks
 and all 36 hosted checks pass at implementation head 910bad8. Final audit
-record updates are checked again on the PR head before handoff. This PR has not
-been merged, published or deployed.
+record updates are checked again on the PR head before handoff. This describes
+the implementation review before merge approval; the subsequent review and
+approval record follows below. No publication or deployment is authorized.
 
 ## Context and Orientation
 
@@ -255,10 +256,31 @@ hash in this file.
 - Wheel SHA256: `4617bf301f9183f47fc1f7115cdd69afced2e345a2841a587e4729ef56ed5f39`.
 - Source archive SHA256: `448f8b1b8fa36d4c525b36b0fa9693ab7af17af692ba2e0ce07cf35adce17453`.
 
-These identify documentation-audit artifacts, not release approval. Main remains
-at a475c9b pending review; supported upstream union integration and the release
+These identify documentation-audit artifacts, not release approval. The review
+baseline is main a475c9b; supported upstream union integration and the release
 runbook's external prerequisites remain open. No runtime optimization or public
 API change is included in this audit.
 
 Revision note — 2026-10-12: Close out local and hosted documentation validation,
 record final archive identities and preserve the original release chronology.
+
+
+### Owner-approved review and merge — 12 October 2026
+
+The owner subsequently requested review followed by merge into main. Review of
+468fdabd30402044f15c3405ae893413c6cf7d4c found no blocking issues: public guidance
+matches the current APIs and validation routes; historical evidence is retained;
+all nine library edits are docstrings only; the unaccepted upstream proposal and
+released-dependency union defect remain explicit. All 36 hosted checks passed
+on that reviewed head. The plan/index now record approval rather than retaining
+a pending-review statement.
+
+Merge with a merge commit, preserve every reviewed commit, verify main and
+archive only the clean merged worktree after saving useful ignored evidence.
+The final PR check status and merge SHA are recorded on
+[PR #58](https://github.com/beartype/bearshape/pull/58); local review/main-check
+results belong in ignored `build/docs-merge-closeout/` in the main checkout.
+This approval does not authorize publication, deployment or upstream contact.
+
+Revision note — 2026-10-12: Record the owner's review-and-merge approval and
+review outcome without changing release readiness or the upstream boundary.

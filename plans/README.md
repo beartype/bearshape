@@ -6,11 +6,13 @@ new plan. The [handoff](../docs/maintainers/production-readiness.md) owns curren
 release status; [releasing.md](../docs/maintainers/releasing.md) owns publishing
 prerequisites. A historical plan is not a current installation recipe.
 
-## Current work
+## Latest documentation audit
 
-[Documentation alignment](2026-10-12-docs-alignment.md) audits user, contributor,
-agent and maintainer guidance against merged main a475c9b. This documentation PR
-still requires its own review before merge.
+[Documentation alignment](2026-10-12-docs-alignment.md) covers user, contributor,
+agent and maintainer guidance against the runtime baseline at a475c9b. The owner
+approved review and merge on 12 October 2026;
+[PR #58](https://github.com/beartype/bearshape/pull/58) records the reviewed head,
+validation and merge status. Publication and upstream acceptance remain separate.
 
 ## Completed implementation and remaining release work
 
