@@ -6,6 +6,13 @@ new plan. The [handoff](../docs/maintainers/production-readiness.md) owns curren
 release status; [releasing.md](../docs/maintainers/releasing.md) owns publishing
 prerequisites. A historical plan is not a current installation recipe.
 
+## Current README and coverage work
+
+[README and coverage visibility](2026-10-12-readme-coverage.md) adds the direct
+website link, coverage floor badge and measured runtime report artifacts in
+[PR #59](https://github.com/beartype/bearshape/pull/59). It does not change
+release readiness or authorize deployment.
+
 ## Latest documentation audit
 
 [Documentation alignment](2026-10-12-docs-alignment.md) covers user, contributor,

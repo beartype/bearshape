@@ -66,7 +66,18 @@ jobs:
       - run: >-
           uv run --no-sync pytest tests/ --ignore=tests/test_typecheck.py -n 4
           --cov=bearshape --cov-branch --cov-report=term-missing:skip-covered
+          --cov-report=json:build/coverage/coverage.json
+          --cov-report=xml:build/coverage/coverage.xml
+          --cov-report=html:build/coverage/htmlcov
           --cov-fail-under=90
+      - name: Retain measured coverage reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python }}
+          path: build/coverage/
+          if-no-files-found: warn
+          retention-days: 7
 
   checkers:
     name: Four checkers (Python ${{ matrix.python }})

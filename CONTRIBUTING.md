@@ -137,6 +137,28 @@ them. Exercise changed runnable examples as real calls, including their intended
 failures; compilation alone is insufficient. The full hosted matrix remains
 required even when only a smaller local check is relevant.
 
+### Coverage reports
+
+The README coverage badge displays the enforced **90% floor**, not a cached
+measurement. Runtime CI measures lines and branches in `bearshape` and uploads
+`coverage-<os>-py<version>` artifacts for seven days. Open the matching CI run
+for its source commit, then download the artifact: `coverage.json` contains the
+exact totals, `coverage.xml` supports other tools, and `htmlcov/index.html`
+shows covered and missing source lines.
+
+Reproduce the reports locally with the same runtime suite:
+
+```bash
+uv run --locked pytest tests/ --ignore=tests/test_typecheck.py -n auto \
+  --cov=bearshape --cov-branch --cov-report=term-missing:skip-covered \
+  --cov-report=json:build/coverage/coverage.json \
+  --cov-report=xml:build/coverage/coverage.xml \
+  --cov-report=html:build/coverage/htmlcov --cov-fail-under=90
+```
+
+Reports are ignored build outputs. These are CPU measurements; skipped CuPy
+checks do not establish GPU coverage. Checker consumers run separately.
+
 For a fresh minimal consumer, build the archives first, then use a new venv:
 
 ```bash

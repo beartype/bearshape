@@ -72,23 +72,33 @@ proposal evidence only.
 
 ### CI and release tooling
 
+- Link the documentation website directly from README and show the enforced CPU
+    coverage floor beside its header badges. Retain measured JSON, XML and HTML
+    reports for each runtime CI platform and Python version.
+
 - Share locked candidate validation across PRs, pushes, nightly and releases:
     CPU backends, four checkers, compatibility floors, coverage, docs, notebook,
     installed archives and minimal environments. Use the locked Ruff toolchain.
+
 - Require the entire native composition/scope suite against the actual installed
     candidate and published dependency before releasing. The separate upstream
     proposal workflow cannot authorize publication.
+
 - Add a separate latest-compatible runtime/backend canary with retained lock,
     source, versions and test evidence, without changing locked acceptance.
+
 - Build wheels from source archives, verify licenses/typing markers/package
     contents, and test normal consumers outside the checkout. Ship the
     regression suite and its configuration in the source archive.
+
 - Require immutable tag/version/source identity and verified artifact hashes
     before OIDC trusted publishing. Support validation-only runs and document
     developer preparation, approval, upload and recovery. Final CUDA evidence
     must match the exact final wheel.
+
 - Keep Pages deployment manually authorized while building/packaging docs in CI.
     Use reviewed Node 24 actions and preserve rendered tables/admonitions.
+
 - Scope file hooks to pre-commit, remove the unused commit-message hook, clear
     inherited Git repository variables in release tooling, and test hook stages.
 
