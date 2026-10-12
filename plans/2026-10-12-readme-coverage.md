@@ -15,8 +15,8 @@ measured coverage for each tested platform/interpreter as downloadable reports.
 - [x] (2026-10-12) Commit the plan and open draft PR #59 before implementation.
 - [x] (2026-10-12) Add a prominent website link and honest coverage badge to README.
 - [x] (2026-10-12) Retain JSON/XML/HTML reports from existing runtime jobs.
-- [ ] Validate hooks, workflow syntax, reports, archives and hosted checks.
-- [ ] Present the focused PR for review; merge needs its own approval.
+- [x] (2026-10-12) Validate hooks, workflow syntax, reports, archives and hosted checks.
+- [x] (2026-10-12) Complete the focused PR for review; merge needs separate approval.
 
 ## Surprises & Discoveries
 
@@ -41,8 +41,9 @@ text link. Runtime CI already measures branch-inclusive coverage and enforces
 
 README visibility and report retention are implemented. Local runtime coverage,
 all three report formats, hooks, actionlint, rendered links and archive checks
-passed. Hosted checks and combined validation remain pending. Publication,
-deployment and upstream contact remain unauthorized.
+passed. All 36 implementation-head hosted checks and combined validation passed.
+The focused PR is complete for review; main is unchanged. Publication, deployment
+and upstream contact remain unauthorized.
 
 ## Context and Orientation
 
@@ -120,3 +121,28 @@ validation and final review remain pending.
 
 Revision, 12 October 2026: local validation passed and artifact identities
 recorded. Hosted and combined checks remain pending before final review.
+
+## Completed review evidence
+
+Implementation commit c2b861abaa419955d2348615cb4d92fb20fa1f6d passes all 34
+[shared CI jobs](https://github.com/beartype/bearshape/actions/runs/38228176769)
+and both [proposal jobs](https://github.com/beartype/bearshape/actions/runs/38228176665).
+All eight coverage artifacts were downloaded and inspected: each contains
+JSON/XML/HTML, records 91.231566% coverage, and expires seven days after creation.
+The workflow artifact record ties it to the tested source SHA. Proposal checks
+do not establish released native-union support.
+
+Combined validation at c545e017327e06a5b6eeffa4afa6ebb72a37f1ed preserves this
+implementation and PR #60's 743b3143ad530f807f47f89b25a1843509743f5a. It retains
+the new coverage reports and updated artifact-action pin, both changelog entries
+and both plans, and resolves README setup to uv 0.13.0. Normal hooks/actionlint,
+1,315 runtime tests with 91.23% coverage, docs structures and normally installed
+1,323 consumer tests on each Python endpoint pass. Its wheel SHA256 is
+3c2fc844f85f00bdd2fd99a27413144ec717174dd270f216b43e8b44ef6d0907 and sdist
+f52ada0686ec9089e648b76edb241b5200abe2c8b8c8c39bec3af45549ba8749.
+Evidence remains in ignored build/maintenance-validation/ in the main checkout.
+This final plan update changes no runtime, docs, workflow or archive inputs;
+final-head hosted checks will also run automatically on push.
+
+Revision, 12 October 2026: record hosted report verification and combined
+validation. Implementation is complete; merging and publishing remain separate.
