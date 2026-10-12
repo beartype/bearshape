@@ -17,13 +17,14 @@ current instructions must describe merged main and the unpublished candidate.
 - [x] (2026-10-12) Verify clean main a475c9b and read repository instructions,
   current release contract, contributor commands and recent optimization plans.
 - [x] (2026-10-12) Create a dedicated docs-alignment worktree and this plan.
-- [ ] Commit the plan and open a focused PR before implementation.
-- [ ] Inventory and audit every tracked Markdown artifact, notebook narrative,
-  user-facing template and relevant configuration against code/tests/workflows.
-- [ ] Correct user installation, usage and support guidance; close contributor
-  workflow gaps and distinguish current status from historical evidence.
-- [ ] Execute relevant examples and notebook, build and inspect rendered docs,
-  check local links and normal hooks, and verify installed archive metadata.
+- [x] (2026-10-12) Commit the plan and open draft PR #58 before implementation.
+- [x] (2026-10-12) Inventory every tracked Markdown artifact, notebook narrative,
+  public docstring and relevant configuration; audit links and current claims.
+- [x] (2026-10-12) Correct installation, usage and support guidance; close
+  contributor workflow gaps and distinguish current status from historical evidence.
+- [x] (2026-10-12) Execute relevant examples and notebook, build and inspect
+  rendered docs, check local links and verify installed archive metadata.
+- [ ] Run final normal/pre-push hooks and inspect hosted checks.
 - [ ] Record coverage, outcomes and hosted validation; present the PR for review.
 
 ## Surprises & Discoveries
@@ -50,7 +51,11 @@ status updates where a completed plan would otherwise mislead a reader.
 
 ## Outcomes & Retrospective
 
-Audit in progress. No implementation changes or support claims are complete yet.
+The documentation corrections are implemented in PR #58. Local example,
+checker, notebook, rendered-site, link and minimal-consumer validation passes.
+The source changes affect docstrings only; runtime behavior, dependency metadata
+and the unresolved union release blocker are unchanged. Final hook/hosted
+validation is pending. This PR has not been merged or published.
 
 ## Context and Orientation
 
@@ -141,3 +146,82 @@ runtime cleanup.
 
 Revision note — 2026-10-12: Initial plan before implementation for the owner's
 complete documentation-alignment request.
+
+
+## Audit register — 12 October 2026
+
+The final inventory contains 81 tracked Markdown entries (including the
+`CLAUDE.md` symlink), plus the notebook, public source docstrings, badges,
+HTML overrides and executable workflow/configuration references.
+
+- Root guidance (six entries): README, AGENTS, CLAUDE, CONTRIBUTING, PLANS and
+  CHANGELOG now agree on the unpublished candidate, support matrix, release
+  blocker, current commands and review responsibilities. The symlink still
+  resolves to AGENTS. The changelog preserves authorship and historical work.
+- User/maintainer website (25 Markdown files): checked every guide and API page
+  against current exports, converters, memo ownership, dimension/Tree handling
+  and runtime/static consumers. Installation, Like typing, custom dtype/scalar
+  factories, check/check_context, standalone examples and release commands were
+  corrected. The unchanged CuPy, OpTree, claw and framework pages remain aligned
+  with their tested boundaries. Added an explicit composition limitation page
+  and its navigation entry. Current handoff evidence is separated from older
+  reports instead of silently rewriting their test results.
+- Plans (42 entries): the index lists all 40 earlier dated plans. Their version,
+  command, pending-review and performance claims were checked for stale active
+  guidance. Each now explicitly identifies its contents as dated evidence;
+  #56/#57 have appended merge/cleanup closeouts. This plan owns the docs audit.
+  Historical implementation narratives and original results were preserved.
+- Tool/proposal/evidence guidance (seven Markdown files): validator commands
+  agree with their parsers, tox factors and workflows; upstream integration is
+  clearly unshipped, with isolation-stage counts distinguished from final
+  optimization validation. Benchmark reports retain source identities, raw
+  samples and original interpreter/dependency versions.
+- Contributor PR template (one Markdown file): prompts for the concrete change,
+  plan/dependency links, validation evidence, docs and compatibility effects.
+- Notebook/public docstrings: use public DtypeSpec construction, correct native
+  static annotations, accurate scalar-casting/memo behavior and runnable import
+  context. Corrected Dimension doctest representations. No executable library
+  AST changed after stripping docstrings.
+- Other artifacts: the active SVG badge already says Python 3.11–3.14. Removed
+  the unreferenced PNG saying 3.10–3.14. Repaired the theme's generated 404 page
+  skip-to-content anchor with a minimal template override. Package/workflow
+  metadata and lock remain unchanged; the current docs navigation includes
+  the composition guide.
+
+### Evidence and checks
+
+Primary-source checks used [PyPI](https://pypi.org/project/bearshape/) for the
+published 0.0.1 release date (29 May 2026) and
+[CuPy installation](https://docs.cupy.dev/en/stable/install.html) for CUDA-specific
+package selection. These are dated facts, not an assertion that current main is
+published.
+
+On Python 3.11.15 with uv 0.11.17 and exact beartype 0.23.1:
+
+- Executed 81 CPU user-guide Python blocks, checking intended exception calls.
+  Nine contextual snippets depend on a containing application/static fixture;
+  their matching existing consumer/claw fixtures were checked separately. Three
+  CuPy snippets were not executed without CUDA. The known union reproducer is
+  deliberately documented as a defect, not counted as passing. Two corrected
+  positive examples were called explicitly: padded arrays have the advertised
+  result shape, and Tree processing returns its input.
+- `pytest tests/test_examples.py tests/test_factory_aliases.py tests/test_claw.py
+  -q`: six passed. `pytest tests/test_typecheck.py -q`: eight passed across all
+  four engines. Dimension doctests: three attempted, zero failures.
+- Zensical build and `tools/check_docs.py` passed: expected rendered tables,
+  admonitions and favicon; 95 Python 3.11 snippets parsed. Parsing and execution
+  totals intentionally differ. `tools/check_notebook.py`: all 29 code cells
+  executed. `tox list` confirms the documented environment names exist.
+- Checked 237 local Markdown file links and 2,561 local HTML references,
+  including 1,298 anchors, with no unresolved targets. The HTML check maps the
+  configured `/bearshape/` site prefix to the build root. Inspected home,
+  installation, composition and handoff pages in a local browser.
+- Built the sdist first, then its wheel; `tools/check_distribution.py` passed.
+  The documented fresh minimal-consumer recipe passed with no optional backend
+  installed or imported. Archive hashes are recorded below after final build.
+- Runtime-source AST comparison with main a475c9b confirms docstring-only source
+  changes. Local logs and inventory are retained under ignored
+  `build/docs-alignment/` in the main checkout.
+
+Revision note — 2026-10-12: Record completed artifact audit, corrected user and
+contributor contracts, preserved historical evidence and local validation.

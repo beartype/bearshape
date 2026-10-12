@@ -3,7 +3,7 @@
 Most users will not need these — the frame-based memo in :mod:`._memo` works
 automatically with ``@beartype``.  These are provided for:
 
-- Guaranteed correctness in exotic call-stack scenarios
+- Explicit memo lifetime across wrapper layers (not native-union rollback)
 - Combining memo management with ``BeartypeConf`` in a single decorator
 - Manual ``is_bearable()`` checks at module scope
 """

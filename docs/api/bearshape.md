@@ -101,6 +101,10 @@ WidthPlus3 = Value("self.width + 3")
 It supports names, attribute access, numeric literals, and arithmetic. It
 rejects calls, indexing, and arbitrary evaluation.
 
+`Value` expressions are trusted developer contracts, not a security sandbox.
+Attribute access can execute user-defined properties. Do not construct these
+expressions from untrusted input.
+
 ## `DtypeSpec`
 
 `DtypeSpec` describes an allowed dtype set and optional byte-order constraint.
@@ -126,8 +130,9 @@ custom array classes.
 ```python
 import numpy as np
 from beartype import beartype
-from bearshape import N, C, make_array_type
-from bearshape._dtypes import FLOAT32
+from bearshape import DtypeSpec, N, C, make_array_type
+
+FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 
 MyF32 = make_array_type(np.ndarray, FLOAT32)
 
@@ -148,13 +153,14 @@ For native static inference from a dynamic factory, use the tested
 
 ## `make_array_like_type`
 
-`make_array_like_type(dtype_spec, *, casting="same_kind", name="ArrayLike")`
-creates a broader input-contract factory for values that will be converted
-before use.
+`make_array_like_type(dtype_spec, ...)` creates a subscriptable input-contract
+factory. Its keyword-only options are `casting="same_kind"`, `name="ArrayLike"`,
+`asarray=None` and `trusted_types=None`.
 
 ```python
-from bearshape import make_array_like_type
-from bearshape._dtypes import FLOAT32
+from bearshape import DtypeSpec, make_array_like_type
+
+FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 
 F32Input = make_array_like_type(FLOAT32, name="F32Input")
 F32StrictInput = make_array_like_type(FLOAT32, casting="no", name="F32StrictInput")
@@ -162,7 +168,15 @@ F32StrictInput = make_array_like_type(FLOAT32, casting="no", name="F32StrictInpu
 
 Use backend modules when you want the built-in NumPy/JAX/Torch/CuPy `Like`
 aliases. Use the root factory when you want custom dtype combinations or custom
-conversion hooks.
+conversion hooks. The `asarray` callable receives the original input and must
+return valid `.shape` and `.dtype` metadata; its failure is never retried
+through another backend. With no callable, conversion uses NumPy and therefore
+requires NumPy at validation time. `trusted_types=()` forces conversion for
+every input. An explicit tuple lets those classes bypass conversion. The root
+default `trusted_types=None` trusts recognized array classes only when `asarray`
+is also `None`; built-in backend factories explicitly trust their native arrays.
+The converted value is used only for validation, never substituted for the
+function argument.
 
 ## `check`
 
@@ -171,6 +185,8 @@ conversion hooks.
 ```python
 import bearshape
 from beartype import beartype
+from bearshape import N
+from bearshape.numpy import F32
 
 @bearshape.check
 @beartype
@@ -188,7 +204,11 @@ def f(x: F32[N]) -> F32[N]:
   ...
 ```
 
-`check` supports sync and async functions. Generator functions are rejected.
+Bare `@check`, `@check()` and `@check(conf=None)` only manage the memo. They
+need `@beartype` underneath for type checking. `@check(conf=BeartypeConf())`
+applies checking itself. Sync and async functions are supported; generator
+functions are rejected. See [memo ownership](../features/decorator.md) and the
+[union limitation](../features/composition.md).
 
 ## `check_context`
 
@@ -197,10 +217,16 @@ def f(x: F32[N]) -> F32[N]:
 ```python
 from beartype.door import is_bearable
 import bearshape
+import numpy as np
+from bearshape import C, N
+from bearshape.numpy import F32
 
+x = np.ones((2, 3), dtype=np.float32)
+y = np.ones((2, 3), dtype=np.float32)
 with bearshape.check_context():
   assert is_bearable(x, F32[N, C])
   assert is_bearable(y, F32[N, C])
 ```
 
-It also supports `async with`.
+It also supports `async with`. Child tasks inherit a live memo by reference;
+each task should enter its own context when it needs independent bindings.

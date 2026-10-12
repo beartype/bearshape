@@ -63,7 +63,11 @@ JAX `Like` aliases use `jnp.asarray` on the slow path, so they can accept:
 - Python scalars and nested sequences
 - objects implementing `__jax_array__`
 
-Static type checkers still see the result as `jax.Array`.
+Static Like aliases describe the original input: native JAX arrays, numeric
+NumPy arrays/scalars and ordinary numeric nested sequences. Validation does not
+replace the argument. Convert explicitly inside the function to obtain a
+`jax.Array` result; runtime still checks dtype, shape and converter support. See
+[Like input typing](../features/static-typing.md#convertible-input-and-native-result-types).
 
 ## `ScalarLike` re-exports
 

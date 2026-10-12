@@ -8,8 +8,9 @@ pre-defined symbols or create your own::
     Vocab = Dimension("Vocab")
     Embed = Dimension("Embed")
 
-Dimensions support full Python arithmetic to express derived shapes::
+Dimensions support the documented arithmetic operators for derived shapes::
 
+    from beartype import beartype
     from bearshape import N
     from bearshape.numpy import F32
 
@@ -123,9 +124,9 @@ class Dimension(str):
 
       >>> N = Dimension("N")
       >>> N + 1
-      Dimension('(N+1)')
+      '(N+1)'
       >>> 2 * N
-      Dimension('(2*N)')
+      '(2*N)'
   """
 
   __slots__ = ()

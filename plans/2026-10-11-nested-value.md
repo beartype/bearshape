@@ -1,5 +1,11 @@
 # Preserve scope in nested Value arithmetic
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 
 This living ExecPlan follows `PLANS.md` and M2 of `plans/2026-10-11-release-readiness.md`. The program plan supplies the full release contract; this focused change is stacked on baseline PR #39.
 

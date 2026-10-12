@@ -1,10 +1,72 @@
 # Contributing
 
+The current development candidate is **0.1.0rc1**, with Python **3.11–3.14** and
+exact **beartype 0.23.1** in validation. It is unpublished. Normal CI is green,
+but the [native-union release blocker](docs/features/composition.md) remains
+open. Local upstream patches are proposal evidence, not a supported replacement
+dependency.
+
+## From an idea to a reviewed change
+
+1. For a bug, describe the smallest reproducer, expected/actual behavior and
+    Python, bearshape, beartype and backend versions in an issue or draft PR.
+    For a public-contract change, agree on scope before implementing it. Keep
+    independent fixes and optimizations in separate PRs.
+1. Fork the repository if you do not have write access, then clone your fork.
+    Add `https://github.com/beartype/bearshape.git` as an `upstream` remote.
+    Contributors with write access can clone that repository directly. Work
+    from current `main` in a feature branch; do not edit or force-push main.
+1. For features, contract changes, CI/release work, substantial docs or
+    refactors, create a dedicated worktree, commit an ExecPlan under `plans/`
+    following [PLANS.md](PLANS.md), then open a draft PR before implementation.
+    Small, low-risk corrections can use a normal feature branch. State
+    dependencies when stacking PRs. [The plan index](plans/README.md) separates
+    active guidance from dated implementation records.
+1. Reproduce a bug with a failing regression where practical, then make the
+    smallest fix. Preserve annotation syntax, useful errors and backend import
+    boundaries. Use the existing two-space Python indentation. Changes to state
+    ownership need failure, nesting, async and lifetime evidence; typing
+    changes need positive, negative and native inference consumers in all four
+    engines.
+1. Run the relevant local checks below and update affected guides/examples and
+    the changelog for user-visible changes. Keep the ExecPlan's progress,
+    decisions and results current. Distinguish local results, hosted checks,
+    expected skips and known release blockers. Never hide a defect with an
+    xfail, a removed negative fixture or a lower coverage threshold.
+1. Push to your branch or fork and target `beartype/bearshape:main`. The PR
+    should explain the user-visible problem and behavior, link its plan/issue,
+    list dependencies and give the commands/results needed to review it. Mark
+    it ready when implementation and required checks pass; address review
+    feedback in focused commits.
+1. Maintainers merge only with explicit approval and successful checks on the
+    reviewed history. Preserve all reviewed heads and integration resolutions,
+    verify main, then remove only clean merged branches/worktrees after saving
+    useful evidence. Merge approval never authorizes publication, deployment,
+    access changes or upstream messages.
+
+A worktree is a second checkout sharing the same Git history. From a clean,
+up-to-date local main, a substantial change can start with:
+
+```bash
+git worktree add ../bearshape-my-change -b my-change main
+cd ../bearshape-my-change
+```
+
+Run the setup below inside that checkout. Push to your fork's remote when using
+one; you do not need release credentials, organization access or CUDA hardware
+to contribute CPU changes. Report an unavailable hardware check explicitly.
+
 ## Local Development
 
-The repository is now
-[beartype/bearshape](https://github.com/beartype/bearshape). Update an existing
-checkout after the ownership transfer:
+Install Git and uv, and select a supported Python interpreter. The repository
+uses uv-managed Python and uv can download a missing interpreter during sync.
+For example, `uv sync --locked --python 3.11` selects the oldest supported
+version; use `--python 3.14` in a separate environment for endpoint validation.
+
+The canonical repository is
+[beartype/bearshape](https://github.com/beartype/bearshape). Only for an old
+checkout whose `origin` still points to the former canonical owner (not a fork),
+update that URL:
 
 ```bash
 git remote set-url origin https://github.com/beartype/bearshape.git
@@ -45,6 +107,49 @@ and the accepted limits of native CuPy static typing.
 Agent instructions are shared by `AGENTS.md` and the `CLAUDE.md` symlink.
 `PLANS.md` describes major-work plans; [tools/README.md](tools/README.md)
 describes the validation scripts, their inputs and what their results prove.
+
+## Repository map and choosing checks
+
+`src/bearshape/` contains the lightweight root API, shared validators and
+explicit backend modules. Runtime regressions live in `tests/test_*.py`;
+positive/static inference consumers live in `tests/typing/`, with deliberately
+invalid callers in `tests/typing_negative/`. `docs/` is the website, and
+`examples/bearshape_tour.ipynb` is its executable tour. `tools/` contains
+existing validators; `.github/workflows/validate.yml` is the shared acceptance
+matrix. Plans and `tools/evidence/` retain dated experiments, not current
+install recipes.
+
+<!-- markdownlint-disable MD013 -->
+
+| Changed surface                    | Relevant checks in addition to normal hooks                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
+| Runtime / backend / memo           | Runtime suite above; affected backend/floor and lifetime cases               |
+| Static aliases / public signatures | Full `tests/test_typecheck.py` consumer harness                              |
+| User docs / examples               | Docs build and rendered/syntax check; execute affected examples and notebook |
+| Dependencies / package metadata    | Locked sync, relevant tox factors, archive integrity and installed consumers |
+| Workflow / release tooling         | Manual actionlint, relevant tooling regressions and actual hook stages       |
+
+<!-- markdownlint-enable MD013 -->
+
+Normal hooks run on every change; the actual pre-push hook runs runtime and
+four-checker validation. The docs checker parses snippets but does not execute
+them. Exercise changed runnable examples as real calls, including their intended
+failures; compilation alone is insufficient. The full hosted matrix remains
+required even when only a smaller local check is relevant.
+
+For a fresh minimal consumer, build the archives first, then use a new venv:
+
+```bash
+uv venv build/minimal --python 3.11
+uv pip install --python build/minimal/bin/python \
+  dist/bearshape-0.1.0rc1-py3-none-any.whl "beartype==0.23.1"
+build/minimal/bin/python -I tools/smoke_minimal.py
+```
+
+On Windows use `build\minimal\Scripts\python.exe`. Substitute the current
+project version and repeat with Python 3.14 when that boundary changes. Do not
+reuse a populated development environment to prove optional-dependency
+isolation.
 
 ## Tox environments and CI
 
@@ -89,7 +194,9 @@ Replace `<version>` with the project version. The check verifies license text,
 metadata, inline typing information, matching package contents, and downstream
 test inputs. It prints artifact hashes for release evidence. The source archive
 includes the tests, lockfile and configuration needed to run `uv sync --locked`
-and `uv run --locked pytest`. CuPy still requires a separate CUDA environment.
+and `uv run --locked pytest`. For the complete contributor workflow, use a Git
+checkout: the archive does not include the website sources, plans or GitHub
+configuration. CuPy still requires a separate CUDA environment.
 
 ## Candidate validation
 
@@ -118,6 +225,13 @@ wheel normally in a temporary environment, then runs copied runtime and checker
 fixtures with no package source directory. It reports artifact hashes and
 installed module origins. `--installed-package` is an explicit pytest mode for
 this consumer check; ordinary source validation continues to include `src`.
+
+The separate read-only `upstream-proposal.yml` workflow applies the reviewed
+patch series only in disposable upstream checkouts and validates installed
+consumers at both Python endpoints.
+[Its reproduction guide](tools/upstream/README.md) is for work on the open
+integration boundary. Do not apply those patches to a normal development
+environment or treat its green result as published support.
 
 ## Validate and publish a release
 
@@ -176,11 +290,11 @@ uv run --locked --only-group docs python tools/check_docs.py
 uv run --locked python tools/check_notebook.py
 ```
 
-CI validates rendered structures, snippets and notebook execution. Main/docs
-pushes build Pages artifacts but do not deploy them. After explicit deployment
-approval, dispatch `docs.yml` from the reviewed `main` or `docs` branch. Only
-its deployment job receives Pages/OIDC write permissions and enters the
-`github-pages` environment. Merging code does not authorize deployment.
+CI validates rendered structures, Python snippet syntax and notebook execution.
+Main/docs pushes build Pages artifacts but do not deploy them. After explicit
+deployment approval, dispatch `docs.yml` from the reviewed `main` or `docs`
+branch. Only its deployment job receives Pages/OIDC write permissions and enters
+the `github-pages` environment. Merging code does not authorize deployment.
 
 The production site is <https://beartype.github.io/bearshape/>. After approval:
 

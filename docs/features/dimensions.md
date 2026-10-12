@@ -126,6 +126,10 @@ class SomeClass:
 
 It rejects calls, indexing, comprehensions, and arbitrary evaluation.
 
+`Value` expressions are trusted developer contracts, not a security sandbox.
+Attribute access can execute user-defined properties. Do not construct these
+expressions from untrusted input.
+
 When `Value(...)` appears in an async function, use `@bearshape.check` if you
 want the scope to be explicitly preserved across the await.
 
@@ -251,7 +255,7 @@ def f(x: F32[__, C]) -> F32[__, C]:
 ```
 
 Unlike variadic and broadcastable syntax, `__` is part of the checker-tested
-static surface and can be used directly with pyright, mypy, and ty.
+static surface and can be used directly with pyright, mypy, ty, and pyrefly.
 
 ## Custom dimensions
 

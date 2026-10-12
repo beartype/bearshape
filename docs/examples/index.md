@@ -4,6 +4,12 @@ description: Copyable examples covering the main bearshape runtime and typing pa
 
 # Examples
 
+These examples target the
+[unpublished candidate](../getting-started/installation.md). Calls marked
+`Raises` deliberately demonstrate rejection. Read
+[composition and limitations](../features/composition.md) for the open union
+boundary before combining stateful annotations inside native unions.
+
 ## bearshape Tour Notebook
 
 The tour notebook is still the broadest runnable walkthrough in the repository:

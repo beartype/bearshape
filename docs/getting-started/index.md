@@ -15,6 +15,12 @@ the memo helpers. Backend modules such as `bearshape.numpy`, `bearshape.jax`,
 `bearshape.torch`, and `bearshape.cupy` add concrete array aliases once you
 install those dependencies.
 
+These pages describe the unpublished 0.1.0rc1 candidate. Start with the
+[installation guide](installation.md) to select the intended revision and read
+[composition and limitations](../features/composition.md) before relying on
+native union alternatives. For changes to bearshape itself, use the
+[contributor guide](https://github.com/beartype/bearshape/blob/main/CONTRIBUTING.md).
+
 ## Start here
 
 - :material-download: **[Installation](installation.md)** — Python requirements,
@@ -23,7 +29,7 @@ install those dependencies.
     `@beartype`-checked function, cross-argument consistency, and return
     validation.
 - :material-check-decagram: **[Static Typing](../features/static-typing.md)** —
-    What passes on pyright, mypy, and ty, and what still needs targeted
+    What passes on pyright, mypy, ty, and pyrefly, and what still needs targeted
     runtime-only workarounds.
 
 ## What bearshape gives you

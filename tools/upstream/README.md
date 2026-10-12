@@ -1,11 +1,27 @@
 # Native union integration proposal
 
-## Current correctness proposal
+## Current state — 12 October 2026
+
+The bearshape adapter, regressions and review patches from PRs #46/#47 are
+merged into bearshape main, together with the later audit and optimizations
+through #57. The complete combined installed proposal suites passed **1,450
+cases per Python endpoint** at the optimization snapshot; the
+[post-merge proposal run](https://github.com/beartype/bearshape/actions/runs/38217028857)
+also passes.
+[The current handoff](../../docs/maintainers/production-readiness.md) records
+exact source/artifact identities. These merges neither modify installed beartype
+nor make the proposed API available in published 0.23.1.
+
+The command below is the maintained reproduction route. Later sections labelled
+historical describe earlier patch designs and their own measurements; do not use
+an earlier single-patch recipe instead of `patches/series.json`.
+
+## Correctness proposal
 
 PR #46 now also isolates transaction enrollment by live public invocation. The
 [design review](DESIGN_REVIEW.md) explains the correction and alternatives. Its
-current installed endpoint suites pass 1,251 tests each, including 41 added
-isolation cases. Earlier measurements below are historical.
+isolation-stage installed endpoint suites passed 1,251 tests each, including 41
+added isolation cases. Those measurements describe the earlier artifact.
 
 PR #46 supersedes the earlier ownership design. The previous proposal passed 22
 union cases but failed eleven additional alias and caught-failure regressions.
@@ -102,7 +118,7 @@ development `0.23.0rc1`. This version string does not imply acceptance or
 publication. The optimized patch and exact commit are recorded in the focused
 ExecPlan. Neither proposal is vendored or applied at import time.
 
-## Reproduce
+## Historical single-patch reproduction
 
 Apply the supplied patch to a clean checkout of the upstream base commit. From
 this bearshape checkout, export the locked tools and backends while excluding
@@ -139,7 +155,7 @@ floor, lock, exact-version preflight and shared CI together, and move these
 regressions into the required `tests/` suite. Do not retain a separate optional
 integration lane after adopting the dependency that fixes the defect.
 
-## Verified behavior
+## Original 22-case coverage
 
 The 22 integration cases cover selected and rejected alternatives, earlier
 bindings, nested unions, parameters and returns, explicit scopes, Like and
@@ -159,7 +175,7 @@ Local CPU runs do not establish CUDA coverage for the changed artifacts. The
 handoff report and ExecPlan record interpreter versions, checks and availability
 separately from earlier GPU evidence.
 
-## Measure overhead
+## Historical overhead comparison
 
 Run the same benchmark script in each normally installed environment:
 
@@ -182,9 +198,9 @@ frame-discovery work; include it in both sides of the latter comparison to avoid
 attributing that improvement to upstream. Record versions, source commits and
 artifact hashes, and keep raw repeat samples. Timing has no CI threshold.
 
-The owner requested further optimization before any upstream contact and has a
-direct Zulip contact. Discussion material is prepared locally for the owner; no
-message has been sent.
+Upstream submission and adoption remain separate from this local review
+material. Use the current reproduction driver and retain matched artifact
+identities for any new comparison.
 
 ## October 2026 refresh
 

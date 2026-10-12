@@ -59,7 +59,12 @@ Torch `Like` aliases use `torch.as_tensor` on the slow path, so they can accept:
 - NumPy arrays
 - Python scalars and nested sequences
 
-Static type checkers still see the result as `torch.Tensor`.
+Static Like aliases describe the original input: native Torch arrays, numeric
+NumPy arrays/scalars and ordinary numeric nested sequences. Validation does not
+replace the argument. Convert explicitly inside the function to obtain a
+`torch.Tensor` result; runtime still checks dtype, shape and converter support.
+See
+[Like input typing](../features/static-typing.md#convertible-input-and-native-result-types).
 
 ## `ScalarLike` re-exports
 

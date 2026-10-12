@@ -1,6 +1,58 @@
 # Production review and ownership handoff
 
-**Remaining optimizations, 11 October 2026 (PRs in review):**
+## Current status — 12 October 2026
+
+Main at `a475c9b5376601eb39c9e0641f16f62d56fed979` includes the complete
+reviewed candidate, correctness fixes and optimizations through PRs
+[#56](https://github.com/beartype/bearshape/pull/56) and
+[#57](https://github.com/beartype/bearshape/pull/57). All reviewed commits and
+integration resolutions are preserved. Their three temporary worktrees were
+archived after validation; their merged local and remote branches were removed.
+
+The unpublished candidate is **0.1.0rc1**, for Python **3.11–3.14** and exact
+released **beartype 0.23.1** (metadata `>=0.23.1,<0.24`). Post-merge local
+checks passed 1,315 runtime tests and eight checker-suite tests; five skips
+cover unavailable CuPy and platform precision. The
+[main CI run](https://github.com/beartype/bearshape/actions/runs/38216971736)
+passed all 34 jobs, the
+[proposal run](https://github.com/beartype/bearshape/actions/runs/38217028857)
+passed both Python endpoints, and the
+[docs run](https://github.com/beartype/bearshape/actions/runs/38216971758) built
+successfully with deployment skipped. Proposal success applies to the patched
+local dependency, not published beartype.
+
+The merged wheel matched the reviewed artifact with SHA256
+`313642ed018e897e5f5ea8123c5571da2deae6ff67a1422448bbf28075529db6`. Its source
+archive SHA256 was
+`1ce95758f82dfc1f6d6f8e6ffaaaa1deea8b7e40e1ddf482eae0859dae9fc9ad`. These
+identify that source snapshot; subsequent documentation and metadata changes
+require new artifact hashes. The
+[performance report](https://github.com/beartype/bearshape/blob/main/tools/evidence/2026-10-11-remaining-optimization/README.md)
+records matched installed baseline/proposal results and unfavorable cases too.
+
+**Release readiness remains withheld.** Published 0.23.1 lacks supported
+whole-alternative rollback; see
+[composition and limitations](../features/composition.md). The tested proposal
+is in
+[the upstream integration guide](https://github.com/beartype/bearshape/blob/main/tools/upstream/README.md).
+Fresh final-wheel CUDA evidence, verified repository/PyPI release controls and
+separate publication approval remain prerequisites in the
+[release runbook](releasing.md). Personal PyPI ownership does not require a
+transfer. No publication or deployment occurred during the merge.
+
+Current contributor commands live in
+[CONTRIBUTING.md](https://github.com/beartype/bearshape/blob/main/CONTRIBUTING.md);
+[the plan index](https://github.com/beartype/bearshape/blob/main/plans/README.md)
+separates current work from historical implementation evidence.
+
+## Historical reports
+
+Everything below records the stated source, dependency and date. Past pending
+reviews, three-checker/Python 3.10 baselines, earlier upstream prototypes and
+older CUDA results do not override the current status above. Follow the current
+contributor guide and release runbook for commands and acceptance requirements.
+
+**Remaining optimizations, 11 October 2026 (pre-merge record):**
 [#56](https://github.com/beartype/bearshape/pull/56) prepares builtin dtype
 names and keeps custom dtype protocols live;
 [#57](https://github.com/beartype/bearshape/pull/57) prepares shape traversal
@@ -194,7 +246,7 @@ positive and negative evidence, not merely annotation declarations.
 | Optional imports and custom backend operation                       | `tests/test_coverage_edges.py`: `TestOptionalBackendImports`, `TestVersionExport`; `tools/smoke_minimal.py` from a minimal installed wheel                                                                                     |
 | Static consumers and expected failures                              | `tests/test_typecheck.py`, `tests/typing/check_*consumers.py`, `tests/typing_negative/invalid_*calls.py`                                                                                                                       |
 | Documentation and distributions                                     | `tests/test_examples.py`, `tools/check_docs.py`, `tools/check_notebook.py`, `tools/check_distribution.py`, `tools/check_installed.py`                                                                                          |
-| Publication identity and bypass rejection                           | `tests/test_release.py`: 23 cases using disposable Git histories, events and foreign hook environments                                                                                                                         |
+| Publication identity and bypass rejection                           | `tests/test_release.py`: cases using disposable Git histories, events and foreign hook environments                                                                                                                            |
 
 <!-- markdownlint-enable MD013 -->
 

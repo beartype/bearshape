@@ -1,5 +1,11 @@
 # Scope validation state to the check that owns it
 
+> Historical execution record. Versions, commands and pending actions below
+> describe this work at the time. Use the [plan index](README.md),
+> [current contributor guide](../CONTRIBUTING.md) and
+> [current handoff](../docs/maintainers/production-readiness.md) for today's
+> workflow, merge status and release prerequisites.
+
 Owner update (2026-09-08): the reviewed implementation and recorded validation
 are approved for merge. This supersedes earlier pending-approval statements.
 Full native union composition remains required through supported upstream

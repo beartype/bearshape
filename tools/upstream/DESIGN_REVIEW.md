@@ -98,4 +98,6 @@ The plan records fresh installed consumers and upstream results on CPython 3.11
 and 3.14. Those endpoints and local macOS measurements do not prove every
 interpreter, platform or optional backend. Hosted CI provides additional
 coverage. Upstream review of the public API and integration remains necessary;
-there has been no maintainer contact, upstream PR, main merge or publication.
+the proposal has not shipped upstream. Its bearshape adapter and review
+artifacts are merged through #46/#47; that merge does not apply the patches to
+beartype.

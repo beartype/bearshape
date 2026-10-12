@@ -9,6 +9,11 @@ description: Write your first shape-checked function and learn the core executio
 This page uses NumPy for concreteness, but the same shape language works across
 `bearshape.jax`, `bearshape.torch`, and `bearshape.cupy`.
 
+First follow the [candidate installation instructions](installation.md).
+Examples marked `Raises` deliberately fail; run those calls separately to see
+the validation error. The [composition guide](../features/composition.md)
+explains the known union limitation in the current dependency.
+
 ## 1. Start with standard `@beartype`
 
 Import dimension symbols from the root module and array aliases from a backend
@@ -116,8 +121,8 @@ If none of those apply, stay with plain `@beartype`.
     - :material-ruler: **[Dimensions](../features/dimensions.md)** — Named, fixed,
         variadic, broadcastable, symbolic, `Scalar`, and `Value(...)`.
     - :material-check-decagram: **[Static Typing](../features/static-typing.md)**
-        pyright, mypy, and ty behavior, plus where targeted ignores are still
-        required.
+        pyright, mypy, ty, and pyrefly behavior, plus where targeted ignores are
+        still required.
     - :material-grid: **[Array Types](../features/array-types.md)** — Dtype
         families, structured dtypes, endianness, and backend differences.
     - :material-file-tree: **[Tree Annotations](../features/tree-annotations.md)**

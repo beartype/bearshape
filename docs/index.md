@@ -520,6 +520,11 @@ Elegant shape and dtype validation for NumPy, JAX, PyTorch, and CuPy arrays
 Powered by <a href="https://github.com/beartype/beartype" class="beartype-link"><img src="assets/images/beartype_bear.png" alt="beartype" class="beartype-logo-inline">beartype</a>
 </p>
 
+<p class="hero__powered">
+Development candidate 0.1.0rc1 · Python 3.11–3.14 ·
+<a href="features/composition/">Unreleased: union integration pending</a>
+</p>
+
 <div class="hero__actions">
 <a href="getting-started/" class="md-button md-button--primary">Get Started</a>
 <a href="features/" class="md-button">Features</a>
@@ -555,8 +560,9 @@ a single function call.
 
 ### :material-check-decagram: Static Type Checker Friendly
 
-Core annotations type-check on pyright, mypy, and ty, with documented tricks for
-runtime-only syntax such as fixed literal dims and symbolic shapes.
+Core annotations type-check on pyright, mypy, ty, and pyrefly, with documented
+tricks for runtime-only syntax such as fixed literal dims and symbolic shapes.
+CuPy has a limited static protocol.
 
 </div>
 
@@ -572,8 +578,8 @@ runtime-only syntax such as fixed literal dims and symbolic shapes.
 
 ### :material-cog: Full BeartypeConf Support
 
-Unlike jaxtyping, bearshape doesn't replace your beartype configuration. Full
-`BeartypeConf` support out of the box.
+Pass `BeartypeConf` to standard beartype or `check(conf=...)`. Container
+sampling still follows beartype's selected strategy.
 
 </div>
 
