@@ -17,9 +17,9 @@ notebook and documentation tools. The candidate must retain the supported Python
 - [x] (2026-10-12) Commit the plan and open draft PR #60 before implementation.
 - [x] (2026-10-12) Update declarations, universal lock, uv/build/workflow and hook pins.
 - [x] (2026-10-12) Update current developer instructions, retaining dated evidence.
-- [ ] Validate runtime, checkers, floors, hooks, docs/notebook and archives.
-- [ ] Validate the combination with the independent README/coverage PR.
-- [ ] Record exact results and present the PR for review; merge is separate.
+- [x] (2026-10-12) Validate runtime, checkers, floors, hooks, docs/notebook and archives.
+- [x] (2026-10-12) Validate the combination with the README/coverage PR.
+- [x] (2026-10-12) Record results and complete the PR for review; merge is separate.
 
 ## Surprises & Discoveries
 
@@ -62,8 +62,12 @@ Checkout, Pages actions and PyPI publish were already current and retain pins.
 
 ## Outcomes & Retrospective
 
-Implementation pending. No merge, publication, deployment, upstream contact or
-access change is authorized by this tool-upgrade request.
+The requested development upgrades and required formatter migrations are
+complete. Source, normally installed archives, minimal consumers, compatibility
+floors, docs/notebook and all 36 implementation-head hosted checks pass. Both
+focused PRs also pass combined validation. Python support, beartype baseline,
+public behavior and the union release blocker remain unchanged. Merge,
+publication, deployment, upstream contact and access changes remain separate.
 
 ## Context and Orientation
 
@@ -152,3 +156,30 @@ with no floor changes. The sdist-derived wheel passes archive checks: SHA256
 b41d831ecc41881e2078c28486688ceec9ef9cb9ce77087e3503617ae3fd8101;
 sdist e27acf7597edfb7f4b13aed7c00883707877a2efd6f2751f7c32f7627f7e6cdd.
 Fresh installed/minimal Python endpoints and combined validation follow.
+
+## Completed review evidence
+
+Implementation commit 743b3143ad530f807f47f89b25a1843509743f5a passes all 34
+[shared CI jobs](https://github.com/beartype/bearshape/actions/runs/38228648881)
+and both [proposal jobs](https://github.com/beartype/bearshape/actions/runs/38228648912).
+Normally installed consumer suites pass 1,323 tests at Python 3.11.15 and 3.14.5,
+including all four checkers, with five expected hardware/precision skips. Both
+fresh minimal environments pass with no optional backend installed. NumPy 2.5
+warns that dtype assignment in the deliberate same-object dtype-replacement
+regression is deprecated; the regression passes and is retained without warning
+suppression. Visual inspection of the rebuilt homepage and JAX API confirms
+layout and code rendering; all 95 formatted snippets retain their original AST.
+
+Combined validation c545e017327e06a5b6eeffa4afa6ebb72a37f1ed preserves both
+implementation heads and resolves the overlapping README, changelog and plan
+index. Coverage uses the updated upload-artifact pin. Normal hooks/actionlint,
+1,315 runtime tests with 91.23% coverage, rendered docs structures and 1,323
+normally installed consumer tests on each Python endpoint pass. Combined wheel
+SHA256 is 3c2fc844f85f00bdd2fd99a27413144ec717174dd270f216b43e8b44ef6d0907;
+sdist f52ada0686ec9089e648b76edb241b5200abe2c8b8c8c39bec3af45549ba8749.
+Evidence lives in ignored build/dev-toolchain/ and build/maintenance-validation/
+in the main checkout. This final plan update changes no validation/archive
+inputs; final-head hosted checks also run automatically on push.
+
+Revision, 12 October 2026: record completed archive, minimal, hosted and combined
+validation, and mark implementation complete for review. Main is unchanged.
