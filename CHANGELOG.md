@@ -110,7 +110,7 @@ proposal evidence only.
 - Complete the contributor review workflow, validation recipes and current
     handoff while retaining clearly marked historical evidence.
 
-## [0.0.1] - 2026-05-29
+## [0.0.1] - 2026-03-31
 
 ### Added
 

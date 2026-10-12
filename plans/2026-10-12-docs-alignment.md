@@ -24,8 +24,10 @@ current instructions must describe merged main and the unpublished candidate.
   contributor workflow gaps and distinguish current status from historical evidence.
 - [x] (2026-10-12) Execute relevant examples and notebook, build and inspect
   rendered docs, check local links and verify installed archive metadata.
-- [ ] Run final normal/pre-push hooks and inspect hosted checks.
-- [ ] Record coverage, outcomes and hosted validation; present the PR for review.
+- [x] (2026-10-12) Normal and real pre-push hooks pass. Hosted baseline
+  validation and both proposal endpoints pass on the implementation head.
+- [x] (2026-10-12) Record coverage, outcomes, artifact hashes and hosted
+  validation; prepare PR #58 for review. Merge approval remains separate.
 
 ## Surprises & Discoveries
 
@@ -54,8 +56,10 @@ status updates where a completed plan would otherwise mislead a reader.
 The documentation corrections are implemented in PR #58. Local example,
 checker, notebook, rendered-site, link and minimal-consumer validation passes.
 The source changes affect docstrings only; runtime behavior, dependency metadata
-and the unresolved union release blocker are unchanged. Final hook/hosted
-validation is pending. This PR has not been merged or published.
+and the unresolved union release blocker are unchanged. Normal/pre-push hooks
+and all 36 hosted checks pass at implementation head 910bad8. Final audit
+record updates are checked again on the PR head before handoff. This PR has not
+been merged, published or deployed.
 
 ## Context and Orientation
 
@@ -191,7 +195,9 @@ HTML overrides and executable workflow/configuration references.
 ### Evidence and checks
 
 Primary-source checks used [PyPI](https://pypi.org/project/bearshape/) for the
-published 0.0.1 release date (29 May 2026) and
+0.0.1 upload date (29 May 2026),
+[the GitHub release](https://github.com/beartype/bearshape/releases/tag/v0.0.1)
+for the original release date (31 March 2026, retained in CHANGELOG), and
 [CuPy installation](https://docs.cupy.dev/en/stable/install.html) for CUDA-specific
 package selection. These are dated facts, not an assertion that current main is
 published.
@@ -225,3 +231,34 @@ On Python 3.11.15 with uv 0.11.17 and exact beartype 0.23.1:
 
 Revision note — 2026-10-12: Record completed artifact audit, corrected user and
 contributor contracts, preserved historical evidence and local validation.
+
+
+### Final implementation validation and artifact identities
+
+The documentation implementation is 910bad807584476b0930ca76fc41457a8184361b,
+following 871d42737f64fe0a8c4241d69e704d22b81cb5f9 and the initial plan commit.
+All 34 [CI jobs](https://github.com/beartype/bearshape/actions/runs/38221049041)
+and both [proposal endpoints](https://github.com/beartype/bearshape/actions/runs/38221048953)
+passed on that implementation, including installed consumers, compatibility
+floors, four checker engines, both notebook endpoints and docs. Real pre-push
+runtime/checker hooks passed. Eight additional standalone public help examples
+were executed on CPU; the CuPy help example still requires CUDA. An AST
+comparison of all nine changed library modules confirms docstrings only.
+
+The final audit record restores the original GitHub release date in CHANGELOG
+instead of substituting the later PyPI upload date. The final archive pair
+includes that correction; normal hooks, archive integrity and the hosted
+matrix are checked on the final PR head. The final run links and exact head are
+recorded in the PR validation description rather than a self-referential commit
+hash in this file.
+
+- Wheel SHA256: `4617bf301f9183f47fc1f7115cdd69afced2e345a2841a587e4729ef56ed5f39`.
+- Source archive SHA256: `448f8b1b8fa36d4c525b36b0fa9693ab7af17af692ba2e0ce07cf35adce17453`.
+
+These identify documentation-audit artifacts, not release approval. Main remains
+at a475c9b pending review; supported upstream union integration and the release
+runbook's external prerequisites remain open. No runtime optimization or public
+API change is included in this audit.
+
+Revision note — 2026-10-12: Close out local and hosted documentation validation,
+record final archive identities and preserve the original release chronology.
