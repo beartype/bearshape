@@ -1,11 +1,14 @@
 # bearshape
 
 [![Python 3.11-3.14](https://raw.githubusercontent.com/beartype/bearshape/main/docs/assets/images/python_versions_badge.svg)](https://www.python.org/)
+[![CPU coverage gate ≥90%](https://img.shields.io/badge/CPU%20coverage-%E2%89%A590%25-brightgreen?style=flat-square&labelColor=1F2937)](https://github.com/beartype/bearshape/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-live-526CFE?style=flat-square&logo=readthedocs&logoColor=white&labelColor=1F2937)](https://beartype.github.io/bearshape/)
 
 Runtime shape and dtype checking for NumPy, JAX, PyTorch, CuPy, and
 tree-structured containers, powered by
 [beartype](https://github.com/beartype/beartype).
+
+[Read the documentation](https://beartype.github.io/bearshape/).
 
 ```python
 from beartype import beartype
@@ -80,6 +83,11 @@ uv run --locked prek run -a
 uv run --locked pytest tests/ --ignore=tests/test_typecheck.py -n auto
 uv run --locked pytest tests/test_typecheck.py -q
 ```
+
+The coverage badge shows the enforced **90% CPU coverage floor**, including
+branches. Each runtime CI job retains its measured JSON, XML and HTML reports;
+see
+[coverage reports](https://github.com/beartype/bearshape/blob/main/CONTRIBUTING.md#coverage-reports).
 
 Use uv 0.11.17. See
 [CONTRIBUTING.md](https://github.com/beartype/bearshape/blob/main/CONTRIBUTING.md)

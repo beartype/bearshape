@@ -33,6 +33,16 @@ Missing engines or crashes fail. Tox selects one checker through its explicit
 factor; ordinary runs require all four. Keep each Python target paired with its
 own interpreter and compatible dependency stubs.
 
+## Coverage reports
+
+Follow the [coverage command](../CONTRIBUTING.md#coverage-reports) to generate
+`build/coverage/coverage.json`, `coverage.xml` and `htmlcov/` from the runtime
+suite. JSON includes line and branch totals; HTML identifies uncovered source
+lines. The shared CI workflow retains these files in `coverage-<os>-py<version>`
+artifacts for seven days, associated with that run's source commit. The README
+badge shows the enforced 90% floor. CPU reports do not establish CUDA coverage,
+and the checker suite runs separately.
+
 ## Documentation and notebook
 
 ```bash

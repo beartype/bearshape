@@ -12,9 +12,9 @@ measured coverage for each tested platform/interpreter as downloadable reports.
 
 - [x] (2026-10-12) Verify clean main 8af59e0, instructions and coverage workflow.
 - [x] (2026-10-12) Create the dedicated readme-coverage worktree and this plan.
-- [ ] Commit this plan and open a draft PR before implementation.
-- [ ] Add a prominent website link and honest coverage badge to README.
-- [ ] Retain JSON/XML/HTML coverage reports from the existing runtime jobs.
+- [x] (2026-10-12) Commit the plan and open draft PR #59 before implementation.
+- [x] (2026-10-12) Add a prominent website link and honest coverage badge to README.
+- [x] (2026-10-12) Retain JSON/XML/HTML reports from existing runtime jobs.
 - [ ] Validate hooks, workflow syntax, reports, archives and hosted checks.
 - [ ] Present the focused PR for review; merge needs its own approval.
 
@@ -39,8 +39,10 @@ text link. Runtime CI already measures branch-inclusive coverage and enforces
 
 ## Outcomes & Retrospective
 
-Implementation pending. Publication, deployment and upstream contact remain
-unauthorized. The separate development-toolchain PR is independent of this work.
+README visibility and report retention are implemented. Local runtime coverage,
+all three report formats, hooks, actionlint, rendered links and archive checks
+passed. Hosted checks and combined validation remain pending. Publication,
+deployment and upstream contact remain unauthorized.
 
 ## Context and Orientation
 
@@ -94,10 +96,27 @@ revert the unrelated development-toolchain work.
 
 ## Artifacts and Notes
 
-Record source SHA, report summary, archive hashes and hosted run URLs here after
-validation. The beartype 0.23.1 union release blocker remains open.
+The local runtime suite passed 1,315 tests with five expected hardware/precision
+skips and 91.231566% line/branch coverage: 1,811 of 1,979 executable lines and
+478 of 530 branches. JSON/XML and the 22-file HTML report agree. Normal hooks
+and actionlint pass; the rendered documentation link and badge both return HTTP
+200. No coverage threshold, diagnostic fixture or test collection changed.
+
+The sdist-derived wheel passes archive checks. SHA256 values are
+`151f37a7600a5161b153c50950b3dad3ad596b04484aa28942d780f929c75e08` (wheel) and
+`737a06a7ddacf971849210e4abf29d66e67d724dfd760528774be47468bf0b18` (sdist).
+Evidence is retained in ignored build/readme-coverage/ in the main checkout;
+report files are generated under build/coverage/ in the worktree. Hosted CI
+verification follows the implementation commit. The beartype 0.23.1 union
+release blocker remains open.
 
 ## Interfaces and Dependencies
 
 No new dependencies. Reuse pytest-cov, coverage and the pinned upload-artifact
 action. The development-toolchain PR updates their versions separately.
+
+Revision, 12 October 2026: implemented README visibility and report retention;
+validation and final review remain pending.
+
+Revision, 12 October 2026: local validation passed and artifact identities
+recorded. Hosted and combined checks remain pending before final review.
