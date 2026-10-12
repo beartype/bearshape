@@ -336,7 +336,7 @@ def make_array_type(array_type: type, dtype_spec: DtypeSpec) -> _ArrayFactory:
   Example::
 
       import numpy as np
-      from bearshape import DtypeSpec, N, C, H, W
+      from bearshape import DtypeSpec, N, C, H, W, make_array_type
 
       FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 
@@ -664,7 +664,7 @@ def make_array_like_type(
 
   Example::
 
-      from bearshape import DtypeSpec, N, C, H, W
+      from bearshape import DtypeSpec, N, C, H, W, make_array_like_type
 
       FLOAT32 = DtypeSpec("Float32", frozenset({"float32"}))
 

@@ -355,6 +355,11 @@ def Structured(  # noqa: N802
 
   Example::
 
+      import numpy as np
+      from beartype import beartype
+      from bearshape import N
+      from bearshape.numpy import Structured
+
       Point = Structured([("x", np.float32), ("y", np.float32)])
 
 
